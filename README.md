@@ -42,23 +42,47 @@ Three strictly separated layers:
 
 See [`CLAUDE.md`](CLAUDE.md) (the build spec) for the full design.
 
-## Build
+## Status
 
-### Engine + AI (Rust)
+| Unit | What | State |
+|------|------|-------|
+| **U1 — Engine** (`engine/`) | rules, capture, win-check (lines + Morph shapes), modes, pure `apply` | ✅ complete, 41 tests |
+| **U2 — AI** (`ai/`) | easy / medium / hard (negamax + alpha-beta + transposition table + iterative deepening) | ✅ complete, 14 tests + self-play |
+| **Bridge** (`bridge/`) | `GameSession` facade, FFI-friendly views | ✅ complete, 6 tests |
+| **U3 — UI** (`ui/`) | screens, board, rails, animations on a swappable `GameApi` | ✅ code-complete (runs on the Dart mock backend) |
+| **Integration** | `flutter_rust_bridge` wiring + on-device play | ⏳ needs Flutter SDK install |
+
+**Quality:** 61 Rust tests pass; `cargo clippy` clean; the AI's Hard difficulty scores 97–100% vs
+Easy and 95% vs Medium in self-play and never loses. Engine/AI use **zero** third-party crates and
+contain **no `unsafe`** (see [`aidlc-docs/design-artifacts/security-review.md`](aidlc-docs/design-artifacts/security-review.md)).
+
+## Build & test
+
+### Engine + AI (Rust) — runs anywhere
 
 ```sh
-cargo test            # run all headless engine + AI tests
-cargo build --release # optimized native build
+cargo test --workspace            # all headless engine + AI + bridge tests
+cargo run --release --example selfplay   # AI strength self-play report
+cargo build --release             # optimized native build
 ```
 
-### UI (Flutter)
+### UI (Flutter) — requires the Flutter SDK (≥ 3.27)
 
-Requires the Flutter SDK. See `ui/README.md` (added during Unit 3).
+```sh
+cd ui
+flutter pub get
+flutter test     # Dart rule-parity tests for the mock backend
+flutter run      # launch on a device/emulator (plays on the Dart mock engine)
+```
+
+See [`ui/README.md`](ui/README.md) for backend details and the native-Rust wiring steps.
 
 ## Project methodology
 
-Built with AI-DLC: INCEPTION → CONSTRUCTION → OPERATIONS. Design and planning artifacts live
-under [`aidlc-docs/`](aidlc-docs/). The changelog follows
+Built with AI-DLC: INCEPTION → CONSTRUCTION → OPERATIONS, with the three Units developed against
+frozen merge contracts (the engine's `Mode` trait and the `GameApi`/`GameSession` boundary). Design
+and planning artifacts (ADR, Morph shapes, Bonanza distribution, heuristic calibration, security
+review) live under [`aidlc-docs/`](aidlc-docs/). The changelog follows
 [Keep a Changelog](https://keepachangelog.com/).
 
 ## License
