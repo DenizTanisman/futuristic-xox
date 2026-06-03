@@ -30,5 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Bridge facade** (`bridge/` crate): `GameSession` over engine + ai with flat, FFI-friendly view
   structs (`Snapshot`, `MoveResult`, `Outcome`) ready for `flutter_rust_bridge`. Reports captures,
   Morph single-move fallback, and inline illegal-move reasons. 6 tests.
+- **U3 UI** (`ui/` Flutter app): entry/futuristic-select/setup/game screens (spec §8), board with
+  legal-cell highlighting + last-move marker, both pawn rails with slide animation, turn & Morph
+  "move N of 2" indicators, inline messages, win/lose/draw banner; bordeaux vs dark-gold theme with
+  60fps placement/capture/rail animations. Backend-agnostic `GameApi` with a pure-Dart mock engine
+  (`DartGameApi`, faithful rule port + mock AI) so the app runs without the Rust toolchain; native
+  `flutter_rust_bridge` backend is the integration step. Dart rule-parity tests.
 
 [Unreleased]: https://example.com/compare/HEAD
