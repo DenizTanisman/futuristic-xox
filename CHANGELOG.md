@@ -36,5 +36,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   60fps placement/capture/rail animations. Backend-agnostic `GameApi` with a pure-Dart mock engine
   (`DartGameApi`, faithful rule port + mock AI) so the app runs without the Rust toolchain; native
   `flutter_rust_bridge` backend is the integration step. Dart rule-parity tests.
+- **U3 verified with Flutter 3.44.1** (SDK installed): `flutter analyze` clean, 9 tests pass
+  (engine rule-parity + widget smoke), `flutter build web` succeeds. Added Android/iOS/web platform
+  scaffolding.
+
+### Fixed
+- Classic hands were fixed-length lists, so playing a symbol threw `Cannot remove from a
+  fixed-length list`; hands are now growable. (Caught by the Dart test suite.)
 
 [Unreleased]: https://example.com/compare/HEAD
