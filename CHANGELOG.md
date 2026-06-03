@@ -21,5 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   per-mode setup, full random playthroughs across all 8 mode/grid combinations).
 - AI-DLC artifacts: build plan, ADR-001 (engine domain design), Morph-shapes log, Bonanza-distribution
   decision log.
+- **U2 AI** (`ai/` crate): Easy (random with capture/placement bias), Medium (per-turn Easy/Hard
+  coin flip), Hard (negamax + alpha-beta, transposition table with Zobrist hashing, iterative
+  deepening + time box, TT/static move ordering). Public `choose_move(mode, state, difficulty,
+  limits, seed)`. 14 tests (tactics: immediate win/block, perfect-play 3×3 draw, never-loses-to-Easy;
+  cross-mode legality + termination; 5×5 Morph time-box). Self-play harness + calibration log
+  (Hard scores 97–100% vs Easy, 95% vs Medium, never loses).
+- **Bridge facade** (`bridge/` crate): `GameSession` over engine + ai with flat, FFI-friendly view
+  structs (`Snapshot`, `MoveResult`, `Outcome`) ready for `flutter_rust_bridge`. Reports captures,
+  Morph single-move fallback, and inline illegal-move reasons. 6 tests.
 
 [Unreleased]: https://example.com/compare/HEAD

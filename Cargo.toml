@@ -3,7 +3,7 @@ resolver = "2"
 members = [
     "engine",
     "ai",
-    # "bridge" is added once flutter_rust_bridge wiring begins (post-U1).
+    "bridge",
 ]
 
 [workspace.package]

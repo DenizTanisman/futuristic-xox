@@ -1,0 +1,16 @@
+[package]
+name = "bridge"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Game facade over engine + ai, FFI-friendly for flutter_rust_bridge (Unit 3 wiring)."
+
+[lib]
+name = "bridge"
+# `rlib` for headless tests now; `staticlib`/`cdylib` are added when flutter_rust_bridge codegen runs
+# (post-Flutter-install), so the same crate compiles for mobile.
+crate-type = ["rlib"]
+
+[dependencies]
+engine = { path = "../engine" }
+ai = { path = "../ai" }
