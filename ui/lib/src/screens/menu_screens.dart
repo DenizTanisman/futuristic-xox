@@ -194,7 +194,7 @@ class _SplitTile extends StatelessWidget {
               child: Text(
                 subtitle,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textMuted),
+                style: const TextStyle(color: AppColors.textMuted),
               ),
             ),
           ],
@@ -217,14 +217,14 @@ class _MenuCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: AppColors.gridLine),
+        side: const BorderSide(color: AppColors.gridLine),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         title: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4),
-          child: Text(subtitle, style: TextStyle(color: AppColors.textMuted)),
+          child: Text(subtitle, style: const TextStyle(color: AppColors.textMuted)),
         ),
         trailing: const Icon(Icons.chevron_right),
         onTap: onTap,
@@ -243,7 +243,7 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         text.toUpperCase(),
-        style: TextStyle(color: AppColors.textMuted, letterSpacing: 1.5, fontWeight: FontWeight.w600),
+        style: const TextStyle(color: AppColors.textMuted, letterSpacing: 1.5, fontWeight: FontWeight.w600),
       ),
     );
   }

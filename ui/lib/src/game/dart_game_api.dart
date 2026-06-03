@@ -60,7 +60,13 @@ class DartGameApi implements GameApi {
     switch (mode) {
       case Mode4.classic:
         final p0 = (cells + 1) ~/ 2;
-        return _State(board, [List.filled(p0, 0), List.filled(cells - p0, 0)], 0, 1);
+        // Growable: symbols are removed from the hand as they are played.
+        return _State(
+          board,
+          [List.filled(p0, 0, growable: true), List.filled(cells - p0, 0, growable: true)],
+          0,
+          1,
+        );
       case Mode4.original:
         final n = _originalPawns(cells);
         final hand = List<int>.generate(n, (i) => i + 1);

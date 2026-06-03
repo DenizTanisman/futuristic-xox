@@ -49,7 +49,7 @@ class PawnRail extends StatelessWidget {
               curve: Curves.easeOut,
               alignment: Alignment.centerLeft,
               child: hand.isEmpty
-                  ? Text('—', style: TextStyle(color: AppColors.textMuted))
+                  ? const Text('—', style: TextStyle(color: AppColors.textMuted))
                   : Wrap(
                       spacing: 6,
                       runSpacing: 6,

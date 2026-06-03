@@ -44,12 +44,12 @@ class TurnIndicator extends StatelessWidget {
           const SizedBox(width: 10),
           Text(
             'move ${3 - movesLeftInTurn} of 2',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
           ),
         ],
         if (aiThinking) ...[
           const SizedBox(width: 10),
-          SizedBox(
+          const SizedBox(
             width: 14,
             height: 14,
             child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accent),

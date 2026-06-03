@@ -1,6 +1,7 @@
 /// UI-facing game model types. These mirror the Rust `bridge` crate's view structs (`Snapshot`,
 /// `MoveResult`, `Outcome`, spec §7.1/§11) so the pure-Dart mock backend and the future
 /// flutter_rust_bridge backend are interchangeable behind `GameApi`.
+library;
 
 /// The four playable modes (spec §4).
 enum Mode4 { classic, original, bonanza, morph }

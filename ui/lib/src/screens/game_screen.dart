@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../controllers/game_controller.dart';
 import '../game/dart_game_api.dart';
 import '../models/game_models.dart';
-import '../theme/app_theme.dart';
 import '../widgets/board_view.dart';
 import '../widgets/pawn_rail.dart';
 import '../widgets/status_widgets.dart';

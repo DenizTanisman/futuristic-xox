@@ -1,5 +1,6 @@
 /// Dart port of the engine's win geometry (spec §3.4 lines, §5 Morph shapes), used by the pure-Dart
 /// mock backend. Mirrors `engine/src/geometry.rs`; the native backend uses the Rust original.
+library;
 
 /// All length-3 winning segments for a `rows×cols` grid: horizontal, vertical, both diagonals.
 List<List<int>> lineTriples(int rows, int cols) {
