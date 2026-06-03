@@ -58,6 +58,34 @@ void main() {
       final win = api.humanMove(color: 0, value: 3, cell: 2);
       expect(win.snapshot.outcome, Outcome.win0);
     });
+
+    test('CLASSIC diagonals win (both directions)', () {
+      // Main diagonal 0,4,8.
+      var api = DartGameApi();
+      api.newGame(mode: Mode4.classic, rows: 3, cols: 3);
+      for (final c in [0, 1, 4, 2]) {
+        api.humanMove(cell: c);
+      }
+      expect(api.humanMove(cell: 8).snapshot.outcome, Outcome.win0);
+
+      // Anti-diagonal 2,4,6.
+      api = DartGameApi();
+      api.newGame(mode: Mode4.classic, rows: 3, cols: 3);
+      for (final c in [2, 0, 4, 1]) {
+        api.humanMove(cell: c);
+      }
+      expect(api.humanMove(cell: 6).snapshot.outcome, Outcome.win0);
+    });
+
+    test('valued diagonal wins on 4x4 (0,5,10)', () {
+      final api = DartGameApi();
+      api.newGame(mode: Mode4.original, rows: 4, cols: 4);
+      api.humanMove(color: 0, value: 1, cell: 0);
+      api.humanMove(color: 1, value: 1, cell: 1);
+      api.humanMove(color: 0, value: 2, cell: 5);
+      api.humanMove(color: 1, value: 2, cell: 2);
+      expect(api.humanMove(color: 0, value: 3, cell: 10).snapshot.outcome, Outcome.win0);
+    });
   });
 
   group('morph', () {
