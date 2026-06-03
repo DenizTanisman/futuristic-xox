@@ -1,0 +1,15 @@
+[package]
+name = "engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Futuristic XOX game engine: pure rules, capture, win-check, modes (Unit 1)."
+
+[lib]
+name = "engine"
+# rlib for the AI crate + bridge; the staticlib/cdylib for mobile is configured in `bridge/`.
+crate-type = ["rlib"]
+
+[dependencies]
+
+[dev-dependencies]

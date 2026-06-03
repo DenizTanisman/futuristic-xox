@@ -1,0 +1,13 @@
+[package]
+name = "ai"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Futuristic XOX AI: easy/medium/hard search over the engine's Mode trait (Unit 2)."
+
+[lib]
+name = "ai"
+crate-type = ["rlib"]
+
+[dependencies]
+engine = { path = "../engine" }
