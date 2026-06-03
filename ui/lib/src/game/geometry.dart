@@ -69,6 +69,28 @@ List<List<List<int>>> _orientations(List<List<int>> base) {
   return out;
 }
 
+/// All concrete 4-cell placements of a SINGLE Morph shape (`shapeIndex`: 0=I, 1=L, 2=Z) on a
+/// `rows×cols` grid — every rotation + mirror of that shape, slid over the grid, deduped. In Morph
+/// one shape is chosen at game start and the win is to complete that shape (spec §4.4, §5).
+List<List<int>> morphPlacementsForShape(int rows, int cols, int shapeIndex) {
+  final placements = <List<int>>[];
+  final seen = <String>{};
+  final flat = _baseShapes()[shapeIndex];
+  for (final orient in _orientations(_toPairs(flat))) {
+    final maxR = orient.map((p) => p[0]).reduce((a, b) => a > b ? a : b);
+    final maxC = orient.map((p) => p[1]).reduce((a, b) => a > b ? a : b);
+    if (maxR >= rows || maxC >= cols) continue;
+    for (var offR = 0; offR < rows - maxR; offR++) {
+      for (var offC = 0; offC < cols - maxC; offC++) {
+        final cells = orient.map((p) => (offR + p[0]) * cols + (offC + p[1])).toList()..sort();
+        final k = cells.join(',');
+        if (seen.add(k)) placements.add(cells);
+      }
+    }
+  }
+  return placements;
+}
+
 /// Every concrete 4-cell Morph placement on a `rows×cols` grid (all I/L/Z rotations + mirror, slid
 /// over the grid, deduped). Excludes the pure diagonal (spec §5).
 List<List<int>> morphPlacements(int rows, int cols) {

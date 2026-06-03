@@ -13,11 +13,13 @@ abstract class GameApi {
   /// Current state.
   Snapshot snapshot();
 
-  /// Legal target cells for a held pawn value (UI highlighting). Pass `null` for Classic.
-  List<int> legalCells(int? value);
+  /// Legal target cells for a held pawn (UI highlighting). Pass `color`+`value` of the selected
+  /// hand pawn; both `null` for Classic.
+  List<int> legalCells({int? color, int? value});
 
-  /// Attempt a human move. Illegal → no state change + an inline reason (spec §3.3).
-  MoveResult humanMove({int? value, required int cell});
+  /// Attempt a human move. For valued modes pass the selected pawn's `color` and `value`; for
+  /// Classic both are `null`. Illegal → no state change + an inline reason (spec §3.3).
+  MoveResult humanMove({int? color, int? value, required int cell});
 
   /// Have the AI move for the side to move. May run asynchronously (native search off-isolate).
   Future<MoveResult> aiMove(Difficulty difficulty);

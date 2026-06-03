@@ -17,7 +17,9 @@ class GameController extends ChangeNotifier {
 
   late Snapshot snapshot;
 
-  /// Selected hand pawn value (valued modes). Null = nothing selected / Classic.
+  /// Selected hand pawn (valued modes): its colour and value. Null = nothing selected / Classic.
+  /// Colour matters in Bonanza, where the human may hold pawns of either colour (spec §4.3).
+  int? selectedColor;
   int? selectedValue;
 
   /// Transient inline message (illegal move, capture, Morph fallback) shown briefly (spec §3.3, §8).
@@ -60,12 +62,19 @@ class GameController extends ChangeNotifier {
   List<int> get highlightedCells {
     if (!isHumanTurn) return const [];
     if (mode.valued && selectedValue == null) return const [];
-    return api.legalCells(mode.valued ? selectedValue : null);
+    return api.legalCells(color: mode.valued ? selectedColor : null, value: mode.valued ? selectedValue : null);
   }
 
-  void selectValue(int? value) {
+  /// Select/deselect a hand pawn by colour + value (valued modes).
+  void selectPawn(int color, int value) {
     if (!isHumanTurn) return;
-    selectedValue = (selectedValue == value) ? null : value;
+    if (selectedColor == color && selectedValue == value) {
+      selectedColor = null;
+      selectedValue = null;
+    } else {
+      selectedColor = color;
+      selectedValue = value;
+    }
     _clearMessage();
     notifyListeners();
   }
@@ -76,15 +85,22 @@ class GameController extends ChangeNotifier {
       _setMessage('Select a pawn first', isError: true);
       return;
     }
-    final result = api.humanMove(value: mode.valued ? selectedValue : null, cell: cell);
+    final result = api.humanMove(
+      color: mode.valued ? selectedColor : null,
+      value: mode.valued ? selectedValue : null,
+      cell: cell,
+    );
     if (!result.applied) {
       _setMessage(result.illegalReason ?? 'Illegal move', isError: true);
       return;
     }
     _onApplied(result);
 
-    // If the human still has a pending pawn that is no longer in hand, clear the selection.
-    if (mode.valued && selectedValue != null && !snapshot.hand0.contains(selectedValue)) {
+    // If the selected pawn is no longer in hand, clear the selection.
+    if (mode.valued &&
+        selectedValue != null &&
+        !snapshot.hand0.any((h) => h.color == selectedColor && h.value == selectedValue)) {
+      selectedColor = null;
       selectedValue = null;
     }
     notifyListeners();

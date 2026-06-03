@@ -60,6 +60,102 @@ class TurnIndicator extends StatelessWidget {
   }
 }
 
+/// Persistent Morph target badge: the chosen shape as a letter + a small 4-cell picture, so players
+/// know what to build (spec §4.4, §5).
+class MorphShapeBadge extends StatelessWidget {
+  final MorphShape shape;
+  const MorphShapeBadge({super.key, required this.shape});
+
+  @override
+  Widget build(BuildContext context) {
+    final cells = shape.previewCells;
+    final maxR = cells.map((c) => c[0]).reduce((a, b) => a > b ? a : b);
+    final maxC = cells.map((c) => c[1]).reduce((a, b) => a > b ? a : b);
+    final filled = cells.map((c) => c[0] * (maxC + 1) + c[1]).toSet();
+    const unit = 11.0;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.6)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('Target', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+          const SizedBox(width: 8),
+          Text(
+            shape.letter,
+            style: const TextStyle(
+              color: AppColors.accent,
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var r = 0; r <= maxR; r++)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var c = 0; c <= maxC; c++)
+                      Container(
+                        width: unit,
+                        height: unit,
+                        margin: const EdgeInsets.all(1),
+                        decoration: BoxDecoration(
+                          color: filled.contains(r * (maxC + 1) + c)
+                              ? AppColors.accent
+                              : AppColors.surfaceHigh,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                  ],
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A brief centered intro overlay (e.g. Bonanza's own-colour count at game start, spec §4.3).
+class IntroOverlay extends StatelessWidget {
+  final String title;
+  final Widget child;
+  const IntroOverlay({super.key, required this.title, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        color: Colors.black.withValues(alpha: 0.55),
+        alignment: Alignment.center,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 28),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.accent, width: 1.5),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(title, style: const TextStyle(color: AppColors.textMuted, letterSpacing: 1.5)),
+              const SizedBox(height: 14),
+              child,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Inline transient message: red for illegal moves, gold for capture/info (spec §3.3, §8).
 class InlineMessage extends StatelessWidget {
   final String? message;

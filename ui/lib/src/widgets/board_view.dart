@@ -9,6 +9,9 @@ import 'pawn_widget.dart';
 class BoardView extends StatelessWidget {
   final Snapshot snapshot;
   final bool showValues;
+
+  /// Classic renders X / O glyphs instead of values (spec §4.1).
+  final bool classic;
   final List<int> highlightedCells;
   final int? lastMoveCell;
   final void Function(int cell) onTap;
@@ -18,6 +21,7 @@ class BoardView extends StatelessWidget {
     super.key,
     required this.snapshot,
     required this.showValues,
+    required this.classic,
     required this.highlightedCells,
     required this.lastMoveCell,
     required this.onTap,
@@ -53,6 +57,7 @@ class BoardView extends StatelessWidget {
               cell: snapshot.board[i],
               size: cellSize,
               showValue: showValues,
+              classic: classic,
               highlighted: highlight.contains(i),
               isLast: lastMoveCell == i,
               onTap: interactive ? () => onTap(i) : null,
@@ -68,6 +73,7 @@ class _Cell extends StatelessWidget {
   final CellView cell;
   final double size;
   final bool showValue;
+  final bool classic;
   final bool highlighted;
   final bool isLast;
   final VoidCallback? onTap;
@@ -76,6 +82,7 @@ class _Cell extends StatelessWidget {
     required this.cell,
     required this.size,
     required this.showValue,
+    required this.classic,
     required this.highlighted,
     required this.isLast,
     required this.onTap,
@@ -114,6 +121,7 @@ class _Cell extends StatelessWidget {
                   value: cell.value,
                   showValue: showValue,
                   size: size * 0.8,
+                  glyph: classic ? (cell.owner == 0 ? 'X' : 'O') : null,
                 ),
               ),
       ),

@@ -11,6 +11,9 @@ class PawnWidget extends StatelessWidget {
   final double size;
   final bool selected;
 
+  /// Optional glyph to show instead of the value (Classic uses 'X' / 'O', spec §4.1).
+  final String? glyph;
+
   const PawnWidget({
     super.key,
     required this.owner,
@@ -18,14 +21,16 @@ class PawnWidget extends StatelessWidget {
     required this.showValue,
     required this.size,
     this.selected = false,
+    this.glyph,
   });
 
   @override
   Widget build(BuildContext context) {
     final color = AppColors.owner(owner);
     final glow = AppColors.ownerGlow(owner);
+    final label = glyph ?? (showValue ? '$value' : null);
     return TweenAnimationBuilder<double>(
-      key: ValueKey('pawn-$owner-$value-$showValue'),
+      key: ValueKey('pawn-$owner-$value-$showValue-$glyph'),
       tween: Tween(begin: 0.6, end: 1.0),
       duration: AppTheme.place,
       curve: Curves.easeOutBack,
@@ -53,13 +58,14 @@ class PawnWidget extends StatelessWidget {
           ],
         ),
         alignment: Alignment.center,
-        child: showValue
-            ? FittedBox(
+        child: label == null
+            ? null
+            : FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Padding(
                   padding: EdgeInsets.all(size * 0.18),
                   child: Text(
-                    '$value',
+                    label,
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontWeight: FontWeight.w800,
@@ -67,8 +73,7 @@ class PawnWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-              )
-            : null,
+              ),
       ),
     );
   }

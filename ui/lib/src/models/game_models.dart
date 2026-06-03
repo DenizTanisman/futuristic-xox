@@ -37,6 +37,40 @@ extension DifficultyX on Difficulty {
 /// Terminal status of a game (mirrors `bridge::Outcome`).
 enum Outcome { inProgress, win0, win1, draw }
 
+/// The three Morph target shapes (spec §5). In Morph, one is chosen at game start and shown to the
+/// players; the win is to complete that shape in any rotation / mirror / position.
+enum MorphShape { i, l, z }
+
+extension MorphShapeX on MorphShape {
+  String get letter => switch (this) {
+        MorphShape.i => 'I',
+        MorphShape.l => 'L',
+        MorphShape.z => 'Z',
+      };
+
+  /// Relative `(row, col)` cells of the shape in its base orientation, for a small preview.
+  List<List<int>> get previewCells => switch (this) {
+        MorphShape.i => const [
+            [0, 0],
+            [0, 1],
+            [0, 2],
+            [0, 3]
+          ],
+        MorphShape.l => const [
+            [0, 0],
+            [1, 0],
+            [2, 0],
+            [2, 1]
+          ],
+        MorphShape.z => const [
+            [0, 1],
+            [0, 2],
+            [1, 0],
+            [1, 1]
+          ],
+      };
+}
+
 /// A single board cell view.
 class CellView {
   final int owner;
@@ -50,18 +84,32 @@ class CellView {
         empty = true;
 }
 
+/// A pawn held in hand. `color` is the pawn's owner-colour once placed — equal to the holding player
+/// in every mode EXCEPT Bonanza, where a player may hold opponent-coloured pawns (spec §4.3).
+class HandPawnView {
+  final int color;
+  final int value;
+  const HandPawnView({required this.color, required this.value});
+}
+
 /// A flat, immutable view of the full game state for rendering (mirrors `bridge::Snapshot`).
 class Snapshot {
   final int rows;
   final int cols;
   final List<CellView> board;
-  final List<int> hand0;
-  final List<int> hand1;
+  final List<HandPawnView> hand0;
+  final List<HandPawnView> hand1;
   final int turn;
 
   /// 1 normally; for Morph, 2 then 1 within a turn (spec §8 "move 1 of 2 / 2 of 2").
   final int movesLeftInTurn;
   final Outcome outcome;
+
+  /// Bonanza only: how many of player 0's pawns are their own colour (shown briefly at start).
+  final int? bonanzaOwnCount;
+
+  /// Morph only: the chosen target shape (shown at start).
+  final MorphShape? morphShape;
 
   const Snapshot({
     required this.rows,
@@ -72,10 +120,12 @@ class Snapshot {
     required this.turn,
     required this.movesLeftInTurn,
     required this.outcome,
+    this.bonanzaOwnCount,
+    this.morphShape,
   });
 
   int get cellCount => rows * cols;
-  List<int> hand(int player) => player == 0 ? hand0 : hand1;
+  List<HandPawnView> hand(int player) => player == 0 ? hand0 : hand1;
   bool get isOver => outcome != Outcome.inProgress;
 }
 

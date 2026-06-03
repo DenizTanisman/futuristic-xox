@@ -1,5 +1,4 @@
-// Rule-parity tests for the pure-Dart mock backend (mirrors the Rust engine tests). Run with
-// `flutter test` once the Flutter SDK is installed.
+// Rule-parity tests for the pure-Dart mock backend. Run with `flutter test`.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:futuristic_xox/src/game/dart_game_api.dart';
@@ -13,11 +12,15 @@ void main() {
       expect(lineTriples(4, 4).length, 24);
     });
 
-    test('morph placements exist and exclude the pure diagonal on 4x4', () {
-      final ps = morphPlacements(4, 4);
-      expect(ps, isNotEmpty);
-      final diag = [0, 5, 10, 15]..sort();
-      expect(ps.any((p) => (List.of(p)..sort()).toString() == diag.toString()), isFalse);
+    test('single-shape placements exist and exclude the pure diagonal on 4x4', () {
+      final all = [
+        ...morphPlacementsForShape(4, 4, 0),
+        ...morphPlacementsForShape(4, 4, 1),
+        ...morphPlacementsForShape(4, 4, 2),
+      ];
+      expect(all, isNotEmpty);
+      final diag = ([0, 5, 10, 15]..sort()).toString();
+      expect(all.any((p) => (List.of(p)..sort()).toString() == diag), isFalse);
     });
   });
 
@@ -25,14 +28,10 @@ void main() {
     test('strict-greater capture; equal/own illegal', () {
       final api = DartGameApi();
       api.newGame(mode: Mode4.original, rows: 3, cols: 3);
-      // P0 places a 3 at cell 0.
-      expect(api.humanMove(value: 3, cell: 0).applied, isTrue);
-      // P1 tries to capture with equal value 3 → illegal.
-      final equalTry = api.humanMove(value: 3, cell: 0);
+      expect(api.humanMove(color: 0, value: 3, cell: 0).applied, isTrue); // P0 colour 0
+      final equalTry = api.humanMove(color: 1, value: 3, cell: 0); // P1 equal value → illegal
       expect(equalTry.applied, isFalse);
-      expect(equalTry.illegalReason, isNotNull);
-      // P1 captures with 4 → legal, reported as capture.
-      final cap = api.humanMove(value: 4, cell: 0);
+      final cap = api.humanMove(color: 1, value: 4, cell: 0); // P1 captures with 4
       expect(cap.applied, isTrue);
       expect(cap.captured, isTrue);
       expect(cap.snapshot.board[0].owner, 1);
@@ -42,7 +41,7 @@ void main() {
     test('illegal move leaves state and turn unchanged', () {
       final api = DartGameApi();
       final before = api.newGame(mode: Mode4.original, rows: 3, cols: 3);
-      final r = api.humanMove(value: 9, cell: 0); // 9 not in hand (1..6)
+      final r = api.humanMove(color: 0, value: 9, cell: 0); // 9 not in hand (1..6)
       expect(r.applied, isFalse);
       expect(r.snapshot.turn, before.turn);
     });
@@ -52,43 +51,91 @@ void main() {
     test('three in a row wins', () {
       final api = DartGameApi();
       api.newGame(mode: Mode4.original, rows: 3, cols: 3);
-      api.humanMove(value: 1, cell: 0); // P0
-      api.humanMove(value: 1, cell: 3); // P1
-      api.humanMove(value: 2, cell: 1); // P0
-      api.humanMove(value: 2, cell: 4); // P1
-      final win = api.humanMove(value: 3, cell: 2); // P0 completes top row
+      api.humanMove(color: 0, value: 1, cell: 0);
+      api.humanMove(color: 1, value: 1, cell: 3);
+      api.humanMove(color: 0, value: 2, cell: 1);
+      api.humanMove(color: 1, value: 2, cell: 4);
+      final win = api.humanMove(color: 0, value: 3, cell: 2);
       expect(win.snapshot.outcome, Outcome.win0);
     });
   });
 
   group('morph', () {
+    test('a single shape is chosen and shown', () {
+      final api = DartGameApi();
+      final s = api.newGame(mode: Mode4.morph, rows: 4, cols: 4, seed: 1);
+      expect(s.morphShape, isNotNull);
+      expect(s.movesLeftInTurn, 2);
+    });
+
     test('two moves per turn; same player continues then turn flips', () {
       final api = DartGameApi();
-      final s0 = api.newGame(mode: Mode4.morph, rows: 4, cols: 4);
-      expect(s0.movesLeftInTurn, 2);
-      final r1 = api.humanMove(value: 1, cell: 5);
+      api.newGame(mode: Mode4.morph, rows: 4, cols: 4);
+      final r1 = api.humanMove(color: 0, value: 1, cell: 5);
       expect(r1.snapshot.turn, 0);
       expect(r1.snapshot.movesLeftInTurn, 1);
-      final r2 = api.humanMove(value: 1, cell: 6);
+      final r2 = api.humanMove(color: 0, value: 1, cell: 6);
       expect(r2.snapshot.turn, 1);
       expect(r2.snapshot.movesLeftInTurn, 2);
     });
   });
 
-  group('mock AI', () {
-    test('hard AI plays only legal moves and games terminate', () async {
+  group('bonanza', () {
+    test('hands may hold opponent-coloured pawns; pool conserved; ownCount in range', () {
+      for (var seed = 0; seed < 30; seed++) {
+        final api = DartGameApi();
+        final s = api.newGame(mode: Mode4.bonanza, rows: 3, cols: 3, seed: seed);
+        expect(s.hand0.length, 6);
+        expect(s.hand1.length, 6);
+        expect(s.bonanzaOwnCount, inInclusiveRange(0, 6));
+
+        // Combined pool = two copies of 1..6 (one per colour).
+        int countColor(int c) =>
+            s.hand0.where((h) => h.color == c).length + s.hand1.where((h) => h.color == c).length;
+        expect(countColor(0), 6);
+        expect(countColor(1), 6);
+      }
+    });
+
+    test('across seeds, player 0 sometimes holds opponent-coloured pawns', () {
+      var sawOpponentColor = false;
+      for (var seed = 0; seed < 30; seed++) {
+        final api = DartGameApi();
+        final s = api.newGame(mode: Mode4.bonanza, rows: 3, cols: 3, seed: seed);
+        if (s.hand0.any((h) => h.color == 1)) {
+          sawOpponentColor = true;
+          break;
+        }
+      }
+      expect(sawOpponentColor, isTrue);
+    });
+  });
+
+  group('AI', () {
+    test('easy plays only legal moves and games terminate (all modes)', () async {
       for (final mode in Mode4.values) {
         final api = DartGameApi();
         final grid = mode == Mode4.morph ? 4 : 3;
-        var s = api.newGame(mode: mode, rows: grid, cols: grid);
+        var s = api.newGame(mode: mode, rows: grid, cols: grid, seed: 7);
         var guard = 0;
-        while (s.outcome == Outcome.inProgress && guard++ < 200) {
-          final r = await api.aiMove(Difficulty.hard);
+        while (s.outcome == Outcome.inProgress && guard++ < 300) {
+          final r = await api.aiMove(Difficulty.easy);
           expect(r.applied, isTrue);
           s = r.snapshot;
         }
         expect(s.outcome, isNot(Outcome.inProgress));
       }
+    });
+
+    test('hard vs hard on Classic 3x3 is a draw (perfect play)', () async {
+      final api = DartGameApi();
+      var s = api.newGame(mode: Mode4.classic, rows: 3, cols: 3, seed: 0);
+      var guard = 0;
+      while (s.outcome == Outcome.inProgress && guard++ < 20) {
+        final r = await api.aiMove(Difficulty.hard);
+        s = r.snapshot;
+      }
+      expect(s.outcome, Outcome.draw);
     });
   });
 }

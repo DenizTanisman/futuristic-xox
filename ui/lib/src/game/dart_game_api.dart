@@ -4,12 +4,18 @@ import '../models/game_models.dart';
 import 'game_api.dart';
 import 'geometry.dart';
 
-/// Pure-Dart mock backend: a faithful port of the engine rules (spec §3–§5) plus a lightweight AI,
-/// so the UI is fully playable without the Rust toolchain. The native backend (flutter_rust_bridge
-/// → `bridge::GameSession`) replaces this with the real engine + negamax AI behind the same [GameApi].
+/// Pure-Dart mock backend: a faithful port of the engine rules (spec §3–§5) plus a real
+/// negamax + alpha-beta AI, so the UI is fully playable — and the Hard difficulty genuinely strong —
+/// without the Rust toolchain. The native backend (flutter_rust_bridge → `bridge::GameSession`)
+/// replaces this with the production engine + AI behind the same [GameApi].
 ///
-/// Rule parity with `engine/`: strict-greater capture with permanent deletion (§3.3), 3-in-a-row and
-/// 4-cell Morph shapes (§3.4, §5), two moves per turn with single-move fallback for Morph (§4.4).
+/// Rule parity with the spec: strict-greater capture with permanent deletion (§3.3); 3-in-a-row and
+/// a single chosen Morph shape (§3.4, §4.4, §5); two moves per turn with single-move fallback (§4.4);
+/// Bonanza hands may hold opponent-coloured pawns whose owner-on-board is the pawn's colour (§4.3).
+
+const int _kWin = 1000;
+const int _kInf = 1 << 29;
+
 class _Pawn {
   int owner;
   int value;
@@ -17,16 +23,32 @@ class _Pawn {
   _Pawn copy() => _Pawn(owner, value);
 }
 
+/// A pawn in hand. `color` becomes its board owner when placed (differs from the holder only in
+/// Bonanza, spec §4.3). Classic stores symbol tokens as value 0.
+class _HandPawn {
+  int color;
+  int value;
+  _HandPawn(this.color, this.value);
+  _HandPawn copy() => _HandPawn(color, value);
+}
+
+class _Move {
+  final int? color; // pawn colour to place (null for Classic symbols)
+  final int? value; // null for Classic
+  final int cell;
+  const _Move(this.color, this.value, this.cell);
+}
+
 class _State {
   List<_Pawn?> board;
-  List<List<int>> hands;
+  List<List<_HandPawn>> hands;
   int turn;
   int movesLeft;
   _State(this.board, this.hands, this.turn, this.movesLeft);
 
   _State copy() => _State(
         board.map((p) => p?.copy()).toList(),
-        [List<int>.from(hands[0]), List<int>.from(hands[1])],
+        [hands[0].map((h) => h.copy()).toList(), hands[1].map((h) => h.copy()).toList()],
         turn,
         movesLeft,
       );
@@ -38,98 +60,116 @@ class DartGameApi implements GameApi {
   late int _cols;
   late _State _s;
   late List<List<int>> _lines;
-  late List<List<int>> _placements;
-  final Random _rng = Random();
+  late List<List<int>> _placements; // Morph: placements of the chosen shape only
+  int? _bonanzaOwnCount;
+  MorphShape? _morphShape;
+  late Random _rng;
 
   @override
   Snapshot newGame({required Mode4 mode, required int rows, required int cols, int? seed}) {
     _mode = mode;
     _rows = rows;
     _cols = cols;
+    final s = seed ?? DateTime.now().microsecondsSinceEpoch;
+    _rng = Random(s);
     _lines = lineTriples(rows, cols);
-    _placements = mode == Mode4.morph ? morphPlacements(rows, cols) : const [];
-    _s = _initialState(mode, rows, cols, seed);
+
+    if (mode == Mode4.morph) {
+      final shapeIdx = Random(s).nextInt(3);
+      _morphShape = MorphShape.values[shapeIdx];
+      _placements = morphPlacementsForShape(rows, cols, shapeIdx);
+    } else {
+      _morphShape = null;
+      _placements = const [];
+    }
+
+    _s = _initialState(mode, rows, cols, s);
     return snapshot();
   }
 
-  // ---- setup (mirrors engine/src/setup.rs) ----
+  // ---- setup (mirrors engine/src/setup.rs, extended for per-pawn colour) ----
 
-  _State _initialState(Mode4 mode, int rows, int cols, int? seed) {
+  _State _initialState(Mode4 mode, int rows, int cols, int seed) {
     final cells = rows * cols;
-    final board = List<_Pawn?>.filled(cells, null);
+    final board = List<_Pawn?>.filled(cells, null, growable: false);
+    List<_HandPawn> own(int color, Iterable<int> values) =>
+        values.map((v) => _HandPawn(color, v)).toList();
+
     switch (mode) {
       case Mode4.classic:
         final p0 = (cells + 1) ~/ 2;
-        // Growable: symbols are removed from the hand as they are played.
         return _State(
           board,
-          [List.filled(p0, 0, growable: true), List.filled(cells - p0, 0, growable: true)],
+          [own(0, List.filled(p0, 0)), own(1, List.filled(cells - p0, 0))],
           0,
           1,
         );
       case Mode4.original:
         final n = _originalPawns(cells);
-        final hand = List<int>.generate(n, (i) => i + 1);
-        return _State(board, [List.from(hand), List.from(hand)], 0, 1);
+        final vals = List<int>.generate(n, (i) => i + 1);
+        return _State(board, [own(0, vals), own(1, vals)], 0, 1);
       case Mode4.bonanza:
         return _State(board, _bonanzaHands(_originalPawns(cells), seed), 0, 1);
       case Mode4.morph:
         final n = cells == 16 ? 6 : 11;
-        final hand = <int>[];
-        for (var v = 1; v <= n; v++) {
-          hand..add(v)..add(v);
-        }
-        return _State(board, [List.from(hand), List.from(hand)], 0, 2);
+        final vals = [for (var v = 1; v <= n; v++) ...[v, v]];
+        return _State(board, [own(0, vals), own(1, vals)], 0, 2);
     }
   }
 
   int _originalPawns(int cells) => cells == 9 ? 6 : (cells == 16 ? 11 : max(1, cells * 11 ~/ 16));
 
-  List<List<int>> _bonanzaHands(int n, int? seed) {
-    final rng = Random(seed ?? DateTime.now().microsecondsSinceEpoch);
+  /// Bonanza (spec §4.3): two colour pools of `1..=N`. Player 0 takes `k` pawns from pool 0 and
+  /// `N-k` from pool 1; player 1 takes the complements. Each player may therefore hold a mix of
+  /// their own and the opponent's colour. `_bonanzaOwnCount` = `k` (player 0's own-colour count).
+  List<List<_HandPawn>> _bonanzaHands(int n, int seed) {
+    final rng = Random(seed);
     final k = rng.nextInt(n + 1);
+    _bonanzaOwnCount = k;
     final pool0 = List<int>.generate(n, (i) => i + 1)..shuffle(rng);
     final pool1 = List<int>.generate(n, (i) => i + 1)..shuffle(rng);
-    final h0 = <int>[...pool0.take(k), ...pool1.take(n - k)]..sort();
-    final h1 = <int>[...pool0.skip(k), ...pool1.skip(n - k)]..sort();
+
+    final h0 = <_HandPawn>[
+      ...pool0.take(k).map((v) => _HandPawn(0, v)),
+      ...pool1.take(n - k).map((v) => _HandPawn(1, v)),
+    ];
+    final h1 = <_HandPawn>[
+      ...pool0.skip(k).map((v) => _HandPawn(0, v)),
+      ...pool1.skip(n - k).map((v) => _HandPawn(1, v)),
+    ];
     return [h0, h1];
   }
 
   // ---- rules ----
 
-  bool _placementLegal(_State s, int cell, int value, int owner) {
+  bool _placementLegal(_State s, int cell, int color, int value) {
     final p = s.board[cell];
     if (p == null) return true;
-    if (p.owner == owner) return false;
-    return value > p.value;
+    if (p.owner == color) return false; // cannot stack/capture your own colour
+    return value > p.value; // strict-greater captures (spec §3.3)
   }
 
-  bool _isMoveLegal(_State s, int? value, int cell) {
-    if (cell < 0 || cell >= s.board.length) return false;
+  List<_Move> _legalMoves(_State s) {
+    final out = <_Move>[];
+    final hand = s.hands[s.turn];
     if (!_mode.valued) {
-      return value == null && s.board[cell] == null && s.hands[s.turn].isNotEmpty;
-    }
-    if (value == null) return false;
-    return s.hands[s.turn].contains(value) && _placementLegal(s, cell, value, s.turn);
-  }
-
-  List<List<int>> _legalMoves(_State s) {
-    final out = <List<int>>[]; // [value(-1 for classic), cell]
-    if (!_mode.valued) {
-      if (s.hands[s.turn].isEmpty) return out;
+      if (hand.isEmpty) return out;
       for (var c = 0; c < s.board.length; c++) {
-        if (s.board[c] == null) out.add([-1, c]);
+        if (s.board[c] == null) out.add(_Move(s.turn, null, c));
       }
       return out;
     }
-    final values = s.hands[s.turn].toSet().toList()..sort();
+    // Distinct (colour, value) pairs in hand.
+    final seen = <int>{};
+    final distinct = <_HandPawn>[];
+    for (final h in hand) {
+      final key = h.color * 100 + h.value;
+      if (seen.add(key)) distinct.add(h);
+    }
     for (var c = 0; c < s.board.length; c++) {
-      final p = s.board[c];
-      for (final v in values) {
-        if (p == null) {
-          out.add([v, c]);
-        } else if (p.owner != s.turn && v > p.value) {
-          out.add([v, c]);
+      for (final h in distinct) {
+        if (_placementLegal(s, c, h.color, h.value)) {
+          out.add(_Move(h.color, h.value, c));
         }
       }
     }
@@ -138,19 +178,22 @@ class DartGameApi implements GameApi {
 
   bool _hasLegalMove(_State s) => _legalMoves(s).isNotEmpty;
 
-  void _apply(_State s, int? value, int cell) {
-    final owner = s.turn;
-    final v = _mode.valued ? value! : 0;
-    s.board[cell] = _Pawn(owner, v);
-    s.hands[owner].remove(_mode.valued ? v : 0);
+  void _apply(_State s, _Move m) {
+    final color = _mode.valued ? m.color! : s.turn;
+    final value = _mode.valued ? m.value! : 0;
+    s.board[m.cell] = _Pawn(color, value);
+    // remove one matching hand pawn from the player to move
+    final hand = s.hands[s.turn];
+    final idx = hand.indexWhere((h) => h.color == color && h.value == value);
+    if (idx >= 0) hand.removeAt(idx);
+
     final perTurn = _mode.twoMovesPerTurn ? 2 : 1;
     s.movesLeft -= 1;
     if (s.movesLeft == 0) {
       s.turn ^= 1;
       s.movesLeft = perTurn;
     } else if (!_hasLegalMove(s)) {
-      // single-move fallback (spec §4.4)
-      s.turn ^= 1;
+      s.turn ^= 1; // single-move fallback (spec §4.4)
       s.movesLeft = perTurn;
     }
   }
@@ -182,50 +225,58 @@ class DartGameApi implements GameApi {
   // ---- GameApi ----
 
   @override
-  Snapshot snapshot() {
-    final board = _s.board
+  Snapshot snapshot() => _snapshotOf(_s);
+
+  Snapshot _snapshotOf(_State s) {
+    final board = s.board
         .map((p) => p == null
             ? const CellView.empty()
             : CellView(owner: p.owner, value: p.value, empty: false))
         .toList();
+    List<HandPawnView> view(List<_HandPawn> h) =>
+        h.map((e) => HandPawnView(color: e.color, value: e.value)).toList();
     return Snapshot(
       rows: _rows,
       cols: _cols,
       board: board,
-      hand0: List.from(_s.hands[0]),
-      hand1: List.from(_s.hands[1]),
-      turn: _s.turn,
-      movesLeftInTurn: _s.movesLeft,
-      outcome: _outcome(_s),
+      hand0: view(s.hands[0]),
+      hand1: view(s.hands[1]),
+      turn: s.turn,
+      movesLeftInTurn: s.movesLeft,
+      outcome: _outcome(s),
+      bonanzaOwnCount: _bonanzaOwnCount,
+      morphShape: _morphShape,
     );
   }
 
   @override
-  List<int> legalCells(int? value) {
+  List<int> legalCells({int? color, int? value}) {
     return _legalMoves(_s)
-        .where((m) => (_mode.valued ? m[0] : null) == value)
-        .map((m) => m[1])
+        .where((m) => m.color == (color ?? m.color) && m.value == value)
+        .where((m) => _mode.valued ? (m.color == color && m.value == value) : true)
+        .map((m) => m.cell)
         .toList();
   }
 
   @override
-  MoveResult humanMove({int? value, required int cell}) {
-    if (!_isMoveLegal(_s, value, cell)) {
+  MoveResult humanMove({int? color, int? value, required int cell}) {
+    final legal = _legalMoves(_s)
+        .any((m) => m.cell == cell && m.color == (_mode.valued ? color : m.color) && m.value == value);
+    if (!legal) {
       return MoveResult(
         applied: false,
         captured: false,
         singleMoveFallback: false,
-        illegalReason: _rejectReason(value, cell),
+        illegalReason: _rejectReason(color, value, cell),
         snapshot: snapshot(),
       );
     }
-    return _commit(value, cell);
+    return _commit(_Move(_mode.valued ? color : _s.turn, value, cell));
   }
 
   @override
   Future<MoveResult> aiMove(Difficulty difficulty) async {
-    // A small delay mimics the native search latency and keeps animations smooth.
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+    await Future<void>.delayed(const Duration(milliseconds: 220));
     final moves = _legalMoves(_s);
     if (moves.isEmpty) {
       return MoveResult(
@@ -236,66 +287,181 @@ class DartGameApi implements GameApi {
         snapshot: snapshot(),
       );
     }
-    final chosen = _chooseMove(difficulty, moves);
-    return _commit(_mode.valued ? chosen[0] : null, chosen[1]);
+    return _commit(_chooseMove(difficulty, moves));
   }
 
-  // ---- mock AI (the real strength lives in the Rust `ai` crate) ----
+  // ---- AI: real negamax + alpha-beta (mirrors ai/src/hard.rs) ----
 
-  List<int> _chooseMove(Difficulty difficulty, List<List<int>> moves) {
+  _Move _chooseMove(Difficulty difficulty, List<_Move> moves) {
     if (difficulty == Difficulty.easy) return moves[_rng.nextInt(moves.length)];
     if (difficulty == Difficulty.medium && _rng.nextBool()) {
       return moves[_rng.nextInt(moves.length)];
     }
-    // Greedy 1-ply: win now > don't hand opponent a win > capture/center.
-    List<int>? best;
-    var bestScore = -1 << 30;
-    for (final m in moves) {
-      final sim = _s.copy();
-      final me = sim.turn;
-      final captured = _mode.valued && sim.board[m[1]] != null && sim.board[m[1]]!.owner != me;
-      _apply(sim, _mode.valued ? m[0] : null, m[1]);
-      var score = 0;
-      final w = _winner(sim);
-      if (w == me) {
-        score += 100000;
-      } else {
-        // If, after our move, it is the opponent's turn and they can win immediately, penalize.
-        if (sim.turn != me && _opponentCanWin(sim)) score -= 50000;
+    // Hard (and half of Medium): iterative-deepening negamax with a time box.
+    final sw = Stopwatch()..start();
+    const budgetMs = 450;
+    final maxDepth = _mode == Mode4.morph ? 5 : (_rows == 3 ? 9 : 7);
+
+    var best = _ordered(moves, _s).first;
+    for (var depth = 1; depth <= maxDepth; depth++) {
+      var alpha = -_kInf;
+      const beta = _kInf;
+      _Move? localBest;
+      var bestScore = -_kInf;
+      var aborted = false;
+      for (final m in _ordered(moves, _s)) {
+        final child = _s.copy();
+        _apply(child, m);
+        final samePlayer = child.turn == _s.turn;
+        final score = samePlayer
+            ? _negamax(child, depth - 1, alpha, beta, sw, budgetMs)
+            : -_negamax(child, depth - 1, -beta, -alpha, sw, budgetMs);
+        if (sw.elapsedMilliseconds > budgetMs) {
+          aborted = true;
+          break;
+        }
+        if (score > bestScore) {
+          bestScore = score;
+          localBest = m;
+        }
+        if (bestScore > alpha) alpha = bestScore;
       }
-      if (captured) score += 100 + (m[0]);
-      score -= _centerDistance(m[1]); // prefer central
-      score += _rng.nextInt(3); // tiny tie-break jitter
-      if (score > bestScore) {
-        bestScore = score;
-        best = m;
-      }
+      if (localBest != null && !aborted) best = localBest;
+      if (aborted) break;
+      if (bestScore.abs() >= _kWin - maxDepth) break; // forced result proven
     }
-    return best ?? moves.first;
+    return best;
   }
 
-  bool _opponentCanWin(_State s) {
-    for (final m in _legalMoves(s)) {
-      final sim = s.copy();
-      final mover = sim.turn;
-      _apply(sim, _mode.valued ? m[0] : null, m[1]);
-      if (_winner(sim) == mover) return true;
+  int _negamax(_State s, int depth, int alpha, int beta, Stopwatch sw, int budgetMs) {
+    final w = _winner(s);
+    if (w != null) {
+      // perspective of side to move at s
+      return (w == s.turn) ? (_kWin - depth) : (depth - _kWin);
     }
-    return false;
+    if (!_hasLegalMove(s)) return 0; // draw
+    if (depth == 0 || sw.elapsedMilliseconds > budgetMs) return _heuristic(s);
+
+    var best = -_kInf;
+    for (final m in _ordered(_legalMoves(s), s)) {
+      final child = s.copy();
+      _apply(child, m);
+      final samePlayer = child.turn == s.turn;
+      final score = samePlayer
+          ? _negamax(child, depth - 1, alpha, beta, sw, budgetMs)
+          : -_negamax(child, depth - 1, -beta, -alpha, sw, budgetMs);
+      if (score > best) best = score;
+      if (best > alpha) alpha = best;
+      if (alpha >= beta) break; // cutoff
+      if (sw.elapsedMilliseconds > budgetMs) break;
+    }
+    return best;
   }
+
+  List<_Move> _ordered(List<_Move> moves, _State s) {
+    final list = List<_Move>.from(moves);
+    list.sort((a, b) {
+      final ga = _captureGain(s, a), gb = _captureGain(s, b);
+      if (ga != gb) return gb - ga; // captures first
+      final va = a.value ?? 0, vb = b.value ?? 0;
+      if (va != vb) return va - vb; // cheaper pawn first (MVV-LVA)
+      return _centerDistance(a.cell) - _centerDistance(b.cell);
+    });
+    return list;
+  }
+
+  int _captureGain(_State s, _Move m) {
+    final p = s.board[m.cell];
+    return (p != null && m.color != null && p.owner != m.color) ? p.value : 0;
+  }
+
+  int _heuristic(_State s) {
+    final me = s.turn, opp = 1 - s.turn;
+    if (_mode == Mode4.morph) {
+      final shape = _shapeProgress(s, me) - _shapeProgress(s, opp);
+      return 40 * shape + _economy(s, me, opp) + 3 * _centerControl(s, me, opp);
+    }
+    final threats = _threats(s, me) - _threats(s, opp);
+    return 30 * threats + _economy(s, me, opp) + 5 * _centerControl(s, me, opp);
+  }
+
+  int _economy(_State s, int me, int opp) {
+    int sum(int p) => s.hands[p].fold(0, (a, h) => a + h.value);
+    return sum(me) - sum(opp);
+  }
+
+  int _centerControl(_State s, int me, int opp) {
+    int count(int who) => List.generate(s.board.length, (i) => i)
+        .where((c) => _centerDistance(c) == 0 && s.board[c]?.owner == who)
+        .length;
+    return count(me) - count(opp);
+  }
+
+  int _maxHandValue(_State s, int color) {
+    var mx = 0;
+    for (final h in s.hands[s.turn]) {
+      if (h.value > mx) mx = h.value;
+    }
+    return mx;
+  }
+
+  int _threats(_State s, int color) {
+    final maxHand = _maxHandValue(s, color);
+    var count = 0;
+    for (final line in _lines) {
+      var mine = 0;
+      int? open;
+      var blocked = false;
+      for (final cell in line) {
+        final p = s.board[cell];
+        if (p != null && p.owner == color) {
+          mine++;
+        } else {
+          if (open != null) blocked = true;
+          open = cell;
+        }
+      }
+      if (blocked || mine != 2 || open == null) continue;
+      final p = s.board[open];
+      final usable = p == null || (p.owner != color && maxHand > p.value);
+      if (usable) count++;
+    }
+    return count;
+  }
+
+  int _shapeProgress(_State s, int color) {
+    var best = 0;
+    for (final p in _placements) {
+      var mine = 0;
+      var blocked = false;
+      for (final cell in p) {
+        final q = s.board[cell];
+        if (q != null && q.owner == color) {
+          mine++;
+        } else if (q != null) {
+          blocked = true;
+          break;
+        }
+      }
+      if (!blocked && mine > best) best = mine;
+    }
+    return best;
+  }
+
+  // ---- helpers ----
 
   int _centerDistance(int cell) {
     final r = cell ~/ _cols, c = cell % _cols;
     return (2 * r - (_rows - 1)).abs() + (2 * c - (_cols - 1)).abs();
   }
 
-  // ---- helpers ----
-
-  MoveResult _commit(int? value, int cell) {
+  MoveResult _commit(_Move m) {
     final turnBefore = _s.turn;
     final movesBefore = _s.movesLeft;
-    final captured = _mode.valued && _s.board[cell] != null && _s.board[cell]!.owner != turnBefore;
-    _apply(_s, value, cell);
+    final target = _s.board[m.cell];
+    final placingColor = _mode.valued ? m.color! : turnBefore;
+    final captured = target != null && target.owner != placingColor;
+    _apply(_s, m);
     final fallback = movesBefore == 2 && _s.turn != turnBefore;
     return MoveResult(
       applied: true,
@@ -306,13 +472,14 @@ class DartGameApi implements GameApi {
     );
   }
 
-  String _rejectReason(int? value, int cell) {
+  String _rejectReason(int? color, int? value, int cell) {
     if (cell < 0 || cell >= _s.board.length) return 'Out of bounds';
     final p = _s.board[cell];
     if (!_mode.valued) return 'Cell is occupied';
-    if (value == null) return 'Select a pawn value first';
-    if (!_s.hands[_s.turn].contains(value)) return "You don't hold a $value";
-    if (p != null && p.owner == _s.turn) return 'That is your own pawn';
+    if (value == null || color == null) return 'Select a pawn first';
+    final holds = _s.hands[_s.turn].any((h) => h.color == color && h.value == value);
+    if (!holds) return "You don't hold that pawn";
+    if (p != null && p.owner == color) return 'That colour already owns this cell';
     if (p != null) return 'Value $value cannot capture a ${p.value} (must be strictly greater)';
     return 'Illegal move';
   }
