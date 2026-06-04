@@ -12,6 +12,7 @@ import 'pawn_widget.dart';
 /// (spec §4.3), so a rail can show a mix of both colours.
 class PawnRail extends StatelessWidget {
   final int owner;
+  final String label;
   final List<HandPawnView> hand;
   final bool showValues;
   final bool classic;
@@ -23,6 +24,7 @@ class PawnRail extends StatelessWidget {
   const PawnRail({
     super.key,
     required this.owner,
+    required this.label,
     required this.hand,
     required this.showValues,
     required this.classic,
@@ -49,7 +51,20 @@ class PawnRail extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _label(),
+          _dot(),
+          const SizedBox(width: 8),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 72),
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: active ? AppColors.textPrimary : AppColors.textMuted,
+                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 13,
+              ),
+            ),
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: AnimatedSize(
@@ -72,7 +87,7 @@ class PawnRail extends StatelessWidget {
     );
   }
 
-  Widget _label() {
+  Widget _dot() {
     return Container(
       width: 14,
       height: 14,
