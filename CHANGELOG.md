@@ -39,6 +39,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **U3 verified with Flutter 3.44.1** (SDK installed): `flutter analyze` clean, 9 tests pass
   (engine rule-parity + widget smoke), `flutter build web` succeeds. Added Android/iOS/web platform
   scaffolding.
+- **App icon** — launcher (iOS opaque master + Android adaptive foreground/background) and the
+  store-listing icon (squircle + gold frame), from the Classic-X + Futuristic-medallion design.
+  Masters are rendered natively from a `Canvas` (no external rasterizer) by `test/icon_gen_test.dart`,
+  then expanded by `flutter_launcher_icons`. iOS master fills to the corners (system rounds it);
+  Android keeps content in the safe zone for adaptive masks.
 
 ### Added
 - **Offline multiplayer** (same-device, two players) via a `PlayerController` abstraction
