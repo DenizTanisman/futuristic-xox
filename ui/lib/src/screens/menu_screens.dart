@@ -157,17 +157,21 @@ class _EntryScreenState extends State<EntryScreen> with TickerProviderStateMixin
                 fit: StackFit.expand,
                 children: [
                   DecoratedBox(decoration: BoxDecoration(gradient: theme.background)),
-                  // Faint diagonal sheen.
+                  // Diagonal light wedge: the two halves' sheens mirror each other and meet near the
+                  // top-center seam. Classic runs ↗ from the bottom-left, Futuristic ↖ from the
+                  // bottom-right.
                   DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                        begin: index == 0 ? Alignment.bottomLeft : Alignment.bottomRight,
+                        end: index == 0 ? Alignment.topRight : Alignment.topLeft,
                         colors: [
-                          theme.accentGlow.withValues(alpha: 0.05),
                           Colors.transparent,
-                          Colors.black.withValues(alpha: 0.15),
+                          (index == 0 ? const Color(0xFFEEF1F6) : const Color(0xFFF6E6A8))
+                              .withValues(alpha: index == 0 ? 0.06 : 0.07),
+                          Colors.transparent,
                         ],
+                        stops: const [0.32, 0.5, 0.68],
                       ),
                     ),
                   ),
@@ -256,17 +260,32 @@ class _Divider extends StatelessWidget {
     return AnimatedBuilder(
       animation: sheen,
       builder: (context, _) {
-        final t = sheen.value; // 0..1
-        final begin = isRow ? Alignment(0, -1 + 2 * t) : Alignment(-1 + 2 * t, 0);
-        final end = isRow ? Alignment(0, 1 + 2 * t) : Alignment(1 + 2 * t, 0);
+        // A bright gold band slides steel→gold→steel along the divider's length.
+        final c = sheen.value; // band centre 0..1
+        const half = 0.18;
+        final lo = (c - half).clamp(0.0, 1.0);
+        final mid = c.clamp(0.0, 1.0);
+        final hi = (c + half).clamp(0.0, 1.0);
+        // Stops must be strictly increasing.
+        final stops = <double>[0.0, lo, mid, hi, 1.0];
+        for (var i = 1; i < stops.length; i++) {
+          if (stops[i] <= stops[i - 1]) stops[i] = (stops[i - 1] + 0.0001).clamp(0.0, 1.0);
+        }
         return DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              begin: begin,
-              end: end,
-              colors: const [Color(0xFFAAB0BE), Color(0xFFD4AF37), Color(0xFFAAB0BE)],
+              begin: isRow ? Alignment.topCenter : Alignment.centerLeft,
+              end: isRow ? Alignment.bottomCenter : Alignment.centerRight,
+              colors: const [
+                Color(0xFFAAB0BE),
+                Color(0xFFAAB0BE),
+                Color(0xFFF6E6A8),
+                Color(0xFFAAB0BE),
+                Color(0xFFAAB0BE),
+              ],
+              stops: stops,
             ),
-            boxShadow: [BoxShadow(color: const Color(0xFFD4AF37).withValues(alpha: 0.4), blurRadius: 8)],
+            boxShadow: [BoxShadow(color: const Color(0xFFD4AF37).withValues(alpha: 0.45), blurRadius: 9)],
           ),
         );
       },
@@ -274,35 +293,41 @@ class _Divider extends StatelessWidget {
   }
 }
 
-/// Faint Classic motif: a silver X and a gold O in opposite corners.
+/// Faint Classic motif: a large silver X and gold O in opposite corners. The opacity is applied
+/// **once to the whole mark** (group opacity) so the X's crossing stays uniform — drawing each
+/// stroke semi-transparent would double the alpha at the intersection.
 class _ClassicMotif extends StatelessWidget {
   const _ClassicMotif();
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(painter: _ClassicMotifPainter(), size: Size.infinite);
+    return Opacity(
+      opacity: 0.13,
+      child: CustomPaint(painter: _ClassicMotifPainter(), size: Size.infinite),
+    );
   }
 }
 
 class _ClassicMotifPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final m = math.min(size.width, size.height) * 0.32;
-    // Silver X, top-left.
+    final short = math.min(size.width, size.height);
+    final m = short * 0.42; // large, per the mockup
+    // Silver X, top-left — fully opaque strokes (group opacity is applied by the wrapping widget).
     final xPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = m * 0.12
       ..strokeCap = StrokeCap.round
-      ..color = const Color(0xFFC8CDD8).withValues(alpha: 0.13);
-    final tl = Offset(size.width * 0.12, size.height * 0.12);
+      ..color = const Color(0xFFC8CDD8);
+    final tl = Offset(size.width * 0.10, size.height * 0.08);
     canvas.drawLine(tl, tl + Offset(m, m), xPaint);
     canvas.drawLine(tl + Offset(m, 0), tl + Offset(0, m), xPaint);
     // Gold O, bottom-right.
     final oPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = m * 0.12
-      ..color = const Color(0xFFD4AF37).withValues(alpha: 0.13);
-    final br = Offset(size.width * 0.82, size.height * 0.82);
+      ..color = const Color(0xFFD4AF37);
+    final br = Offset(size.width * 0.86, size.height * 0.88);
     canvas.drawCircle(br, m * 0.5, oPaint);
   }
 
@@ -310,39 +335,48 @@ class _ClassicMotifPainter extends CustomPainter {
   bool shouldRepaint(_ClassicMotifPainter old) => false;
 }
 
-/// Faint Futuristic motif: metallic medallions in the corners (reused medallion widget).
+/// Faint Futuristic motif: large metallic corner medallions, sized to the half (not a fixed small
+/// size). Opacity is applied per medallion (group opacity) so internal layers don't double up.
 class _FuturisticMotif extends StatelessWidget {
   const _FuturisticMotif();
 
   @override
   Widget build(BuildContext context) {
-    return const Stack(
-      children: [
-        Positioned(
-          top: 24,
-          right: 20,
-          child: Opacity(
-            opacity: 0.24,
-            child: PawnWidget(owner: 1, value: 11, showValue: true, size: 64, animateIn: false),
-          ),
-        ),
-        Positioned(
-          bottom: 26,
-          left: 22,
-          child: Opacity(
-            opacity: 0.24,
-            child: PawnWidget(owner: 0, value: 8, showValue: true, size: 56, animateIn: false),
-          ),
-        ),
-        Positioned(
-          top: 120,
-          left: 30,
-          child: Opacity(
-            opacity: 0.18,
-            child: PawnWidget(owner: 0, value: 5, showValue: true, size: 40, animateIn: false),
-          ),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, c) {
+        final s = math.min(c.maxWidth, c.maxHeight);
+        final d1 = (c.maxWidth * 0.26).clamp(70.0, 150.0);
+        final d2 = (c.maxWidth * 0.20).clamp(56.0, 120.0);
+        final d3 = (c.maxWidth * 0.14).clamp(40.0, 90.0);
+        return Stack(
+          children: [
+            Positioned(
+              top: s * 0.05,
+              right: s * 0.05,
+              child: Opacity(
+                opacity: 0.24,
+                child: PawnWidget(owner: 1, value: 11, showValue: true, size: d1, animateIn: false),
+              ),
+            ),
+            Positioned(
+              bottom: s * 0.06,
+              left: s * 0.05,
+              child: Opacity(
+                opacity: 0.24,
+                child: PawnWidget(owner: 0, value: 8, showValue: true, size: d2, animateIn: false),
+              ),
+            ),
+            Positioned(
+              top: s * 0.34,
+              left: s * 0.08,
+              child: Opacity(
+                opacity: 0.18,
+                child: PawnWidget(owner: 0, value: 5, showValue: true, size: d3, animateIn: false),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

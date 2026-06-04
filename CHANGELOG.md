@@ -98,6 +98,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - On-board winning-cell hint markers (the green-star overlay). Players find winning placements
   themselves; win detection is unchanged.
 
+### Fixed (entry screen, to match the mockup)
+- Added the diagonal light-wedge sheen on each half (mirrored, meeting at the top-center seam).
+- The center divider now animates (a gold sheen band sliding along its length) with a soft glow,
+  instead of being a flat static line.
+- Decorative corner motifs are sized to the half (responsive) instead of a fixed tiny size.
+- The Classic X motif no longer shows a darker patch at the stroke crossing — opacity is applied once
+  to the whole mark (group opacity) rather than per stroke.
+
 ### Fixed
 - Classic hands were fixed-length lists, so playing a symbol threw `Cannot remove from a
   fixed-length list`; hands are now growable. (Caught by the Dart test suite.)
