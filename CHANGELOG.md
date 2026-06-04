@@ -41,6 +41,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   scaffolding.
 
 ### Added
+- **Mode picker & setup screens** — rebuilt inside a shared metallic shimmer panel (reusable
+  `MetallicPanel`) with Cinzel metallic titles and a back chevron. Futuristic submode picker shows
+  Original / Bonanza / Morph cards (metallic icon tile + description, hover lift + glow). Setup uses
+  themed segmented selectors for Difficulty and Grid (grid options adapt per mode; each shows an n×n
+  mini-grid dot icon), a styled Offline-Multiplayer toggle (dims + disables Difficulty while Grid
+  stays active), and a metallic gradient Start button. Fully themed per mode.
+- **Entry/landing screen** — responsive Classic | Futuristic split (side-by-side on wide screens,
+  top/bottom on phones via `LayoutBuilder`), slide-in entrance, metallic gradient titles (Cinzel 900
+  via `ShaderMask`), an animated steel→gold divider with a sheen shift, themed motifs (Classic X/O
+  `CustomPaint`, Futuristic corner medallions reusing the pawn widget), hover-to-expand on desktop,
+  and a "tap to play" pill; tapping a side opens that mode's setup.
+- **UI themes** — Classic (cold metallic) and Futuristic (warm luxury), rebuilt natively in Flutter
+  (no WebView): a shared `GameTheme` abstraction (colours/gradients/fonts via an `InheritedWidget`),
+  Cinzel (display) + Rajdhani (UI/numbers) via `google_fonts`, themed radial backgrounds, a beveled
+  metallic frame with a sweeping rim shimmer, staggered board reveal, cell hover/press glow, animated
+  disc pawns (elastic pop-in + ring ripple, red on capture), animated Classic X/O metallic
+  stroke-draw, a pulsing turn indicator, and a themed target badge. Animations are wrapped in
+  `RepaintBoundary` and use transform/opacity for 60fps.
 - **Offline multiplayer** (same-device, two players) via a `PlayerController` abstraction
   (`HumanController` / `AiController`, with a `RemoteController` seam for future online play). The
   game loop asks the active seat's controller for its move, so the engine/UI are identical across
@@ -50,6 +68,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a future name/nickname swap touches one place.
 
 ### Changed
+- Futuristic pawns are now metallic **medallions** (spec v2): a thin same-hue metallic sweep-gradient
+  ring + colored inner radial disc (inset ~7%) + a bevel overlay + a metallic number drawn as a
+  dark-stroke pass under a gradient-fill pass for crisp legibility at any size, in both rails.
+  Seat 0 (player, bottom) = gold, seat 1 (opponent, top) = bordeaux.
+- Morph target badge now shows the shape itself (a compact, vertical tetromino mini-grid with glowing
+  gold cells) instead of a letter; keeps the "any rotation" sublabel.
+- Board, cells, pawns, and typography are now driven by the shared `GameTheme` (no hardcoded colours);
+  Classic mode uses the metallic theme + stroke-drawn X/O, Futuristic modes use the luxury theme +
+  valued discs.
 - Mode setup screens now include an **Offline Multiplayer** toggle (default off); turning it on dims
   and disables the Difficulty selector (no AI opponent) while Grid stays selectable.
 - **Morph win condition (play-test, spec §4.4/§5/§13.1):** one target shape (I/L/Z) is chosen at
@@ -70,6 +97,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - On-board winning-cell hint markers (the green-star overlay). Players find winning placements
   themselves; win detection is unchanged.
+
+### Fixed (pawn numbers)
+- Pawn numbers are now legible everywhere (board + both rails, both colours): the fill is a solid
+  gradient of the **opposite brightness to its disc** — dark bronze digits on gold pawns, bright
+  digits on bordeaux pawns — never the disc's own hue, with a contrast outline + drop shadow.
+
+### Fixed (entry screen, to match the mockup)
+- Added the diagonal light-wedge sheen on each half (mirrored, meeting at the top-center seam).
+- The center divider now animates (a gold sheen band sliding along its length) with a soft glow,
+  instead of being a flat static line.
+- Decorative corner motifs are sized to the half (responsive) instead of a fixed tiny size.
+- The Classic X motif no longer shows a darker patch at the stroke crossing — opacity is applied once
+  to the whole mark (group opacity) rather than per stroke.
 
 ### Fixed
 - Classic hands were fixed-length lists, so playing a symbol threw `Cannot remove from a

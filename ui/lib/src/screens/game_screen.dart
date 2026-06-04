@@ -6,7 +6,7 @@ import '../controllers/game_controller.dart';
 import '../game/dart_game_api.dart';
 import '../game/player_controller.dart';
 import '../models/game_models.dart';
-import '../theme/app_theme.dart';
+import '../theme/game_theme.dart';
 import '../widgets/board_view.dart';
 import '../widgets/pawn_rail.dart';
 import '../widgets/status_widgets.dart';
@@ -91,9 +91,25 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     final showValues = widget.mode.valued;
     final classic = widget.mode == Mode4.classic;
+    final theme = classic ? GameTheme.classic : GameTheme.futuristic;
+    return GameThemeProvider(
+      theme: theme,
+      child: Container(
+        decoration: BoxDecoration(gradient: theme.background),
+        child: _scaffold(context, theme, showValues, classic),
+      ),
+    );
+  }
+
+  Widget _scaffold(BuildContext context, GameTheme theme, bool showValues, bool classic) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Text('${widget.mode.label} · ${widget.grid}×${widget.grid}'),
+        title: Text(
+          '${widget.mode.label} · ${widget.grid}×${widget.grid}',
+          style: theme.display(18, color: theme.ink),
+        ),
+        iconTheme: IconThemeData(color: theme.muted),
         actions: [
           IconButton(icon: const Icon(Icons.refresh), tooltip: 'Restart', onPressed: _playAgain),
         ],
@@ -149,6 +165,7 @@ class _GameScreenState extends State<GameScreen> {
                             classic: classic,
                             highlightedCells: controller.highlightedCells,
                             lastMoveCell: controller.lastMoveCell,
+                            lastWasCapture: controller.lastWasCapture,
                             interactive: controller.isHumanTurn && !controller.aiThinking,
                             onTap: controller.onCellTap,
                           ),
@@ -174,7 +191,7 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                 ),
                 if (_showIntro && s.bonanzaOwnCount != null)
-                  Positioned.fill(child: _bonanzaIntro(s.bonanzaOwnCount!, s.hand0.length)),
+                  Positioned.fill(child: _bonanzaIntro(context, s.bonanzaOwnCount!, s.hand0.length)),
                 if (s.isOver)
                   Positioned.fill(
                     child: ResultBanner(
@@ -192,25 +209,19 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _bonanzaIntro(int ownCount, int total) {
+  Widget _bonanzaIntro(BuildContext context, int ownCount, int total) {
+    final theme = GameTheme.of(context);
     return IntroOverlay(
       title: 'YOUR HAND',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            '$ownCount',
-            style: const TextStyle(
-              color: AppColors.accent,
-              fontSize: 44,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
+          Text('$ownCount', style: theme.display(44, color: theme.accent)),
           const SizedBox(height: 6),
           Text(
             'of your $total pawns are your own colour\n(${total - ownCount} are your opponent\'s)',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textPrimary),
+            style: theme.label(15, color: theme.ink),
           ),
         ],
       ),

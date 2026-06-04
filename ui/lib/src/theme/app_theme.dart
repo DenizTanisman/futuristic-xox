@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Futuristic XOX palette (spec §3.1): bordeaux (player A) vs dark luxury gold (player B), on a deep
 /// near-black backdrop for a polished, premium feel.
@@ -43,7 +44,8 @@ class AppTheme {
         surface: AppColors.surface,
         secondary: AppColors.playerA,
       ),
-      textTheme: base.textTheme.apply(
+      // Rajdhani as the default UI font (numbers + labels); Cinzel is applied per-widget for display.
+      textTheme: GoogleFonts.rajdhaniTextTheme(base.textTheme).apply(
         bodyColor: AppColors.textPrimary,
         displayColor: AppColors.textPrimary,
       ),
