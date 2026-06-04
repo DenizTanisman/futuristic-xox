@@ -214,6 +214,28 @@ mod tests {
         assert!(has([3, 6, 9, 12]), "anti-diagonal (staircase) I");
     }
 
+    /// The placement set of every shape must be closed under 180° rotation — a top-left placement
+    /// implies its bottom-right mirror exists, and vice versa. (Regression: the diagonal frame must
+    /// be normalized before sliding, or top-left diagonal placements get dropped.)
+    #[test]
+    fn morph_placements_are_180_symmetric() {
+        for (rows, cols) in [(4usize, 4usize), (5, 5)] {
+            let last = rows * cols - 1;
+            for shape in 0..MORPH_SHAPE_COUNT {
+                let ps = morph_placements_for_shape(shape, rows, cols);
+                let set: std::collections::HashSet<[usize; 4]> = ps.iter().copied().collect();
+                for p in &ps {
+                    let mut rot = [last - p[0], last - p[1], last - p[2], last - p[3]];
+                    rot.sort_unstable();
+                    assert!(
+                        set.contains(&rot),
+                        "shape {shape} on {rows}x{cols}: {p:?} has no 180° mirror {rot:?}"
+                    );
+                }
+            }
+        }
+    }
+
     /// Every generated placement of a shape must be reachable from THAT base shape — no shape ever
     /// produces a placement that another base shape would, and random 4-cell sets never qualify.
     #[test]

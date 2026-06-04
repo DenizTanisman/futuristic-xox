@@ -12,6 +12,30 @@ void main() {
       expect(lineTriples(4, 4).length, 24);
     });
 
+    test('Morph placements are 180-degree symmetric (no top-left dropout)', () {
+      // Regression: the diagonal frame must be normalized before sliding, else top-left diagonal
+      // placements are silently dropped (the screenshot Z/L bug).
+      String canon(List<int> c) => (List.of(c)..sort()).toString();
+      for (final n in [4, 5]) {
+        final last = n * n - 1;
+        for (var sh = 0; sh < 3; sh++) {
+          final ps = morphPlacementsForShape(n, n, sh);
+          final set = ps.map(canon).toSet();
+          for (final p in ps) {
+            final rot = p.map((i) => last - i).toList();
+            expect(set.contains(canon(rot)), isTrue,
+                reason: 'shape $sh on ${n}x$n: $p has no 180° mirror');
+          }
+        }
+      }
+    });
+
+    test('Morph Z includes the screenshot diagonal pattern [0,2,6,8] on 5x5', () {
+      String canon(List<int> c) => (List.of(c)..sort()).toString();
+      final z = morphPlacementsForShape(5, 5, 2).map(canon).toSet();
+      expect(z.contains(canon([0, 2, 6, 8])), isTrue);
+    });
+
     test('Morph placements INCLUDE diagonal (staircase) forms on 4x4', () {
       // Diagonals are part of Morph (the §5 exclusion was reversed in play-testing, §13.1).
       final iShape = morphPlacementsForShape(4, 4, 0); // I

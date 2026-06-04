@@ -102,21 +102,26 @@ List<List<int>> morphPlacementsForShape(int rows, int cols, int shapeIndex) {
 
   for (final orient in _orientations(base)) {
     for (final b in const [_axis, _diag]) {
-      for (var anchorR = 0; anchorR < rows; anchorR++) {
-        for (var anchorC = 0; anchorC < cols; anchorC++) {
-          final cells = <int>[];
-          var inside = true;
-          for (final p in orient) {
-            final rr = anchorR + p[0] * b.rowStep[0] + p[1] * b.colStep[0];
-            final cc = anchorC + p[0] * b.rowStep[1] + p[1] * b.colStep[1];
-            if (rr < 0 || rr >= rows || cc < 0 || cc >= cols) {
-              inside = false;
-              break;
-            }
-            cells.add(rr * cols + cc);
-          }
-          if (!inside) continue;
-          cells.sort();
+      // 1. Map the shape into grid-space under this basis.
+      var t = orient
+          .map((p) => [
+                p[0] * b.rowStep[0] + p[1] * b.colStep[0],
+                p[0] * b.rowStep[1] + p[1] * b.colStep[1],
+              ])
+          .toList();
+      // 2. Normalize: shift min row/col to 0. CRITICAL — the diagonal basis produces negative
+      //    coordinates for top-left placements; without this shift those placements would need a
+      //    negative anchor and be silently dropped (asymmetric: top-left missing, bottom-right ok).
+      final minR = t.map((p) => p[0]).reduce((a, x) => a < x ? a : x);
+      final minC = t.map((p) => p[1]).reduce((a, x) => a < x ? a : x);
+      t = t.map((p) => [p[0] - minR, p[1] - minC]).toList();
+      final maxR = t.map((p) => p[0]).reduce((a, x) => a > x ? a : x);
+      final maxC = t.map((p) => p[1]).reduce((a, x) => a > x ? a : x);
+      if (maxR >= rows || maxC >= cols) continue;
+      // 3. Slide the normalized shape over every valid anchor.
+      for (var offR = 0; offR <= rows - 1 - maxR; offR++) {
+        for (var offC = 0; offC <= cols - 1 - maxC; offC++) {
+          final cells = t.map((p) => (offR + p[0]) * cols + (offC + p[1])).toList()..sort();
           final k = cells.join(',');
           if (seen.add(k)) placements.add(cells);
         }
