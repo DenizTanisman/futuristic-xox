@@ -1,7 +1,7 @@
 //! Morph mode: valued + capture (identical to Original), two moves per turn, win = complete a
 //! randomly chosen 4-cell shape (spec §4.4, §5). Reuses the valued move/capture/apply helpers.
 
-use crate::geometry::morph_placements;
+use crate::geometry::morph_placements_for_shape;
 use crate::mode::{Mode, WIN};
 use crate::rules::*;
 use crate::state::{GameResult, GameState, Move};
@@ -12,15 +12,25 @@ const W_ECONOMY: i32 = 1;
 const W_CENTER: i32 = 3;
 
 pub struct MorphMode {
-    /// Precomputed concrete 4-cell shape placements (all I/L/Z orientations, slid over the grid).
+    /// The chosen target shape (0 = I, 1 = L, 2 = Z), fixed at game start (spec §4.4).
+    shape_index: usize,
+    /// Precomputed concrete 4-cell placements of the chosen shape (axis + diagonal forms).
     placements: Vec<[usize; 4]>,
 }
 
 impl MorphMode {
-    pub fn new(rows: usize, cols: usize) -> Self {
+    /// Build for a chosen target shape (0 = I, 1 = L, 2 = Z). Win = complete that shape in any of its
+    /// axis or diagonal placements (spec §4.4, §5).
+    pub fn new(rows: usize, cols: usize, shape_index: usize) -> Self {
         MorphMode {
-            placements: morph_placements(rows, cols),
+            shape_index,
+            placements: morph_placements_for_shape(shape_index, rows, cols),
         }
+    }
+
+    /// The chosen target shape index (for the UI badge / logging).
+    pub fn shape_index(&self) -> usize {
+        self.shape_index
     }
 
     /// Precomputed placements (exposed for the design-artifact log and AI move ordering).

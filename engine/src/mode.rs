@@ -71,7 +71,10 @@ pub fn build(config: GameConfig, seed: u64) -> (Box<dyn Mode>, GameState) {
             (Box::new(mode), state)
         }
         ModeKind::Morph => {
-            let mode = MorphMode::new(config.rows, config.cols);
+            // One target shape is chosen at game start, seeded for reproducibility (spec §4.4).
+            let shape = (crate::Rng::new(seed ^ 0x5159_0000).below(crate::geometry::MORPH_SHAPE_COUNT))
+                .min(crate::geometry::MORPH_SHAPE_COUNT - 1);
+            let mode = MorphMode::new(config.rows, config.cols, shape);
             let state = crate::setup::morph_state(config.rows, config.cols);
             (Box::new(mode), state)
         }

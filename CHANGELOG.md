@@ -40,6 +40,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (engine rule-parity + widget smoke), `flutter build web` succeeds. Added Android/iOS/web platform
   scaffolding.
 
+### Changed
+- **Morph win condition (play-test, spec §4.4/§5/§13.1):** one target shape (I/L/Z) is chosen at
+  game start; the win is to complete *that* shape. **Diagonal/staircase placements are now included**
+  (reversing the earlier "exclude the diagonal I" default) via a Morph-only basis-vector generator:
+  each orientation (4 rotations + mirror) is laid under both an axis frame and a 45° diagonal frame
+  `(r,c)->(r+c,r-c)`. Synced across the Rust engine (`geometry::morph_placements_for_shape`,
+  `MorphMode::new(rows, cols, shape_index)`, seed-chosen shape in `build`) and the Dart mock backend.
+  Line modes' 3-in-a-row is untouched. Build spec §5/§7.5/§14 updated with the verified algorithm and
+  diagonal regression fixtures.
+- **Bonanza (play-test, spec §4.3):** hands now carry per-pawn colour, so a player can hold (and
+  place) opponent-coloured pawns — the placed pawn's board owner is the pawn's colour. (Dart backend;
+  Rust state-model sync pending.) Earlier ADR-001 interpretation reversed per play-test.
+- UI: Classic renders X/O glyphs; Morph shows a target-shape badge ("any rotation") and a green-star
+  hint on cells that complete the target this move; Bonanza shows the own-colour count for 2s at
+  start. Dart mock AI upgraded to real negamax + alpha-beta (Hard plays perfectly on 3×3).
+
 ### Fixed
 - Classic hands were fixed-length lists, so playing a symbol threw `Cannot remove from a
   fixed-length list`; hands are now growable. (Caught by the Dart test suite.)

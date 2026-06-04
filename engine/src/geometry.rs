@@ -80,30 +80,53 @@ fn orientations(base: &Shape) -> Vec<Shape> {
     seen
 }
 
-/// Every concrete 4-cell placement of every Morph shape on a `rows×cols` grid (spec §5):
-/// all orientations of I/L/Z, slid over every position that fits. Deduplicated by cell set.
+/// Placement frame: how the shape's own (row, col) axes map onto the grid.
+/// `Axis` is the classic axis-aligned mapping; `Diag` is a 45°-rotated frame that yields
+/// staircase / diagonal placements the axis frame can never produce (spec §5).
+/// A placement-frame transform on a relative cell.
+type Frame = fn((i32, i32)) -> (i32, i32);
+
+fn axis_frame((r, c): (i32, i32)) -> (i32, i32) {
+    (r, c)
+}
+fn diag_frame((r, c): (i32, i32)) -> (i32, i32) {
+    (r + c, r - c)
+}
+
+/// The number of Morph base shapes (I, L, Z).
+pub const MORPH_SHAPE_COUNT: usize = 3;
+
+/// Base relative cells of a Morph shape by index (0 = I, 1 = L, 2 = Z), for previews/logging.
+pub fn morph_base_shape(shape_index: usize) -> Vec<(i32, i32)> {
+    base_shapes()[shape_index].clone()
+}
+
+/// All concrete 4-cell placements of a SINGLE Morph shape (`shape_index`: 0 = I, 1 = L, 2 = Z) on a
+/// `rows×cols` grid (spec §4.4, §5). Each of the shape's orientations (4 rotations + mirror) is laid
+/// onto the grid under BOTH the axis and the diagonal frame, anchored at every position that fits,
+/// then deduplicated by cell set — giving axis-aligned AND diagonal/staircase placements.
 ///
-/// The straight I appears in all 4 orientations; the pure corner-to-corner diagonal is *not* a
-/// tetromino orientation and therefore never appears (spec §5 defensive default).
-pub fn morph_placements(rows: usize, cols: usize) -> Vec<[usize; 4]> {
+/// Diagonals are intentionally included (the earlier "exclude the diagonal I" default was reversed in
+/// play-testing, spec §13.1). This is Morph-only; line modes use [`line_triples`].
+pub fn morph_placements_for_shape(shape_index: usize, rows: usize, cols: usize) -> Vec<[usize; 4]> {
+    let frames: [Frame; 2] = [axis_frame, diag_frame];
     let mut placements: Vec<[usize; 4]> = Vec::new();
     let mut seen: Vec<[usize; 4]> = Vec::new();
 
-    for base in base_shapes() {
-        for orient in orientations(&base) {
-            let max_r = orient.iter().map(|&(r, _)| r).max().unwrap();
-            let max_c = orient.iter().map(|&(_, c)| c).max().unwrap();
+    for orient in orientations(&base_shapes()[shape_index]) {
+        for frame in frames {
+            let t: Shape = orient.iter().map(|&p| frame(p)).collect();
+            let t = normalize(t); // shift min row/col to 0
+            let max_r = t.iter().map(|&(r, _)| r).max().unwrap();
+            let max_c = t.iter().map(|&(_, c)| c).max().unwrap();
             if max_r as usize >= rows || max_c as usize >= cols {
                 continue;
             }
-            // Slide the bounding box over every valid top-left offset.
             for off_r in 0..(rows - max_r as usize) {
                 for off_c in 0..(cols - max_c as usize) {
                     let mut cells = [0usize; 4];
-                    for (i, &(r, c)) in orient.iter().enumerate() {
-                        let rr = off_r + r as usize;
-                        let cc = off_c + c as usize;
-                        cells[i] = rr * cols + cc;
+                    for (i, &(r, c)) in t.iter().enumerate() {
+                        cells[i] = (off_r + r as usize) * cols + (off_c + c as usize);
                     }
                     cells.sort_unstable();
                     if !seen.contains(&cells) {
@@ -158,31 +181,61 @@ mod tests {
     #[test]
     fn morph_placements_all_four_cells_in_bounds_and_distinct() {
         for (rows, cols) in [(4, 4), (5, 5)] {
-            let ps = morph_placements(rows, cols);
-            assert!(!ps.is_empty());
-            for p in &ps {
-                let mut sorted = *p;
-                sorted.sort_unstable();
-                // 4 distinct, in-bounds cells.
-                assert!(sorted.windows(2).all(|w| w[0] < w[1]), "cells must be distinct");
-                assert!(p.iter().all(|&c| c < rows * cols));
+            for shape in 0..MORPH_SHAPE_COUNT {
+                let ps = morph_placements_for_shape(shape, rows, cols);
+                assert!(!ps.is_empty());
+                for p in &ps {
+                    let mut sorted = *p;
+                    sorted.sort_unstable();
+                    assert!(sorted.windows(2).all(|w| w[0] < w[1]), "cells must be distinct");
+                    assert!(p.iter().all(|&c| c < rows * cols));
+                }
             }
         }
     }
 
+    /// Regression fixture: the I shape on 4×4 must include axis AND diagonal/staircase placements
+    /// (diagonals are IN, spec §5/§13.1). Proven from code, not by eyeballing.
     #[test]
-    fn morph_excludes_pure_diagonal() {
-        // The main diagonal of a 4×4 (0,5,10,15) is a line, not a tetromino — must not appear.
-        let ps = morph_placements(4, 4);
-        let diag = {
-            let mut d = [0, 5, 10, 15];
-            d.sort_unstable();
-            d
+    fn morph_i_includes_axis_and_diagonal() {
+        let ps = morph_placements_for_shape(0, 4, 4); // I
+        let has = |cells: [usize; 4]| {
+            let mut want = cells;
+            want.sort_unstable();
+            ps.iter().any(|p| {
+                let mut s = *p;
+                s.sort_unstable();
+                s == want
+            })
         };
-        assert!(!ps.iter().any(|p| {
-            let mut s = *p;
-            s.sort_unstable();
-            s == diag
-        }));
+        assert!(has([0, 1, 2, 3]), "horizontal I");
+        assert!(has([0, 4, 8, 12]), "vertical I");
+        assert!(has([0, 5, 10, 15]), "main-diagonal (staircase) I");
+        assert!(has([3, 6, 9, 12]), "anti-diagonal (staircase) I");
+    }
+
+    /// Every generated placement of a shape must be reachable from THAT base shape — no shape ever
+    /// produces a placement that another base shape would, and random 4-cell sets never qualify.
+    #[test]
+    fn morph_placements_belong_to_their_own_shape() {
+        for shape in 0..MORPH_SHAPE_COUNT {
+            let ps = morph_placements_for_shape(shape, 5, 5);
+            // Each placement, re-normalized, must match one of this shape's frame×orientation forms.
+            let forms: Vec<Shape> = {
+                let frames: [Frame; 2] = [axis_frame, diag_frame];
+                let mut v = Vec::new();
+                for o in orientations(&base_shapes()[shape]) {
+                    for f in frames {
+                        v.push(normalize(o.iter().map(|&p| f(p)).collect()));
+                    }
+                }
+                v
+            };
+            for p in &ps {
+                let cells: Shape = p.iter().map(|&i| ((i / 5) as i32, (i % 5) as i32)).collect();
+                let norm = normalize(cells);
+                assert!(forms.contains(&norm), "placement {p:?} not a form of shape {shape}");
+            }
+        }
     }
 }

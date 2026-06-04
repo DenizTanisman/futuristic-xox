@@ -398,6 +398,11 @@ See §2. Persist AI-DLC artifacts under `aidlc-docs/{plans,requirements,story-ar
 2. **U1 Engine** — implement + headless unit tests for every rule (capture strict-greater, capture
    deletes pawn, win-before-draw, hands-empty draw, Morph shapes + rotations/mirrors, Morph two-moves
    + win-after-each + single-move fallback). Completion report.
+   - **Morph diagonal regression fixtures (must pass):** for the I shape on 4×4, the engine must
+     recognize the axis forms `[0,1,2,3]` (horizontal) and `[0,4,8,12]` (vertical) **and** the
+     diagonal/staircase forms `[0,5,10,15]` (main) and `[3,6,9,12]` (anti). Every generated placement
+     of a chosen shape must re-normalize to one of that shape's `frame × orientation` forms (no
+     cross-shape leakage, no random 4-cell set). Diagonals are IN (§5/§13.1).
 3. Freeze `Mode` trait. Bridge skeleton.
 4. **U2 AI** + **U3 UI** in parallel. U2: difficulties + optimizations + self-play weight calibration.
    U3: screens + board + animations against a mock AI, then wire to U2.

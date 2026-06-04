@@ -5,28 +5,44 @@ mod common;
 use common::{p, state, E};
 use engine::{build, GameConfig, GameResult, Mode, ModeKind, Move, MorphMode};
 
+// Shape index 0 = I; tests below use horizontal-I patterns (0,1,2,3) or are shape-independent.
 fn morph_4x4() -> MorphMode {
-    MorphMode::new(4, 4)
+    MorphMode::new(4, 4, 0)
 }
 
 #[test]
 fn every_precomputed_shape_is_a_win_when_fully_owned() {
-    // Strong property: owning all 4 cells of ANY placement (every I/L/Z rotation + mirror) wins.
+    // Strong property: for each chosen shape, owning all 4 cells of ANY of its placements
+    // (every rotation + mirror, axis AND diagonal) wins.
     for (rows, cols) in [(4usize, 4usize), (5, 5)] {
-        let mode = MorphMode::new(rows, cols);
-        for placement in mode.placements() {
-            let mut board = vec![E; rows * cols];
-            for &cell in placement {
-                board[cell] = p(0, 1);
+        for shape in 0..3 {
+            let mode = MorphMode::new(rows, cols, shape);
+            for placement in mode.placements() {
+                let mut board = vec![E; rows * cols];
+                for &cell in placement {
+                    board[cell] = p(0, 1);
+                }
+                let s = state(rows, cols, board, vec![], vec![], 1, 2);
+                assert_eq!(
+                    mode.is_terminal(&s),
+                    Some(GameResult::Win(0)),
+                    "shape {shape} placement {placement:?} on {rows}x{cols} should be a win"
+                );
             }
-            let s = state(rows, cols, board, vec![], vec![], 1, 2);
-            assert_eq!(
-                mode.is_terminal(&s),
-                Some(GameResult::Win(0)),
-                "placement {placement:?} on {rows}x{cols} should be a win"
-            );
         }
     }
+}
+
+#[test]
+fn diagonal_shape_completion_wins() {
+    // The diagonal/staircase I (0,5,10,15) is now a valid win (diagonals are IN, spec §5/§13.1).
+    let mode = MorphMode::new(4, 4, 0); // I
+    let mut board = vec![E; 16];
+    for &cell in &[0usize, 5, 10, 15] {
+        board[cell] = p(1, 3);
+    }
+    let s = state(4, 4, board, vec![1], vec![], 0, 2);
+    assert_eq!(mode.is_terminal(&s), Some(GameResult::Win(1)));
 }
 
 #[test]
