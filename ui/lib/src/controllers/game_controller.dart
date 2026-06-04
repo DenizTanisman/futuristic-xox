@@ -4,6 +4,23 @@ import '../game/game_api.dart';
 import '../game/player_controller.dart';
 import '../models/game_models.dart';
 
+/// Localized strings the controller needs for its transient messages / result text. Injected from the
+/// view so the controller stays free of hardcoded user-facing text (spec: localization).
+class GameStrings {
+  final String capture;
+  final String noSecondMove;
+  final String selectPawnFirst;
+  final String draw;
+  final String Function(String name) wins;
+  const GameStrings({
+    required this.capture,
+    required this.noSecondMove,
+    required this.selectPawnFirst,
+    required this.draw,
+    required this.wins,
+  });
+}
+
 /// Drives a single game: owns the backend session, the current [Snapshot], transient UI messages,
 /// and the turn loop. Each seat (0 = bottom, 1 = top) is a [PlayerController] — human or AI — so the
 /// controller is agnostic to who plays: single-player, offline multiplayer, and (later) online all
@@ -16,6 +33,9 @@ class GameController extends ChangeNotifier {
 
   /// players[0] = bottom seat (moves first), players[1] = top seat.
   final List<PlayerController> players;
+
+  /// Localized strings for messages / result (injected by the view).
+  final GameStrings strings;
 
   late Snapshot snapshot;
 
@@ -44,6 +64,7 @@ class GameController extends ChangeNotifier {
     required this.rows,
     required this.cols,
     required this.players,
+    required this.strings,
     int? seed,
   }) {
     snapshot = api.newGame(mode: mode, rows: rows, cols: cols, seed: seed);
@@ -97,7 +118,7 @@ class GameController extends ChangeNotifier {
   Future<void> onCellTap(int cell) async {
     if (aiThinking || !isHumanTurn) return;
     if (mode.valued && selectedValue == null) {
-      _setMessage('Select a pawn first', isError: true);
+      _setMessage(strings.selectPawnFirst, isError: true);
       return;
     }
     final result = api.humanMove(
@@ -151,9 +172,9 @@ class GameController extends ChangeNotifier {
     if (result.snapshot.isOver) {
       _setMessage(_resultText(result.snapshot.outcome), isError: false);
     } else if (result.singleMoveFallback) {
-      _setMessage('No second move available — turn passes', isError: false);
+      _setMessage(strings.noSecondMove, isError: false);
     } else if (result.captured) {
-      _setMessage('Capture!', isError: false);
+      _setMessage(strings.capture, isError: false);
     } else {
       _clearMessage();
     }
@@ -170,9 +191,9 @@ class GameController extends ChangeNotifier {
 
   /// Outcome message from the winning seat's perspective (uses player labels).
   String _resultText(Outcome o) => switch (o) {
-        Outcome.win0 => '${players[0].label} wins!',
-        Outcome.win1 => '${players[1].label} wins!',
-        Outcome.draw => 'Draw',
+        Outcome.win0 => strings.wins(players[0].label),
+        Outcome.win1 => strings.wins(players[1].label),
+        Outcome.draw => strings.draw,
         Outcome.inProgress => '',
       };
 
