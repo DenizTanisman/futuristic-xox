@@ -287,4 +287,112 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutSoon => 'Coming soon';
+
+  @override
+  String get tutBtnNext => 'Continue';
+
+  @override
+  String get tutRailLabel => 'Your pawns';
+
+  @override
+  String get tutHintSelect => 'Pick a pawn first';
+
+  @override
+  String get tutHintPlaceNow => 'Now tap a square';
+
+  @override
+  String get tutHintEat => 'Pick a pawn, then tap the center opponent pawn';
+
+  @override
+  String get tutHintWinPlace => 'Pick a pawn, then tap the glowing square';
+
+  @override
+  String get tutHintEatwin =>
+      'Pick a pawn bigger than 5, then place it in the center';
+
+  @override
+  String get tutHintSmall => 'Too small — pick a bigger pawn';
+
+  @override
+  String get tutHintRedirect => 'Place it on the glowing square';
+
+  @override
+  String get tutHintWin => 'You win!';
+
+  @override
+  String get tutOrigWelcomeTitle => 'Welcome to Futuristic';
+
+  @override
+  String get tutOrigWelcomeBody =>
+      'You\'re about to play tic-tac-toe like you\'ve never seen it. No rush — we\'ll discover the new rules together, step by step. Ready when you are.';
+
+  @override
+  String get tutOrigNumbersTitle => 'Now there are numbers';
+
+  @override
+  String get tutOrigNumbersBody =>
+      'You no longer place just X or O. Instead you place valued numbers — and each one carries a power. That small change changes everything.';
+
+  @override
+  String get tutOrigPlaceTitle => 'Place any pawn you like';
+
+  @override
+  String get tutOrigPlaceBody =>
+      'You can drop any of your pawns on an empty square. Watch — a gold pawn lands on the glowing square.';
+
+  @override
+  String get tutOrigDemoplaceTitle => 'Now you try';
+
+  @override
+  String get tutOrigDemoplaceBody =>
+      'First pick a pawn below, then tap an empty square to place it.';
+
+  @override
+  String get tutOrigCapintroTitle => 'You can capture, too';
+
+  @override
+  String get tutOrigCapintroBody =>
+      'Here\'s the fun part: you can capture your opponent\'s pawn. Watch — a larger gold pawn lands on theirs and takes it.';
+
+  @override
+  String get tutOrigCapruleTitle => 'But there\'s one rule';
+
+  @override
+  String get tutOrigCapruleBody =>
+      'To capture a pawn, yours must have a strictly greater value. A smaller pawn can\'t take a larger one.';
+
+  @override
+  String get tutOrigDemoeatTitle => 'Now you capture';
+
+  @override
+  String get tutOrigDemoeatBody =>
+      'Try to capture the opponent pawn (3) in the center. First with a small pawn — then with one that\'s big enough.';
+
+  @override
+  String get tutOrigWinruleTitle => 'How you win';
+
+  @override
+  String get tutOrigWinruleBody =>
+      'Winning is still familiar: line up three of your own pawns — horizontal, vertical, or diagonal. It\'s the line that matters, not the values.';
+
+  @override
+  String get tutOrigDemowinTitle => 'Complete the line';
+
+  @override
+  String get tutOrigDemowinBody =>
+      'Place a pawn on the glowing empty square and complete the right-column trio.';
+
+  @override
+  String get tutOrigDemoeatwinTitle => 'Capture and win at once';
+
+  @override
+  String get tutOrigDemoeatwinBody =>
+      'This time your winning move also captures. Pick a pawn big enough to take the opponent\'s 5 in the center, place it there, and close the diagonal.';
+
+  @override
+  String get tutOrigDoneTitle => 'That\'s Original!';
+
+  @override
+  String get tutOrigDoneBody =>
+      'Now you know the power of numbers, capturing, and winning. Try it in a real game — be the one who wins.';
 }

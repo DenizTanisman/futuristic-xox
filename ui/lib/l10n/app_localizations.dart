@@ -629,6 +629,198 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Coming soon'**
   String get tutSoon;
+
+  /// No description provided for @tutBtnNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get tutBtnNext;
+
+  /// No description provided for @tutRailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your pawns'**
+  String get tutRailLabel;
+
+  /// No description provided for @tutHintSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a pawn first'**
+  String get tutHintSelect;
+
+  /// No description provided for @tutHintPlaceNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Now tap a square'**
+  String get tutHintPlaceNow;
+
+  /// No description provided for @tutHintEat.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a pawn, then tap the center opponent pawn'**
+  String get tutHintEat;
+
+  /// No description provided for @tutHintWinPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a pawn, then tap the glowing square'**
+  String get tutHintWinPlace;
+
+  /// No description provided for @tutHintEatwin.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a pawn bigger than 5, then place it in the center'**
+  String get tutHintEatwin;
+
+  /// No description provided for @tutHintSmall.
+  ///
+  /// In en, this message translates to:
+  /// **'Too small — pick a bigger pawn'**
+  String get tutHintSmall;
+
+  /// No description provided for @tutHintRedirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Place it on the glowing square'**
+  String get tutHintRedirect;
+
+  /// No description provided for @tutHintWin.
+  ///
+  /// In en, this message translates to:
+  /// **'You win!'**
+  String get tutHintWin;
+
+  /// No description provided for @tutOrigWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Futuristic'**
+  String get tutOrigWelcomeTitle;
+
+  /// No description provided for @tutOrigWelcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re about to play tic-tac-toe like you\'ve never seen it. No rush — we\'ll discover the new rules together, step by step. Ready when you are.'**
+  String get tutOrigWelcomeBody;
+
+  /// No description provided for @tutOrigNumbersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Now there are numbers'**
+  String get tutOrigNumbersTitle;
+
+  /// No description provided for @tutOrigNumbersBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You no longer place just X or O. Instead you place valued numbers — and each one carries a power. That small change changes everything.'**
+  String get tutOrigNumbersBody;
+
+  /// No description provided for @tutOrigPlaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Place any pawn you like'**
+  String get tutOrigPlaceTitle;
+
+  /// No description provided for @tutOrigPlaceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can drop any of your pawns on an empty square. Watch — a gold pawn lands on the glowing square.'**
+  String get tutOrigPlaceBody;
+
+  /// No description provided for @tutOrigDemoplaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Now you try'**
+  String get tutOrigDemoplaceTitle;
+
+  /// No description provided for @tutOrigDemoplaceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'First pick a pawn below, then tap an empty square to place it.'**
+  String get tutOrigDemoplaceBody;
+
+  /// No description provided for @tutOrigCapintroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You can capture, too'**
+  String get tutOrigCapintroTitle;
+
+  /// No description provided for @tutOrigCapintroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s the fun part: you can capture your opponent\'s pawn. Watch — a larger gold pawn lands on theirs and takes it.'**
+  String get tutOrigCapintroBody;
+
+  /// No description provided for @tutOrigCapruleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'But there\'s one rule'**
+  String get tutOrigCapruleTitle;
+
+  /// No description provided for @tutOrigCapruleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To capture a pawn, yours must have a strictly greater value. A smaller pawn can\'t take a larger one.'**
+  String get tutOrigCapruleBody;
+
+  /// No description provided for @tutOrigDemoeatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Now you capture'**
+  String get tutOrigDemoeatTitle;
+
+  /// No description provided for @tutOrigDemoeatBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try to capture the opponent pawn (3) in the center. First with a small pawn — then with one that\'s big enough.'**
+  String get tutOrigDemoeatBody;
+
+  /// No description provided for @tutOrigWinruleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How you win'**
+  String get tutOrigWinruleTitle;
+
+  /// No description provided for @tutOrigWinruleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Winning is still familiar: line up three of your own pawns — horizontal, vertical, or diagonal. It\'s the line that matters, not the values.'**
+  String get tutOrigWinruleBody;
+
+  /// No description provided for @tutOrigDemowinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete the line'**
+  String get tutOrigDemowinTitle;
+
+  /// No description provided for @tutOrigDemowinBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Place a pawn on the glowing empty square and complete the right-column trio.'**
+  String get tutOrigDemowinBody;
+
+  /// No description provided for @tutOrigDemoeatwinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture and win at once'**
+  String get tutOrigDemoeatwinTitle;
+
+  /// No description provided for @tutOrigDemoeatwinBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This time your winning move also captures. Pick a pawn big enough to take the opponent\'s 5 in the center, place it there, and close the diagonal.'**
+  String get tutOrigDemoeatwinBody;
+
+  /// No description provided for @tutOrigDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s Original!'**
+  String get tutOrigDoneTitle;
+
+  /// No description provided for @tutOrigDoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Now you know the power of numbers, capturing, and winning. Try it in a real game — be the one who wins.'**
+  String get tutOrigDoneBody;
 }
 
 class _AppLocalizationsDelegate

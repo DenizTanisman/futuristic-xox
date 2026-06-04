@@ -417,24 +417,32 @@ void _go(BuildContext context, Widget screen) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
 }
 
+/// The tutorial screen for a mode, or null if it has none yet. `onExit` is the destination.
+Widget? tutorialScreenFor(Mode4 mode, VoidCallback onExit) => switch (mode) {
+      Mode4.classic => ClassicTutorialScreen(onExit: onExit),
+      Mode4.original => OriginalTutorialScreen(onExit: onExit),
+      _ => null, // Bonanza / Morph tutorials: coming soon
+    };
+
 /// Enter a mode's setup. The first time the player enters a mode whose tutorial exists, auto-show
 /// that tutorial first (then the difficulty/setup screen); afterwards go straight to setup. Gated by a
 /// persisted per-mode "seen" flag (spec: tutorials only on first entry per mode).
 void _enterMode(BuildContext context, Mode4 mode) {
   final progress = AppScope.of(context).tutorialProgress;
-  final hasTutorial = mode == Mode4.classic; // only Classic has a tutorial for now
-  if (hasTutorial && !progress.seen(mode.name)) {
-    progress.markSeen(mode.name);
+  if (!progress.seen(mode.name)) {
     final nav = Navigator.of(context);
-    nav.push(MaterialPageRoute(
-      builder: (_) => ClassicTutorialScreen(
-        // On finish/skip, replace the tutorial with the mode's setup (back from setup → home).
-        onExit: () => nav.pushReplacement(MaterialPageRoute(builder: (_) => _SetupScreen(mode: mode))),
-      ),
-    ));
-  } else {
-    _go(context, _SetupScreen(mode: mode));
+    final tutorial = tutorialScreenFor(
+      mode,
+      // On finish/skip, replace the tutorial with the mode's setup (back from setup → home).
+      () => nav.pushReplacement(MaterialPageRoute(builder: (_) => _SetupScreen(mode: mode))),
+    );
+    if (tutorial != null) {
+      progress.markSeen(mode.name);
+      nav.push(MaterialPageRoute(builder: (_) => tutorial));
+      return;
+    }
   }
+  _go(context, _SetupScreen(mode: mode));
 }
 
 String _modeName(AppLocalizations l, Mode4 mode) => switch (mode) {

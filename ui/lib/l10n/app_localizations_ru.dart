@@ -288,4 +288,114 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get tutSoon => 'Скоро';
+
+  @override
+  String get tutBtnNext => 'Дальше';
+
+  @override
+  String get tutRailLabel => 'Ваши фишки';
+
+  @override
+  String get tutHintSelect => 'Сначала выберите фишку';
+
+  @override
+  String get tutHintPlaceNow => 'Теперь коснитесь клетки';
+
+  @override
+  String get tutHintEat =>
+      'Выберите фишку, затем коснитесь центральной фишки соперника';
+
+  @override
+  String get tutHintWinPlace =>
+      'Выберите фишку, затем коснитесь светящейся клетки';
+
+  @override
+  String get tutHintEatwin =>
+      'Выберите фишку больше 5, затем поставьте в центр';
+
+  @override
+  String get tutHintSmall => 'Слишком мала — выберите фишку покрупнее';
+
+  @override
+  String get tutHintRedirect => 'Поставьте на светящуюся клетку';
+
+  @override
+  String get tutHintWin => 'Вы победили!';
+
+  @override
+  String get tutOrigWelcomeTitle => 'Добро пожаловать в Futuristic';
+
+  @override
+  String get tutOrigWelcomeBody =>
+      'Сейчас вы сыграете в крестики-нолики, каких ещё не видели. Не спеша — новые правила откроем вместе, шаг за шагом. Начнём, когда будете готовы.';
+
+  @override
+  String get tutOrigNumbersTitle => 'Теперь есть числа';
+
+  @override
+  String get tutOrigNumbersBody =>
+      'Вы ставите не просто X или O, а ценные числа — и у каждого своя сила. Эта маленькая деталь меняет всё.';
+
+  @override
+  String get tutOrigPlaceTitle => 'Поставьте любую фишку';
+
+  @override
+  String get tutOrigPlaceBody =>
+      'Любую свою фишку можно поставить на пустую клетку. Смотрите — золотая фишка появляется на светящейся клетке.';
+
+  @override
+  String get tutOrigDemoplaceTitle => 'Теперь попробуйте';
+
+  @override
+  String get tutOrigDemoplaceBody =>
+      'Сначала выберите фишку снизу, затем коснитесь пустой клетки, чтобы поставить её.';
+
+  @override
+  String get tutOrigCapintroTitle => 'Можно и захватывать';
+
+  @override
+  String get tutOrigCapintroBody =>
+      'Самое интересное: можно захватить фишку соперника. Смотрите — золотая фишка побольше встаёт на чужую и забирает её.';
+
+  @override
+  String get tutOrigCapruleTitle => 'Но есть одно правило';
+
+  @override
+  String get tutOrigCapruleBody =>
+      'Чтобы захватить фишку, ваша должна быть строго большего значения. Меньшая не возьмёт большую.';
+
+  @override
+  String get tutOrigDemoeatTitle => 'Теперь захватите вы';
+
+  @override
+  String get tutOrigDemoeatBody =>
+      'Попробуйте захватить фишку соперника (3) в центре. Сначала маленькой фишкой — потом достаточно большой.';
+
+  @override
+  String get tutOrigWinruleTitle => 'Как победить';
+
+  @override
+  String get tutOrigWinruleBody =>
+      'Победа всё та же: соберите три свои фишки в ряд — по горизонтали, вертикали или диагонали. Важен ряд, а не значения.';
+
+  @override
+  String get tutOrigDemowinTitle => 'Завершите линию';
+
+  @override
+  String get tutOrigDemowinBody =>
+      'Поставьте фишку на светящуюся пустую клетку и завершите тройку в правом столбце.';
+
+  @override
+  String get tutOrigDemoeatwinTitle => 'Захват и победа разом';
+
+  @override
+  String get tutOrigDemoeatwinBody =>
+      'На этот раз победный ход ещё и захватывает. Выберите фишку, способную взять 5 соперника в центре, поставьте туда и закройте диагональ.';
+
+  @override
+  String get tutOrigDoneTitle => 'Вот и весь Original!';
+
+  @override
+  String get tutOrigDoneBody =>
+      'Теперь вы знаете силу чисел, захват и победу. Попробуйте в настоящей игре — станьте победителем.';
 }

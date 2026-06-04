@@ -287,4 +287,111 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get tutSoon => 'Yakında';
+
+  @override
+  String get tutBtnNext => 'Devam';
+
+  @override
+  String get tutRailLabel => 'Senin taşların';
+
+  @override
+  String get tutHintSelect => 'Önce bir taş seç';
+
+  @override
+  String get tutHintPlaceNow => 'Şimdi bir kareye koy';
+
+  @override
+  String get tutHintEat => 'Bir taş seç, sonra ortadaki rakip taşına koy';
+
+  @override
+  String get tutHintWinPlace => 'Bir taş seç, sonra parlayan kareye koy';
+
+  @override
+  String get tutHintEatwin => '5\'ten büyük bir taş seç, sonra ortaya koy';
+
+  @override
+  String get tutHintSmall => 'Bu taş çok küçük — daha büyük bir taş seç';
+
+  @override
+  String get tutHintRedirect => 'Parlayan kareye koy';
+
+  @override
+  String get tutHintWin => 'Kazandın!';
+
+  @override
+  String get tutOrigWelcomeTitle => 'Futuristic\'e hoş geldin';
+
+  @override
+  String get tutOrigWelcomeBody =>
+      'Burada tic-tac-toe\'yu daha önce hiç görmediğin bir hâliyle oynayacaksın. Acele yok — yeni kuralları birlikte, adım adım keşfedeceğiz. Hazırsan başlıyoruz.';
+
+  @override
+  String get tutOrigNumbersTitle => 'Artık sayılar var';
+
+  @override
+  String get tutOrigNumbersBody =>
+      'Sadece X ya da O koymuyorsun. Onların yerine değerli sayılar koyuyorsun — ve her sayının bir gücü var. Bu küçük fark her şeyi değiştiriyor.';
+
+  @override
+  String get tutOrigPlaceTitle => 'İstediğin taşı koy';
+
+  @override
+  String get tutOrigPlaceBody =>
+      'Boş bir kareye dilediğin taşını bırakabilirsin. İzle — parlayan kareye altın bir taş düşüveriyor.';
+
+  @override
+  String get tutOrigDemoplaceTitle => 'Şimdi sen dene';
+
+  @override
+  String get tutOrigDemoplaceBody =>
+      'Önce alttan bir taş seç, sonra boş bir kareye dokunup koy.';
+
+  @override
+  String get tutOrigCapintroTitle => 'Taş da yiyebilirsin';
+
+  @override
+  String get tutOrigCapintroBody =>
+      'İşin güzel yanı: rakibin taşını yiyebilirsin. İzle — daha büyük bir altın taş, rakibin taşının üstüne gelip onu alıyor.';
+
+  @override
+  String get tutOrigCapruleTitle => 'Ama bir şartı var';
+
+  @override
+  String get tutOrigCapruleBody =>
+      'Bir taşı yiyebilmen için, ondan daha büyük değerde bir taşa sahip olman gerekir. Küçük taş, büyüğü yiyemez.';
+
+  @override
+  String get tutOrigDemoeatTitle => 'Hadi sen ye';
+
+  @override
+  String get tutOrigDemoeatBody =>
+      'Ortadaki rakip taşını (3) yemeyi dene. Önce küçük bir taşla — sonra yeterince büyük olanla.';
+
+  @override
+  String get tutOrigWinruleTitle => 'Kazanmanın yolu';
+
+  @override
+  String get tutOrigWinruleBody =>
+      'Kazanmak hâlâ tanıdık: kendi üç taşını yatay, dikey ya da çapraz bir hizaya getir. Değerleri değil, hizayı önemse.';
+
+  @override
+  String get tutOrigDemowinTitle => 'Hattı tamamla';
+
+  @override
+  String get tutOrigDemowinBody =>
+      'Parlayan boş kareye bir taş koy ve sağ sütundaki üçlüyü tamamla.';
+
+  @override
+  String get tutOrigDemoeatwinTitle => 'Hem ye, hem kazan';
+
+  @override
+  String get tutOrigDemoeatwinBody =>
+      'Bu sefer kazanç hamlen aynı zamanda bir taş yiyecek. Ortadaki rakip 5\'i yiyecek kadar büyük bir taş seç ve oraya koyarak çaprazı kapat.';
+
+  @override
+  String get tutOrigDoneTitle => 'İşte Original bu kadar!';
+
+  @override
+  String get tutOrigDoneBody =>
+      'Artık sayıların gücünü, yemeyi ve kazanmayı biliyorsun. Hadi gerçek bir oyunda dene — kazanan sen ol.';
 }

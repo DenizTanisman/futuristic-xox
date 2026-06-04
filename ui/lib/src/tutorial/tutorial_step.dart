@@ -13,6 +13,20 @@ enum Mark { x, o }
 /// The decorative visual for an `info` step.
 enum InfoVisual { none, bigX, bigXO }
 
+/// Demo interaction mode for Futuristic (Original) tutorials (spec §3).
+enum TutMode { free, eat, win, eatwin }
+
+/// A valued, owned pawn for Futuristic tutorials: owner 0 = gold (ours), 1 = bordeaux (opponent).
+class TutPawn {
+  final int owner;
+  final int value;
+  const TutPawn(this.owner, this.value);
+}
+
+/// Gold (ours) / bordeaux (opponent) literal helpers.
+TutPawn g(int v) => TutPawn(0, v);
+TutPawn b(int v) => TutPawn(1, v);
+
 /// One mini board for the `triple` win-rule showcase (spec §4).
 class MiniBoard {
   final List<Mark?> base; // 9 cells; the `last` cell is empty here and gets placed in the loop
@@ -58,6 +72,30 @@ class TutorialStep {
   /// Footer button label; `null` for `demo` steps (which auto-advance).
   final L10nText? button;
 
+  // ---- Futuristic (Original) extensions (spec §0) ----
+
+  /// Marks this as a Futuristic step (valued medallion pawns instead of X/O marks).
+  final bool futuristic;
+
+  /// Futuristic board: owned, valued pawns (gold/bordeaux). 9 cells.
+  final List<TutPawn?> fcells;
+
+  /// Demo hand: selectable gold pawn values (rail).
+  final List<int>? hand;
+
+  /// Demo interaction mode (free / eat / win / eatwin).
+  final TutMode demoMode;
+
+  /// `loop`: value + owner of the pawn placed each cycle; `eatAt` marks a capture loop (the placed
+  /// pawn lands on an opponent at that cell).
+  final int? loopValue;
+  final int loopOwner;
+  final int? eatAt;
+
+  /// `info` (futuristic): large showcase medallions in a row; `gtrSeparator` shows a ">" between them.
+  final List<TutPawn>? bigMedallions;
+  final bool gtrSeparator;
+
   const TutorialStep({
     required this.kind,
     this.board = const [null, null, null, null, null, null, null, null, null],
@@ -73,6 +111,15 @@ class TutorialStep {
     required this.body,
     this.hint,
     this.button,
+    this.futuristic = false,
+    this.fcells = const [null, null, null, null, null, null, null, null, null],
+    this.hand,
+    this.demoMode = TutMode.free,
+    this.loopValue,
+    this.loopOwner = 0,
+    this.eatAt,
+    this.bigMedallions,
+    this.gtrSeparator = false,
   });
 }
 
@@ -176,6 +223,135 @@ List<TutorialStep> classicTutorialSteps() => [
         infoVisual: InfoVisual.bigX,
         title: (l) => l.tutClassicDoneTitle,
         body: (l) => l.tutClassicDoneBody,
+        button: (l) => l.tutBtnFinish,
+      ),
+    ];
+
+/// The Futuristic · Original tutorial's 11 steps (spec §4). All text via ARB selectors.
+List<TutorialStep> originalTutorialSteps() => [
+      // 1 — welcome
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [g(6), b(4)],
+        title: (l) => l.tutOrigWelcomeTitle,
+        body: (l) => l.tutOrigWelcomeBody,
+        button: (l) => l.tutBtnStart,
+      ),
+      // 2 — numbers have power
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [g(5), g(2), b(6)],
+        title: (l) => l.tutOrigNumbersTitle,
+        body: (l) => l.tutOrigNumbersBody,
+        button: (l) => l.tutBtnNext,
+      ),
+      // 3 — place loop (gold 5 on cell 4)
+      TutorialStep(
+        kind: TutKind.loop,
+        futuristic: true,
+        fcells: [g(2), null, null, b(4), null, g(3), null, b(1), null],
+        highlight: 4,
+        loopPlaceCell: 4,
+        loopValue: 5,
+        title: (l) => l.tutOrigPlaceTitle,
+        body: (l) => l.tutOrigPlaceBody,
+        button: (l) => l.tutBtnOk,
+      ),
+      // 4 — place demo (any empty)
+      TutorialStep(
+        kind: TutKind.demo,
+        futuristic: true,
+        fcells: [g(2), null, null, b(4), null, g(3), null, b(1), null],
+        hand: [1, 4, 5, 6],
+        highlight: 4,
+        demoMode: TutMode.free,
+        title: (l) => l.tutOrigDemoplaceTitle,
+        body: (l) => l.tutOrigDemoplaceBody,
+        hint: (l) => l.tutHintSelect,
+      ),
+      // 5 — capture loop (gold 4 eats bordeaux 3 at cell 4)
+      TutorialStep(
+        kind: TutKind.loop,
+        futuristic: true,
+        fcells: [b(2), null, g(1), null, b(3), null, g(5), null, b(5)],
+        highlight: 4,
+        loopPlaceCell: 4,
+        loopValue: 4,
+        eatAt: 4,
+        title: (l) => l.tutOrigCapintroTitle,
+        body: (l) => l.tutOrigCapintroBody,
+        button: (l) => l.tutBtnNext,
+      ),
+      // 6 — capture rule (5 > 3)
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [g(5), b(3)],
+        gtrSeparator: true,
+        title: (l) => l.tutOrigCapruleTitle,
+        body: (l) => l.tutOrigCapruleBody,
+        button: (l) => l.tutBtnOk,
+      ),
+      // 7 — capture demo (eat the B3 at 4; 2 too small, 5 works)
+      TutorialStep(
+        kind: TutKind.demo,
+        futuristic: true,
+        fcells: [b(2), null, g(1), null, b(3), null, null, null, null],
+        hand: [2, 5],
+        target: 4,
+        highlight: 4,
+        demoMode: TutMode.eat,
+        title: (l) => l.tutOrigDemoeatTitle,
+        body: (l) => l.tutOrigDemoeatBody,
+        hint: (l) => l.tutHintEat,
+      ),
+      // 8 — win rule (static board with a line)
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        fcells: [g(2), g(2), g(2), null, null, null, null, null, null],
+        winLine: [0, 1, 2],
+        title: (l) => l.tutOrigWinruleTitle,
+        body: (l) => l.tutOrigWinruleBody,
+        button: (l) => l.tutBtnTry,
+      ),
+      // 9 — win by placing (right column [2,5,8], target 8)
+      TutorialStep(
+        kind: TutKind.demo,
+        futuristic: true,
+        fcells: [b(5), null, g(4), null, b(6), g(2), null, null, null],
+        hand: [1, 3, 5, 6],
+        target: 8,
+        highlight: 8,
+        winLine: [2, 5, 8],
+        demoMode: TutMode.win,
+        title: (l) => l.tutOrigDemowinTitle,
+        body: (l) => l.tutOrigDemowinBody,
+        hint: (l) => l.tutHintWinPlace,
+      ),
+      // 10 — win by capturing (eat B5 at 4, diagonal [0,4,8])
+      TutorialStep(
+        kind: TutKind.demo,
+        futuristic: true,
+        fcells: [g(6), null, g(1), null, b(5), null, null, g(2), g(4)],
+        hand: [3, 4, 5, 6],
+        target: 4,
+        highlight: 4,
+        winLine: [0, 4, 8],
+        demoMode: TutMode.eatwin,
+        title: (l) => l.tutOrigDemoeatwinTitle,
+        body: (l) => l.tutOrigDemoeatwinBody,
+        hint: (l) => l.tutHintEatwin,
+      ),
+      // 11 — done
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [g(6)],
+        title: (l) => l.tutOrigDoneTitle,
+        body: (l) => l.tutOrigDoneBody,
         button: (l) => l.tutBtnFinish,
       ),
     ];

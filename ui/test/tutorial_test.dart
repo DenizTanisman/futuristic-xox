@@ -50,6 +50,32 @@ void main() {
     expect(exited, isTrue);
   });
 
+  testWidgets('Original tutorial renders (futuristic) and advances', (tester) async {
+    await tester.pumpWidget(_wrap(Builder(
+      builder: (ctx) => Center(
+        child: TextButton(
+          onPressed: () => Navigator.of(ctx).push(MaterialPageRoute(
+            builder: (_) => OriginalTutorialScreen(onExit: () => Navigator.of(ctx).pop()),
+          )),
+          child: const Text('go'),
+        ),
+      ),
+    )));
+    await tester.tap(find.text('go'));
+    await tester.pumpAndSettle();
+    expect(find.text('Welcome to Futuristic'), findsOneWidget);
+
+    await tester.tap(find.text("Let's begin"));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.text('Now there are numbers'), findsOneWidget);
+
+    await tester.tap(find.text('Skip'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('go'), findsOneWidget);
+  });
+
   testWidgets('advances through steps and Skip pops cleanly from a loop step (no leaked timer)',
       (tester) async {
     await tester.pumpWidget(_wrap(Builder(

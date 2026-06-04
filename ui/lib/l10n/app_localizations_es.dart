@@ -288,4 +288,112 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tutSoon => 'Próximamente';
+
+  @override
+  String get tutBtnNext => 'Continuar';
+
+  @override
+  String get tutRailLabel => 'Tus fichas';
+
+  @override
+  String get tutHintSelect => 'Primero elige una ficha';
+
+  @override
+  String get tutHintPlaceNow => 'Ahora toca una casilla';
+
+  @override
+  String get tutHintEat => 'Elige una ficha y toca la ficha rival del centro';
+
+  @override
+  String get tutHintWinPlace => 'Elige una ficha y toca la casilla que brilla';
+
+  @override
+  String get tutHintEatwin =>
+      'Elige una ficha mayor que 5 y colócala en el centro';
+
+  @override
+  String get tutHintSmall => 'Demasiado pequeña — elige una ficha mayor';
+
+  @override
+  String get tutHintRedirect => 'Colócala en la casilla que brilla';
+
+  @override
+  String get tutHintWin => '¡Ganaste!';
+
+  @override
+  String get tutOrigWelcomeTitle => 'Bienvenido a Futuristic';
+
+  @override
+  String get tutOrigWelcomeBody =>
+      'Vas a jugar al tres en raya como nunca lo has visto. Sin prisa — descubriremos las nuevas reglas juntos, paso a paso. Cuando estés listo, empezamos.';
+
+  @override
+  String get tutOrigNumbersTitle => 'Ahora hay números';
+
+  @override
+  String get tutOrigNumbersBody =>
+      'Ya no colocas solo X u O. En su lugar colocas números con valor — y cada uno tiene un poder. Ese pequeño cambio lo cambia todo.';
+
+  @override
+  String get tutOrigPlaceTitle => 'Coloca la ficha que quieras';
+
+  @override
+  String get tutOrigPlaceBody =>
+      'Puedes soltar cualquiera de tus fichas en una casilla vacía. Mira — una ficha dorada cae en la casilla que brilla.';
+
+  @override
+  String get tutOrigDemoplaceTitle => 'Ahora prueba tú';
+
+  @override
+  String get tutOrigDemoplaceBody =>
+      'Primero elige una ficha abajo, luego toca una casilla vacía para colocarla.';
+
+  @override
+  String get tutOrigCapintroTitle => 'También puedes capturar';
+
+  @override
+  String get tutOrigCapintroBody =>
+      'Lo divertido: puedes capturar la ficha del rival. Mira — una ficha dorada mayor cae sobre la suya y se la lleva.';
+
+  @override
+  String get tutOrigCapruleTitle => 'Pero hay una regla';
+
+  @override
+  String get tutOrigCapruleBody =>
+      'Para capturar una ficha, la tuya debe tener un valor estrictamente mayor. Una ficha menor no puede tomar una mayor.';
+
+  @override
+  String get tutOrigDemoeatTitle => 'Ahora captura tú';
+
+  @override
+  String get tutOrigDemoeatBody =>
+      'Intenta capturar la ficha rival (3) del centro. Primero con una ficha pequeña — luego con una lo bastante grande.';
+
+  @override
+  String get tutOrigWinruleTitle => 'Cómo ganas';
+
+  @override
+  String get tutOrigWinruleBody =>
+      'Ganar sigue siendo familiar: alinea tres fichas tuyas — horizontal, vertical o diagonal. Importa la línea, no los valores.';
+
+  @override
+  String get tutOrigDemowinTitle => 'Completa la línea';
+
+  @override
+  String get tutOrigDemowinBody =>
+      'Coloca una ficha en la casilla vacía que brilla y completa el trío de la columna derecha.';
+
+  @override
+  String get tutOrigDemoeatwinTitle => 'Captura y gana a la vez';
+
+  @override
+  String get tutOrigDemoeatwinBody =>
+      'Esta vez tu jugada ganadora también captura. Elige una ficha capaz de tomar el 5 del rival en el centro, colócala ahí y cierra la diagonal.';
+
+  @override
+  String get tutOrigDoneTitle => '¡Eso es Original!';
+
+  @override
+  String get tutOrigDoneBody =>
+      'Ya conoces el poder de los números, la captura y la victoria. Pruébalo en una partida real — sé tú quien gane.';
 }

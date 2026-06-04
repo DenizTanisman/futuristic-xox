@@ -108,7 +108,15 @@ class TutorialWinLine extends StatefulWidget {
   /// Centres of the cells the line passes through (board-space, same size as the painter area).
   final Offset start;
   final Offset end;
-  const TutorialWinLine({super.key, required this.start, required this.end});
+
+  /// Line colour: silver for Classic, gold for Futuristic.
+  final Color color;
+  const TutorialWinLine({
+    super.key,
+    required this.start,
+    required this.end,
+    this.color = const Color(0xFFFFFFFF),
+  });
 
   @override
   State<TutorialWinLine> createState() => _TutorialWinLineState();
@@ -131,7 +139,7 @@ class _TutorialWinLineState extends State<TutorialWinLine> with SingleTickerProv
         child: AnimatedBuilder(
           animation: _c,
           builder: (context, _) => CustomPaint(
-            painter: _WinLinePainter(start: widget.start, end: widget.end, progress: _c.value),
+            painter: _WinLinePainter(start: widget.start, end: widget.end, progress: _c.value, color: widget.color),
             size: Size.infinite,
           ),
         ),
@@ -144,7 +152,8 @@ class _WinLinePainter extends CustomPainter {
   final Offset start;
   final Offset end;
   final double progress;
-  _WinLinePainter({required this.start, required this.end, required this.progress});
+  final Color color;
+  _WinLinePainter({required this.start, required this.end, required this.progress, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -153,17 +162,17 @@ class _WinLinePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 10
       ..strokeCap = StrokeCap.round
-      ..color = const Color(0xFFEEF1F6).withValues(alpha: 0.45)
+      ..color = color.withValues(alpha: 0.45)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
     final line = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 5
       ..strokeCap = StrokeCap.round
-      ..color = const Color(0xFFFFFFFF);
+      ..color = color;
     canvas.drawLine(start, tip, glow);
     canvas.drawLine(start, tip, line);
   }
 
   @override
-  bool shouldRepaint(_WinLinePainter old) => old.progress != progress;
+  bool shouldRepaint(_WinLinePainter old) => old.progress != progress || old.color != color;
 }

@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Futuristic (Original) mode interactive tutorial.** Extends the reusable tutorial engine for the
+  valued-pawn rules: an 11-step walkthrough that introduces pawn numbers, free placement, capture
+  (strictly higher value: a gold pawn can only land on a bordeaux one whose value is *strictly*
+  smaller), and the three-in-a-row win — including capture-to-win. Gif-looped showcase boards (place
+  and capture, 2s, timer cancelled on step change/dispose) plus select-then-place demos with a
+  selectable gold `HandRail`: pick a pawn, then tap a cell; wrong/too-small/redirect taps surface a
+  localized hint and flash the correct cell. Gold medallion board (`FuturisticTutorialBoard`) reusing
+  the in-game `PawnWidget` (legible numbers, gold pop + ripple on placement, bordeaux scale-out on
+  capture) and gold win lines. Uses the Futuristic silver→gold game theme regardless of the app
+  light/dark theme; fully localized (tr/en/ru/es). Auto-shows on first Original entry and replayable
+  from the **Tutorials** drawer (Bonanza/Morph still "coming soon").
+
 - **Classic mode interactive tutorial.** A reusable tutorial engine (`TutorialController` +
   `TutorialStep` model; works for future modes) driving the 8-step Classic walkthrough: an
   always-on Skip + progress dots; gif-looped showcase steps (empty → place → win line → reset, 2s,
