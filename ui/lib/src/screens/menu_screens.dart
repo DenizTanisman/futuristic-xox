@@ -98,6 +98,7 @@ class _SetupScreen extends StatefulWidget {
 class _SetupScreenState extends State<_SetupScreen> {
   Difficulty difficulty = Difficulty.medium;
   late int grid = widget.mode.grids.first;
+  bool multiplayer = false;
 
   @override
   Widget build(BuildContext context) {
@@ -109,11 +110,13 @@ class _SetupScreenState extends State<_SetupScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionLabel('Difficulty'),
+              // Difficulty is meaningless with two human players, so dim + disable it.
+              _SectionLabel('Difficulty', dimmed: multiplayer),
               _ChoiceRow<Difficulty>(
                 values: Difficulty.values,
                 selected: difficulty,
                 label: (d) => d.label,
+                enabled: !multiplayer,
                 onSelect: (d) => setState(() => difficulty = d),
               ),
               const SizedBox(height: 28),
@@ -124,6 +127,11 @@ class _SetupScreenState extends State<_SetupScreen> {
                 label: (g) => '$g×$g',
                 onSelect: (g) => setState(() => grid = g),
               ),
+              const SizedBox(height: 28),
+              _MultiplayerToggle(
+                value: multiplayer,
+                onChanged: (v) => setState(() => multiplayer = v),
+              ),
               const Spacer(),
               SizedBox(
                 width: double.infinity,
@@ -133,7 +141,12 @@ class _SetupScreenState extends State<_SetupScreen> {
                   ),
                   onPressed: () => _go(
                     context,
-                    GameScreen(mode: widget.mode, grid: grid, difficulty: difficulty),
+                    GameScreen(
+                      mode: widget.mode,
+                      grid: grid,
+                      difficulty: difficulty,
+                      multiplayer: multiplayer,
+                    ),
                   ),
                   child: const Text('Play', style: TextStyle(fontSize: 18)),
                 ),
@@ -141,6 +154,46 @@ class _SetupScreenState extends State<_SetupScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Offline-multiplayer (same-device, two humans) switch. Foundation for online play.
+class _MultiplayerToggle extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  const _MultiplayerToggle({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: value ? AppColors.accent : AppColors.gridLine,
+          width: value ? 2 : 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Offline Multiplayer',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                Text(
+                  value ? 'Two players, same device' : 'Play against the computer',
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          Switch(value: value, activeThumbColor: AppColors.accent, onChanged: onChanged),
+        ],
       ),
     );
   }
@@ -235,7 +288,8 @@ class _MenuCard extends StatelessWidget {
 
 class _SectionLabel extends StatelessWidget {
   final String text;
-  const _SectionLabel(this.text);
+  final bool dimmed;
+  const _SectionLabel(this.text, {this.dimmed = false});
 
   @override
   Widget build(BuildContext context) {
@@ -243,7 +297,11 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         text.toUpperCase(),
-        style: const TextStyle(color: AppColors.textMuted, letterSpacing: 1.5, fontWeight: FontWeight.w600),
+        style: TextStyle(
+          color: AppColors.textMuted.withValues(alpha: dimmed ? 0.4 : 1.0),
+          letterSpacing: 1.5,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -255,23 +313,27 @@ class _ChoiceRow<T> extends StatelessWidget {
   final String Function(T) label;
   final void Function(T) onSelect;
 
+  /// When false, the row is dimmed and non-interactive (Difficulty under offline multiplayer).
+  final bool enabled;
+
   const _ChoiceRow({
     required this.values,
     required this.selected,
     required this.label,
     required this.onSelect,
+    this.enabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final row = Row(
       children: [
         for (final v in values)
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(right: 10),
               child: GestureDetector(
-                onTap: () => onSelect(v),
+                onTap: enabled ? () => onSelect(v) : null,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -296,6 +358,12 @@ class _ChoiceRow<T> extends StatelessWidget {
             ),
           ),
       ],
+    );
+    // Dim the whole row when disabled.
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 180),
+      opacity: enabled ? 1.0 : 0.4,
+      child: row,
     );
   }
 }

@@ -1,0 +1,93 @@
+// Offline multiplayer + PlayerController turn-loop tests. Run with `flutter test`.
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:futuristic_xox/main.dart';
+import 'package:futuristic_xox/src/controllers/game_controller.dart';
+import 'package:futuristic_xox/src/game/dart_game_api.dart';
+import 'package:futuristic_xox/src/game/player_controller.dart';
+import 'package:futuristic_xox/src/models/game_models.dart';
+
+GameController mp(Mode4 mode, int grid) => GameController(
+      api: DartGameApi(),
+      mode: mode,
+      rows: grid,
+      cols: grid,
+      players: [HumanController('Player 1'), HumanController('Player 2')],
+      seed: 1,
+    );
+
+void main() {
+  group('offline multiplayer (two humans)', () {
+    test('turns alternate P1 -> P2, no AI runs', () async {
+      final c = mp(Mode4.original, 3);
+      expect(c.snapshot.turn, 0);
+      expect(c.activePlayer.label, 'Player 1');
+      expect(c.isHumanTurn, isTrue);
+
+      c.selectPawn(0, 1);
+      await c.onCellTap(0);
+
+      expect(c.snapshot.turn, 1, reason: 'handed to top seat');
+      expect(c.activePlayer.label, 'Player 2');
+      expect(c.isHumanTurn, isTrue, reason: 'seat 2 is also human');
+      expect(c.aiThinking, isFalse, reason: 'no AI in offline multiplayer');
+
+      c.selectPawn(1, 1);
+      await c.onCellTap(1);
+      expect(c.snapshot.turn, 0, reason: 'back to bottom seat');
+    });
+
+    test('Morph keeps two-moves-per-turn per human seat', () async {
+      final c = mp(Mode4.morph, 4);
+      expect(c.snapshot.movesLeftInTurn, 2);
+
+      c.selectPawn(0, 1);
+      await c.onCellTap(5);
+      expect(c.snapshot.turn, 0, reason: 'still P1 mid-turn');
+      expect(c.snapshot.movesLeftInTurn, 1);
+
+      // The selection persists (a second value-1 pawn remains), so just place again.
+      await c.onCellTap(6);
+      expect(c.snapshot.turn, 1, reason: 'turn passes to P2 after two moves');
+      expect(c.snapshot.movesLeftInTurn, 2);
+    });
+  });
+
+  group('single-player (human vs AI) regression', () {
+    test('AI auto-moves after the human, returning the turn', () async {
+      final c = GameController(
+        api: DartGameApi(),
+        mode: Mode4.classic,
+        rows: 3,
+        cols: 3,
+        players: [HumanController('You'), AiController(Difficulty.hard, label: 'Computer')],
+        seed: 1,
+      );
+      expect(c.playerAt(1).isHuman, isFalse);
+      await c.onCellTap(0); // Classic: no pawn selection needed
+      expect(c.snapshot.turn, 0, reason: 'AI took its turn automatically');
+      expect(c.aiThinking, isFalse);
+      // The board now has two pawns (human + AI).
+      final filled = c.snapshot.board.where((cell) => !cell.empty).length;
+      expect(filled, 2);
+    });
+  });
+
+  group('setup toggle', () {
+    testWidgets('Offline Multiplayer dims the difficulty selector', (tester) async {
+      await tester.pumpWidget(const FuturisticXoxApp());
+      await tester.tap(find.text('Classic'));
+      await tester.pumpAndSettle();
+
+      AnimatedOpacity difficultyOpacity() => tester.widget<AnimatedOpacity>(
+            find.ancestor(of: find.text('Easy'), matching: find.byType(AnimatedOpacity)),
+          );
+      expect(difficultyOpacity().opacity, 1.0);
+
+      await tester.tap(find.byType(Switch));
+      await tester.pumpAndSettle();
+      expect(difficultyOpacity().opacity, 0.4, reason: 'difficulty dimmed when MP on');
+    });
+  });
+}

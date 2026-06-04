@@ -13,9 +13,6 @@ class BoardView extends StatelessWidget {
   /// Classic renders X / O glyphs instead of values (spec §4.1).
   final bool classic;
   final List<int> highlightedCells;
-
-  /// Morph hint: cells that would complete the target shape this move.
-  final List<int> winningCells;
   final int? lastMoveCell;
   final void Function(int cell) onTap;
   final bool interactive;
@@ -26,7 +23,6 @@ class BoardView extends StatelessWidget {
     required this.showValues,
     required this.classic,
     required this.highlightedCells,
-    this.winningCells = const [],
     required this.lastMoveCell,
     required this.onTap,
     required this.interactive,
@@ -35,7 +31,6 @@ class BoardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final highlight = highlightedCells.toSet();
-    final winning = winningCells.toSet();
     return LayoutBuilder(
       builder: (context, constraints) {
         final side = constraints.biggest.shortestSide;
@@ -64,7 +59,6 @@ class BoardView extends StatelessWidget {
               showValue: showValues,
               classic: classic,
               highlighted: highlight.contains(i),
-              winning: winning.contains(i),
               isLast: lastMoveCell == i,
               onTap: interactive ? () => onTap(i) : null,
             ),
@@ -81,7 +75,6 @@ class _Cell extends StatelessWidget {
   final bool showValue;
   final bool classic;
   final bool highlighted;
-  final bool winning;
   final bool isLast;
   final VoidCallback? onTap;
 
@@ -91,7 +84,6 @@ class _Cell extends StatelessWidget {
     required this.showValue,
     required this.classic,
     required this.highlighted,
-    required this.winning,
     required this.isLast,
     required this.onTap,
   });
@@ -106,28 +98,22 @@ class _Cell extends StatelessWidget {
           color: AppColors.surfaceHigh,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: winning
-                ? AppColors.hint
-                : isLast
-                    ? AppColors.accent
-                    : highlighted
-                        ? AppColors.accent.withValues(alpha: 0.6)
-                        : AppColors.gridLine,
-            width: winning ? 2.5 : (isLast ? 2.5 : (highlighted ? 2 : 1)),
+            color: isLast
+                ? AppColors.accent
+                : highlighted
+                    ? AppColors.accent.withValues(alpha: 0.6)
+                    : AppColors.gridLine,
+            width: isLast ? 2.5 : (highlighted ? 2 : 1),
           ),
-          boxShadow: winning
-              ? [BoxShadow(color: AppColors.hint.withValues(alpha: 0.45), blurRadius: 12)]
-              : highlighted
-                  ? [BoxShadow(color: AppColors.accent.withValues(alpha: 0.25), blurRadius: 10)]
-                  : null,
+          boxShadow: highlighted
+              ? [BoxShadow(color: AppColors.accent.withValues(alpha: 0.25), blurRadius: 10)]
+              : null,
         ),
         alignment: Alignment.center,
         child: cell.empty
-            ? (winning
-                ? Icon(Icons.star_rounded, color: AppColors.hint, size: size * 0.45)
-                : highlighted
-                    ? Icon(Icons.add, color: AppColors.accent.withValues(alpha: 0.7), size: size * 0.35)
-                    : null)
+            ? (highlighted
+                ? Icon(Icons.add, color: AppColors.accent.withValues(alpha: 0.7), size: size * 0.35)
+                : null)
             : Padding(
                 padding: EdgeInsets.all(size * 0.1),
                 child: PawnWidget(

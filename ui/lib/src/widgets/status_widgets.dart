@@ -4,8 +4,10 @@ import '../models/game_models.dart';
 import '../theme/app_theme.dart';
 
 /// Turn indicator + Morph "move 1 of 2 / 2 of 2" + an AI-thinking hint (spec §8).
+/// Shows the active seat's [label] (e.g. "You", "Computer", "Player 1/2").
 class TurnIndicator extends StatelessWidget {
   final int turn;
+  final String label;
   final bool twoMovesPerTurn;
   final int movesLeftInTurn;
   final bool aiThinking;
@@ -14,6 +16,7 @@ class TurnIndicator extends StatelessWidget {
   const TurnIndicator({
     super.key,
     required this.turn,
+    required this.label,
     required this.twoMovesPerTurn,
     required this.movesLeftInTurn,
     required this.aiThinking,
@@ -23,8 +26,7 @@ class TurnIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isOver) return const SizedBox.shrink();
-    final isHuman = turn == 0;
-    final who = isHuman ? 'Your turn' : 'Computer';
+    final who = '$label · turn';
     final color = AppColors.owner(turn);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -195,23 +197,25 @@ class InlineMessage extends StatelessWidget {
 /// Win/lose/draw banner overlay with a play-again / menu action (spec §8).
 class ResultBanner extends StatelessWidget {
   final Outcome outcome;
+  final String title;
   final VoidCallback onPlayAgain;
   final VoidCallback onMenu;
 
   const ResultBanner({
     super.key,
     required this.outcome,
+    required this.title,
     required this.onPlayAgain,
     required this.onMenu,
   });
 
   @override
   Widget build(BuildContext context) {
-    final (title, color) = switch (outcome) {
-      Outcome.win0 => ('You win!', AppColors.playerAGlow),
-      Outcome.win1 => ('Computer wins', AppColors.playerBGlow),
-      Outcome.draw => ('Draw', AppColors.textPrimary),
-      Outcome.inProgress => ('', AppColors.textPrimary),
+    final color = switch (outcome) {
+      Outcome.win0 => AppColors.playerAGlow,
+      Outcome.win1 => AppColors.playerBGlow,
+      Outcome.draw => AppColors.textPrimary,
+      Outcome.inProgress => AppColors.textPrimary,
     };
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),

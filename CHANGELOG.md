@@ -40,7 +40,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (engine rule-parity + widget smoke), `flutter build web` succeeds. Added Android/iOS/web platform
   scaffolding.
 
+### Added
+- **Offline multiplayer** (same-device, two players) via a `PlayerController` abstraction
+  (`HumanController` / `AiController`, with a `RemoteController` seam for future online play). The
+  game loop asks the active seat's controller for its move, so the engine/UI are identical across
+  single-player, offline multiplayer, and (later) online — only the seat→controller mapping changes.
+  Seat 0 (bottom) moves first, then seat 1 (top); Morph's two-moves-per-turn applies per seat.
+  Player labels ("Player 1" / "Player 2", or "You" / "Computer") are sourced from the controller, so
+  a future name/nickname swap touches one place.
+
 ### Changed
+- Mode setup screens now include an **Offline Multiplayer** toggle (default off); turning it on dims
+  and disables the Difficulty selector (no AI opponent) while Grid stays selectable.
 - **Morph win condition (play-test, spec §4.4/§5/§13.1):** one target shape (I/L/Z) is chosen at
   game start; the win is to complete *that* shape. **Diagonal/staircase placements are now included**
   (reversing the earlier "exclude the diagonal I" default) via a Morph-only basis-vector generator:
@@ -56,8 +67,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hint on cells that complete the target this move; Bonanza shows the own-colour count for 2s at
   start. Dart mock AI upgraded to real negamax + alpha-beta (Hard plays perfectly on 3×3).
 
+### Removed
+- On-board winning-cell hint markers (the green-star overlay). Players find winning placements
+  themselves; win detection is unchanged.
+
 ### Fixed
 - Classic hands were fixed-length lists, so playing a symbol threw `Cannot remove from a
   fixed-length list`; hands are now growable. (Caught by the Dart test suite.)
+- Morph diagonal placements were asymmetric in the Dart backend (top-left forms dropped) — the
+  diagonal frame is now normalized before sliding; guarded by 180°-symmetry tests in both backends.
 
 [Unreleased]: https://example.com/compare/HEAD

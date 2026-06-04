@@ -4,24 +4,30 @@ import 'package:flutter/material.dart';
 
 import '../controllers/game_controller.dart';
 import '../game/dart_game_api.dart';
+import '../game/player_controller.dart';
 import '../models/game_models.dart';
 import '../theme/app_theme.dart';
 import '../widgets/board_view.dart';
 import '../widgets/pawn_rail.dart';
 import '../widgets/status_widgets.dart';
 
-/// The main game screen (spec §8.4): board, both pawn rails (human at the bottom), turn/Morph
-/// indicators, inline messages, and the win/lose/draw banner.
+/// The main game screen (spec §8.4): board, both pawn rails (seat 0 at the bottom), turn/Morph
+/// indicators, inline messages, and the win/lose/draw banner. Seats are [PlayerController]s, so the
+/// same screen serves single-player (vs AI) and offline multiplayer (two humans).
 class GameScreen extends StatefulWidget {
   final Mode4 mode;
   final int grid;
   final Difficulty difficulty;
+
+  /// Offline multiplayer: both seats are human (no AI). When false, seat 1 is the AI.
+  final bool multiplayer;
 
   const GameScreen({
     super.key,
     required this.mode,
     required this.grid,
     required this.difficulty,
+    this.multiplayer = false,
   });
 
   @override
@@ -39,16 +45,23 @@ class _GameScreenState extends State<GameScreen> {
     _start();
   }
 
+  List<PlayerController> _buildPlayers() {
+    if (widget.multiplayer) {
+      // Two humans on one device (also the online foundation: seat 1 becomes Remote later).
+      return [HumanController('Player 1'), HumanController('Player 2')];
+    }
+    return [HumanController('You'), AiController(widget.difficulty, label: 'Computer')];
+  }
+
   void _start() {
     controller = GameController(
       api: DartGameApi(),
       mode: widget.mode,
       rows: widget.grid,
       cols: widget.grid,
-      difficulty: widget.difficulty,
+      players: _buildPlayers(),
       seed: DateTime.now().millisecondsSinceEpoch & 0xFFFFFF,
     );
-    // Bonanza shows its own-colour count briefly at the start (spec §4.3).
     _introTimer?.cancel();
     if (widget.mode == Mode4.bonanza && controller.snapshot.bonanzaOwnCount != null) {
       _showIntro = true;
@@ -98,6 +111,7 @@ class _GameScreenState extends State<GameScreen> {
                     children: [
                       PawnRail(
                         owner: 1,
+                        label: controller.playerAt(1).label,
                         hand: s.hand1,
                         showValues: showValues,
                         classic: classic,
@@ -106,6 +120,7 @@ class _GameScreenState extends State<GameScreen> {
                       const SizedBox(height: 10),
                       TurnIndicator(
                         turn: s.turn,
+                        label: controller.activePlayer.label,
                         twoMovesPerTurn: widget.mode.twoMovesPerTurn,
                         movesLeftInTurn: s.movesLeftInTurn,
                         aiThinking: controller.aiThinking,
@@ -123,7 +138,6 @@ class _GameScreenState extends State<GameScreen> {
                             showValues: showValues,
                             classic: classic,
                             highlightedCells: controller.highlightedCells,
-                            winningCells: controller.completingCells,
                             lastMoveCell: controller.lastMoveCell,
                             interactive: controller.isHumanTurn && !controller.aiThinking,
                             onTap: controller.onCellTap,
@@ -133,13 +147,14 @@ class _GameScreenState extends State<GameScreen> {
                       const SizedBox(height: 10),
                       PawnRail(
                         owner: 0,
+                        label: controller.playerAt(0).label,
                         hand: s.hand0,
                         showValues: showValues,
                         classic: classic,
-                        active: controller.isHumanTurn,
+                        active: controller.isHumanTurn && s.turn == 0,
                         selectedColor: controller.selectedColor,
                         selectedValue: controller.selectedValue,
-                        onSelect: widget.mode.valued ? controller.selectPawn : null,
+                        onSelect: widget.mode.valued && s.turn == 0 ? controller.selectPawn : null,
                       ),
                     ],
                   ),
@@ -150,6 +165,7 @@ class _GameScreenState extends State<GameScreen> {
                   Positioned.fill(
                     child: ResultBanner(
                       outcome: s.outcome,
+                      title: controller.resultTitle,
                       onPlayAgain: _playAgain,
                       onMenu: () => Navigator.of(context).popUntil((r) => r.isFirst),
                     ),

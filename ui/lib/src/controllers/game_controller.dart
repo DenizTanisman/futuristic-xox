@@ -1,24 +1,25 @@
 import 'package:flutter/foundation.dart';
 
 import '../game/game_api.dart';
+import '../game/player_controller.dart';
 import '../models/game_models.dart';
 
 /// Drives a single game: owns the backend session, the current [Snapshot], transient UI messages,
-/// and the human↔AI turn orchestration. Human is player 0; the AI is player 1.
-///
-/// Backend-agnostic: it talks only to [GameApi], so swapping the Dart mock for the native Rust
-/// backend needs no controller changes (spec §11).
+/// and the turn loop. Each seat (0 = bottom, 1 = top) is a [PlayerController] — human or AI — so the
+/// controller is agnostic to who plays: single-player, offline multiplayer, and (later) online all
+/// use the same loop and only differ in the two [players] passed in.
 class GameController extends ChangeNotifier {
   final GameApi api;
   final Mode4 mode;
   final int rows;
   final int cols;
-  final Difficulty difficulty;
+
+  /// players[0] = bottom seat (moves first), players[1] = top seat.
+  final List<PlayerController> players;
 
   late Snapshot snapshot;
 
   /// Selected hand pawn (valued modes): its colour and value. Null = nothing selected / Classic.
-  /// Colour matters in Bonanza, where the human may hold pawns of either colour (spec §4.3).
   int? selectedColor;
   int? selectedValue;
 
@@ -26,13 +27,26 @@ class GameController extends ChangeNotifier {
   String? message;
   bool messageIsError = false;
 
-  /// The cell touched by the most recent applied move (drives placement/capture highlight).
+  /// The cell touched by the most recent applied move (placement/capture highlight).
   int? lastMoveCell;
 
-  /// True while the AI is "thinking" (search running) — disables input, shows an indicator.
+  /// True while a non-human (AI) seat is "thinking".
   bool aiThinking = false;
 
   bool _disposed = false;
+
+  GameController({
+    required this.api,
+    required this.mode,
+    required this.rows,
+    required this.cols,
+    required this.players,
+    int? seed,
+  }) {
+    snapshot = api.newGame(mode: mode, rows: rows, cols: cols, seed: seed);
+    // If the starting seat is non-human (future-proofing), let it play.
+    Future.microtask(_runAutoPlayers);
+  }
 
   @override
   void dispose() {
@@ -44,32 +58,23 @@ class GameController extends ChangeNotifier {
     if (!_disposed) notifyListeners();
   }
 
-  GameController({
-    required this.api,
-    required this.mode,
-    required this.rows,
-    required this.cols,
-    required this.difficulty,
-    int? seed,
-  }) {
-    snapshot = api.newGame(mode: mode, rows: rows, cols: cols, seed: seed);
-  }
+  PlayerController get activePlayer => players[snapshot.turn];
+  PlayerController playerAt(int seat) => players[seat];
 
-  bool get isHumanTurn => snapshot.turn == 0 && !snapshot.isOver;
+  bool get isHumanTurn => activePlayer.isHuman && !snapshot.isOver;
   bool get isOver => snapshot.isOver;
+
+  /// Banner title for the current outcome (uses player labels).
+  String get resultTitle => _resultText(snapshot.outcome);
 
   /// Cells the currently-selected pawn (or Classic symbol) may be placed on, for highlighting.
   List<int> get highlightedCells {
     if (!isHumanTurn) return const [];
     if (mode.valued && selectedValue == null) return const [];
-    return api.legalCells(color: mode.valued ? selectedColor : null, value: mode.valued ? selectedValue : null);
-  }
-
-  /// Morph only: cells where the human can place to complete the target shape this move (an on-board
-  /// hint, since 4-cell shapes are hard to track visually). Empty in other modes.
-  List<int> get completingCells {
-    if (!isHumanTurn || mode != Mode4.morph) return const [];
-    return api.completingCells();
+    return api.legalCells(
+      color: mode.valued ? selectedColor : null,
+      value: mode.valued ? selectedValue : null,
+    );
   }
 
   /// Select/deselect a hand pawn by colour + value (valued modes).
@@ -103,26 +108,27 @@ class GameController extends ChangeNotifier {
     }
     _onApplied(result);
 
-    // If the selected pawn is no longer in hand, clear the selection.
+    // Drop the selection if that pawn is no longer in the (now active) hand.
     if (mode.valued &&
         selectedValue != null &&
-        !snapshot.hand0.any((h) => h.color == selectedColor && h.value == selectedValue)) {
+        !snapshot.hand(snapshot.turn).any((h) => h.color == selectedColor && h.value == selectedValue)) {
       selectedColor = null;
       selectedValue = null;
     }
     notifyListeners();
 
-    await _runAiIfNeeded();
+    await _runAutoPlayers();
   }
 
-  Future<void> _runAiIfNeeded() async {
-    if (isOver || snapshot.turn != 1) return;
+  /// Play out any consecutive non-human seats (AI) until it's a human's turn or the game ends.
+  Future<void> _runAutoPlayers() async {
+    if (isOver || activePlayer.isHuman) return;
     aiThinking = true;
     _safeNotify();
 
-    // Morph gives the AI up to two moves; keep playing until the turn returns to the human or the
-    // game ends.
-    while (snapshot.turn == 1 && !snapshot.isOver && !_disposed) {
+    while (!isOver && !activePlayer.isHuman && !_disposed) {
+      final seat = activePlayer;
+      final difficulty = seat is AiController ? seat.difficulty : Difficulty.medium;
       final result = await api.aiMove(difficulty);
       if (_disposed) return;
       if (!result.applied) break;
@@ -135,8 +141,6 @@ class GameController extends ChangeNotifier {
   }
 
   void _onApplied(MoveResult result) {
-    // The backend result doesn't echo the cell, so diff the board to find what changed (board is
-    // tiny). This drives the placement/capture highlight for both human and AI moves.
     lastMoveCell = _firstChangedCell(snapshot, result.snapshot) ?? lastMoveCell;
     snapshot = result.snapshot;
 
@@ -160,9 +164,10 @@ class GameController extends ChangeNotifier {
     return null;
   }
 
+  /// Outcome message from the winning seat's perspective (uses player labels).
   String _resultText(Outcome o) => switch (o) {
-        Outcome.win0 => 'You win!',
-        Outcome.win1 => 'Computer wins',
+        Outcome.win0 => '${players[0].label} wins!',
+        Outcome.win1 => '${players[1].label} wins!',
         Outcome.draw => 'Draw',
         Outcome.inProgress => '',
       };
