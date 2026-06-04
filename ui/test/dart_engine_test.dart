@@ -12,15 +12,18 @@ void main() {
       expect(lineTriples(4, 4).length, 24);
     });
 
-    test('single-shape placements exist and exclude the pure diagonal on 4x4', () {
-      final all = [
-        ...morphPlacementsForShape(4, 4, 0),
-        ...morphPlacementsForShape(4, 4, 1),
-        ...morphPlacementsForShape(4, 4, 2),
-      ];
-      expect(all, isNotEmpty);
-      final diag = ([0, 5, 10, 15]..sort()).toString();
-      expect(all.any((p) => (List.of(p)..sort()).toString() == diag), isFalse);
+    test('Morph placements INCLUDE diagonal (staircase) forms on 4x4', () {
+      // Diagonals are part of Morph (the §5 exclusion was reversed in play-testing, §13.1).
+      final iShape = morphPlacementsForShape(4, 4, 0); // I
+      bool has(List<int> s) {
+        final t = (List.of(s)..sort()).toString();
+        return iShape.any((p) => (List.of(p)..sort()).toString() == t);
+      }
+      expect(iShape, isNotEmpty);
+      expect(has([0, 1, 2, 3]), isTrue, reason: 'horizontal I');
+      expect(has([0, 4, 8, 12]), isTrue, reason: 'vertical I');
+      expect(has([0, 5, 10, 15]), isTrue, reason: 'main-diagonal (staircase) I');
+      expect(has([3, 6, 9, 12]), isTrue, reason: 'anti-diagonal (staircase) I');
     });
   });
 
@@ -94,6 +97,30 @@ void main() {
       final s = api.newGame(mode: Mode4.morph, rows: 4, cols: 4, seed: 1);
       expect(s.morphShape, isNotNull);
       expect(s.movesLeftInTurn, 2);
+    });
+
+    test('diagonal (staircase) I completion wins', () {
+      // Find a seed whose chosen shape is I.
+      int? seed;
+      for (var s = 0; s < 60; s++) {
+        final snap = DartGameApi().newGame(mode: Mode4.morph, rows: 4, cols: 4, seed: s);
+        if (snap.morphShape == MorphShape.i) {
+          seed = s;
+          break;
+        }
+      }
+      expect(seed, isNotNull);
+      final api = DartGameApi();
+      api.newGame(mode: Mode4.morph, rows: 4, cols: 4, seed: seed!);
+      const target = [0, 5, 10, 15]; // main diagonal
+      final park = [for (var c = 0; c < 16; c++) if (!target.contains(c)) c];
+      api.humanMove(color: 0, value: 1, cell: target[0]);
+      api.humanMove(color: 0, value: 1, cell: target[1]);
+      api.humanMove(color: 1, value: 1, cell: park[0]);
+      api.humanMove(color: 1, value: 1, cell: park[1]);
+      api.humanMove(color: 0, value: 2, cell: target[2]);
+      final r = api.humanMove(color: 0, value: 2, cell: target[3]);
+      expect(r.snapshot.outcome, Outcome.win0);
     });
 
     test('two moves per turn; same player continues then turn flips', () {

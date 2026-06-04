@@ -153,14 +153,24 @@ Three base shapes, each **4 cells**: **I** (straight line), **L** (L-tetromino),
 
 **Algorithmic definition (do NOT hand-list coordinates):** define each shape once as relative cells in
 a bounding box, e.g. `I = [(0,0),(0,1),(0,2),(0,3)]`, `L = [(0,0),(1,0),(2,0),(2,1)]`,
-`Z = [(0,1),(0,2),(1,0),(1,1)]`. The engine derives all **4 rotations + mirror**, then scans the grid
-with a **sliding window** over every valid placement. Same code runs on 4×4 and 5×5. Win check tests
-whether any precomputed placement has all 4 cells owned by one player.
+`Z = [(0,1),(0,2),(1,0),(1,1)]`. The engine derives all **4 rotations + mirror**, then lays each
+orientation onto the grid under **two placement bases** and scans every anchor (bounds-checked,
+deduped). Same code runs on 4×4 and 5×5. Win check tests whether any precomputed placement has all 4
+cells owned by one player.
 
-**Defensive defaults for open points (proceed with these; flag if a play-test contradicts):** include
-the straight I in all 4 orientations; **exclude** the pure corner-to-corner diagonal "I" (it is a
-diagonal line, not the I tetromino). Confirm exact L/Z relative cells against this section during the
-Engine Unit and log the final chosen sets in `aidlc-docs/design-artifacts/`.
+**Diagonal placements are IN (updated during play-testing, reversing the earlier defensive default,
+per §13.1).** Axis-aligned placement alone can never produce diagonal/staircase forms (a 90° rotation
+just swaps row/col, staying axis-aligned), so the original "exclude the diagonal I" default was wrong
+for the intended game. The fix is a **basis-vector generalization, applied only to Morph** (line
+modes' 3-in-a-row is untouched):
+- **Axis basis:** shape-row → grid `(+1,0)`, shape-col → grid `(0,+1)` — the classic placement.
+- **Diagonal basis:** shape-row → grid `(+1,-1)`, shape-col → grid `(+1,+1)` — a 45°-rotated frame,
+  giving staircase/diagonal placements (e.g. the diagonal I `0,5,10,15`).
+
+A grid cell = `anchor + shape_row·row_basis + shape_col·col_basis`. Generating each orientation under
+both bases yields all axis **and** diagonal placements. The basis is injective (no two shape cells
+collide), so there is no false matching; only per-cell bounds checking is required. Final chosen sets
+logged in `aidlc-docs/design-artifacts/morph-shapes.md`.
 
 ---
 
@@ -246,8 +256,10 @@ fn negamax(s: &GameState, depth: i32, mut alpha: i32, beta: i32, mode: &dyn Mode
 - **Original / Bonanza** (one shared impl) — `legal_moves` = empty + capturable enemy cells × each
   distinct hand value; `apply` removes the pawn from hand and deletes any captured enemy pawn;
   `is_terminal` = 3-in-a-row, or Draw when both hands empty.
-- **Morph** — reuses Original's move/capture/apply; `is_terminal`/`heuristic` use shape completion;
-  `apply` handles the two-moves-per-turn turn flip.
+- **Morph** — reuses Original's move/capture/apply; `apply` handles the two-moves-per-turn turn flip.
+  Has its **own** `morph_shape_placements` (Morph-only, §5): one shape is chosen at game start, and its
+  placements are precomputed under both the axis and diagonal bases (axis **and** diagonal forms).
+  `is_terminal`/`heuristic` test/score completion of those placements. Line modes are untouched.
 
 ### 7.6 Heuristics (used at depth limit; scored "me minus opponent")
 - **Line modes:** line threats (2 of mine + 1 empty/capturable in a line) · hand economy (sum of big

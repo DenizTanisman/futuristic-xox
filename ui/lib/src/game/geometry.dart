@@ -69,41 +69,54 @@ List<List<List<int>>> _orientations(List<List<int>> base) {
   return out;
 }
 
+/// Placement basis: how the shape's own (row, col) axes map onto the grid.
+///   - [rowStep] is the grid step for one step along the shape's row axis.
+///   - [colStep] is the grid step for one step along the shape's column axis.
+class _Basis {
+  final List<int> rowStep;
+  final List<int> colStep;
+  const _Basis(this.rowStep, this.colStep);
+}
+
+/// Axis-aligned frame (the classic placement): shape-right → grid-right, shape-down → grid-down.
+const _axis = _Basis([1, 0], [0, 1]);
+
+/// 45°-rotated frame: shape-down → grid down-left, shape-right → grid down-right. Laying a shape on
+/// this frame yields its staircase / **diagonal** placements (e.g. the diagonal I), which the
+/// axis frame can never produce. This is what makes Morph recognise diagonal shapes (spec §5 — the
+/// diagonal exclusion was reversed during play-testing per §13.1: diagonals are IN).
+const _diag = _Basis([1, -1], [1, 1]);
+
 /// All concrete 4-cell placements of a SINGLE Morph shape (`shapeIndex`: 0=I, 1=L, 2=Z) on a
-/// `rows×cols` grid — every rotation + mirror of that shape, slid over the grid, deduped. In Morph
-/// one shape is chosen at game start and the win is to complete that shape (spec §4.4, §5).
+/// `rows×cols` grid.
+///
+/// Morph-only generalization: each of the shape's orientations (4 rotations + mirror, on its own
+/// relative cells) is laid onto the grid under BOTH the [_axis] and [_diag] bases, anchored at every
+/// cell, bounds-checked, and deduped — giving axis-aligned AND diagonal placements. Line modes are
+/// unaffected (they use [lineTriples]). In Morph one shape is chosen at game start and the win is to
+/// complete that shape in any of these placements (spec §4.4, §5).
 List<List<int>> morphPlacementsForShape(int rows, int cols, int shapeIndex) {
   final placements = <List<int>>[];
   final seen = <String>{};
-  final flat = _baseShapes()[shapeIndex];
-  for (final orient in _orientations(_toPairs(flat))) {
-    final maxR = orient.map((p) => p[0]).reduce((a, b) => a > b ? a : b);
-    final maxC = orient.map((p) => p[1]).reduce((a, b) => a > b ? a : b);
-    if (maxR >= rows || maxC >= cols) continue;
-    for (var offR = 0; offR < rows - maxR; offR++) {
-      for (var offC = 0; offC < cols - maxC; offC++) {
-        final cells = orient.map((p) => (offR + p[0]) * cols + (offC + p[1])).toList()..sort();
-        final k = cells.join(',');
-        if (seen.add(k)) placements.add(cells);
-      }
-    }
-  }
-  return placements;
-}
+  final base = _toPairs(_baseShapes()[shapeIndex]);
 
-/// Every concrete 4-cell Morph placement on a `rows×cols` grid (all I/L/Z rotations + mirror, slid
-/// over the grid, deduped). Excludes the pure diagonal (spec §5).
-List<List<int>> morphPlacements(int rows, int cols) {
-  final placements = <List<int>>[];
-  final seen = <String>{};
-  for (final flat in _baseShapes()) {
-    for (final orient in _orientations(_toPairs(flat))) {
-      final maxR = orient.map((p) => p[0]).reduce((a, b) => a > b ? a : b);
-      final maxC = orient.map((p) => p[1]).reduce((a, b) => a > b ? a : b);
-      if (maxR >= rows || maxC >= cols) continue;
-      for (var offR = 0; offR < rows - maxR; offR++) {
-        for (var offC = 0; offC < cols - maxC; offC++) {
-          final cells = orient.map((p) => (offR + p[0]) * cols + (offC + p[1])).toList()..sort();
+  for (final orient in _orientations(base)) {
+    for (final b in const [_axis, _diag]) {
+      for (var anchorR = 0; anchorR < rows; anchorR++) {
+        for (var anchorC = 0; anchorC < cols; anchorC++) {
+          final cells = <int>[];
+          var inside = true;
+          for (final p in orient) {
+            final rr = anchorR + p[0] * b.rowStep[0] + p[1] * b.colStep[0];
+            final cc = anchorC + p[0] * b.rowStep[1] + p[1] * b.colStep[1];
+            if (rr < 0 || rr >= rows || cc < 0 || cc >= cols) {
+              inside = false;
+              break;
+            }
+            cells.add(rr * cols + cc);
+          }
+          if (!inside) continue;
+          cells.sort();
           final k = cells.join(',');
           if (seen.add(k)) placements.add(cells);
         }
