@@ -7,9 +7,21 @@ import 'package:google_fonts/google_fonts.dart';
 class PawnPalette {
   final List<Color> ring;
   final List<Color> disc;
+
+  /// Number fill gradient — always the OPPOSITE brightness of [disc] so the value reads (bright on a
+  /// dark disc, dark on a light disc). Never reuses the disc hue.
   final List<Color> number;
+
+  /// Outline drawn under the number for crispness (dark under a bright number, light under a dark one).
+  final Color numberStroke;
   final Color glow;
-  const PawnPalette({required this.ring, required this.disc, required this.number, required this.glow});
+  const PawnPalette({
+    required this.ring,
+    required this.disc,
+    required this.number,
+    required this.numberStroke,
+    required this.glow,
+  });
 }
 
 /// All visual tokens for one identity (colours, gradients, fonts). Two instances —
@@ -104,7 +116,7 @@ class GameTheme {
     accentGlow: Color(0xFFF6E6A8),
     danger: Color(0xFFD8556B),
     pawns: [
-      // owner 0 — GOLD
+      // owner 0 — GOLD (light disc → DARK bronze number)
       PawnPalette(
         ring: [
           Color(0xFF6B4F12),
@@ -116,10 +128,11 @@ class GameTheme {
           Color(0xFF6B4F12),
         ],
         disc: [Color(0xFFE9C659), Color(0xFFD4AF37), Color(0xFF7A5D16)],
-        number: [Color(0xFFFFFDF2), Color(0xFFFFEEC2), Color(0xFFF1D171), Color(0xFFD4AF37)],
+        number: [Color(0xFF5A4410), Color(0xFF3A2A08), Color(0xFF2E2106), Color(0xFF241A05)],
+        numberStroke: Color(0x59FFF0C8), // light rim, rgba(255,240,200,.35)
         glow: Color(0xFFF6E6A8),
       ),
-      // owner 1 — BORDEAUX
+      // owner 1 — BORDEAUX (dark disc → BRIGHT number)
       PawnPalette(
         ring: [
           Color(0xFF3C0C14),
@@ -132,6 +145,7 @@ class GameTheme {
         ],
         disc: [Color(0xFFB83247), Color(0xFF9B2335), Color(0xFF4A0E17)],
         number: [Color(0xFFFFF0F3), Color(0xFFFFC2CD), Color(0xFFF57E92), Color(0xFFD8556B)],
+        numberStroke: Color(0x9E120703), // dark, rgba(18,7,3,.62)
         glow: Color(0xFFE87A8E),
       ),
     ],
@@ -185,7 +199,8 @@ class GameTheme {
           Color(0xFF3A3F4B),
         ],
         disc: [Color(0xFFFFFFFF), Color(0xFFC8CDD8), Color(0xFF878D9C)],
-        number: [Color(0xFFFFFFFF), Color(0xFFEEF1F6), Color(0xFFC8CDD8), Color(0xFF878D9C)],
+        number: [Color(0xFF2A2F3A), Color(0xFF1E222B), Color(0xFF14171E), Color(0xFF0C0E13)],
+        numberStroke: Color(0x59FFFFFF),
         glow: Color(0xFFEEF1F6),
       ),
       PawnPalette(
@@ -199,7 +214,8 @@ class GameTheme {
           Color(0xFF7E611A),
         ],
         disc: [Color(0xFFF3DD8C), Color(0xFFC79A3A), Color(0xFF7E611A)],
-        number: [Color(0xFFFFF6D8), Color(0xFFF3DD8C), Color(0xFFC79A3A), Color(0xFF7E611A)],
+        number: [Color(0xFF4A3610), Color(0xFF3A2A08), Color(0xFF2E2106), Color(0xFF241A05)],
+        numberStroke: Color(0x59FFF0C8),
         glow: Color(0xFFF3DD8C),
       ),
     ],

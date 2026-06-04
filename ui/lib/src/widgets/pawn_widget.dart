@@ -97,7 +97,8 @@ class PawnWidget extends StatelessWidget {
                 ),
                 child: SizedBox.expand(),
               ),
-              if (label != null) _MetalNumber(label: label, size: size, colors: p.number),
+              if (label != null)
+                _MetalNumber(label: label, size: size, colors: p.number, strokeColor: p.numberStroke),
             ],
           ),
         ),
@@ -130,18 +131,24 @@ class _MetalNumber extends StatelessWidget {
   final String label;
   final double size;
   final List<Color> colors;
-  const _MetalNumber({required this.label, required this.size, required this.colors});
+  final Color strokeColor;
+  const _MetalNumber({
+    required this.label,
+    required this.size,
+    required this.colors,
+    required this.strokeColor,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final fontSize = size * 0.52;
-    final strokeWidth = (fontSize * 0.055).clamp(0.8, 3.0);
+    final fontSize = size * 0.54;
+    final strokeWidth = (fontSize * 0.06).clamp(0.9, 3.2);
     final base = GoogleFonts.rajdhani(fontSize: fontSize, fontWeight: FontWeight.w700, height: 1.0);
 
     final strokePaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
-      ..color = const Color(0x9E120703); // rgba(18,7,3,.62)
+      ..color = strokeColor;
 
     final fillShader = LinearGradient(
       begin: Alignment.topCenter,

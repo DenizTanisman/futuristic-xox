@@ -98,6 +98,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - On-board winning-cell hint markers (the green-star overlay). Players find winning placements
   themselves; win detection is unchanged.
 
+### Fixed (pawn numbers)
+- Pawn numbers are now legible everywhere (board + both rails, both colours): the fill is a solid
+  gradient of the **opposite brightness to its disc** — dark bronze digits on gold pawns, bright
+  digits on bordeaux pawns — never the disc's own hue, with a contrast outline + drop shadow.
+
 ### Fixed (entry screen, to match the mockup)
 - Added the diagonal light-wedge sheen on each half (mirrored, meeting at the top-center seam).
 - The center divider now animates (a gold sheen band sliding along its length) with a soft glow,
