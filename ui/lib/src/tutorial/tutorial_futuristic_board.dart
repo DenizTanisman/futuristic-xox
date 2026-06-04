@@ -8,7 +8,19 @@ import 'tutorial_painters.dart';
 import 'tutorial_step.dart';
 
 /// Result of a demo tap on the Futuristic board (spec §3); the screen maps it to a localized hint.
-enum FutTapResult { noSelection, redirect, tooSmall, placed, placedWin, captured, capturedWin }
+/// `placeEmpty` / `lost` are Bonanza's forced-loss outcomes (tapped a filled cell / completed an
+/// opponent line).
+enum FutTapResult {
+  noSelection,
+  redirect,
+  tooSmall,
+  placed,
+  placedWin,
+  captured,
+  capturedWin,
+  placeEmpty,
+  lost,
+}
 
 /// A Futuristic (Original) tutorial board: valued medallion cells (gold = ours, bordeaux = opponent),
 /// a faint `+` on empty cells, a pulsing gold highlight, the gif-style place/capture showcase loop,
@@ -18,6 +30,9 @@ class FuturisticTutorialBoard extends StatefulWidget {
   final List<TutPawn?> cells;
   final double size;
   final int? highlight;
+
+  /// Extra highlighted cells (Bonanza's forced-loss step glows every empty cell).
+  final List<int>? highlights;
 
   // Showcase loop.
   final bool loop;
@@ -33,6 +48,12 @@ class FuturisticTutorialBoard extends StatefulWidget {
   final int? selectedValue; // currently selected hand pawn value
   final void Function(FutTapResult result)? onResult;
 
+  /// Owner of the pawn placed in a demo (0 = gold, 1 = bordeaux for the forced-loss step).
+  final int placeOwner;
+
+  /// `lose` demo: each empty (forced) cell → the opponent line it completes when played.
+  final Map<int, List<int>>? loseMap;
+
   final List<int>? winLine;
 
   /// Force the win line to always show (static info board, e.g. the win-rule showcase).
@@ -43,6 +64,7 @@ class FuturisticTutorialBoard extends StatefulWidget {
     required this.cells,
     required this.size,
     this.highlight,
+    this.highlights,
     this.loop = false,
     this.loopPlaceCell,
     this.loopValue,
@@ -53,6 +75,8 @@ class FuturisticTutorialBoard extends StatefulWidget {
     this.demoMode = TutMode.free,
     this.selectedValue,
     this.onResult,
+    this.placeOwner = 0,
+    this.loseMap,
     this.winLine,
     this.showWin = false,
   });
@@ -70,6 +94,7 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
   final Map<int, TutPawn> _demoPlaced = {};
   int? _flash;
   bool _won = false;
+  List<int>? _loseLine; // the opponent line completed in a forced-loss demo
 
   @override
   void initState() {
@@ -96,7 +121,8 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
     return widget.cells[i];
   }
 
-  bool get _showWin => widget.winLine != null && (widget.showWin || (widget.loop ? false : _won));
+  List<int>? get _activeWinLine => _loseLine ?? widget.winLine;
+  bool get _showWin => _activeWinLine != null && (widget.showWin || (widget.loop ? false : _won));
 
   /// In a capture loop, the cell shows a gold ripple in the placed phase.
   bool _isFreshPlacement(int i) {
@@ -158,10 +184,23 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
           _redirect();
         }
         // tapping our own pawn: ignore.
+      case TutMode.lose:
+        // Forced loss: any empty cell completes an opponent line; a filled cell is illegal.
+        if (cell != null) {
+          widget.onResult?.call(FutTapResult.placeEmpty);
+        } else {
+          _place(i, sel, owner: widget.placeOwner);
+          setState(() {
+            _won = true;
+            _loseLine = widget.loseMap?[i];
+          });
+          widget.onResult?.call(FutTapResult.lost);
+        }
     }
   }
 
-  void _place(int i, int value) => setState(() => _demoPlaced[i] = TutPawn(0, value));
+  void _place(int i, int value, {int owner = 0}) =>
+      setState(() => _demoPlaced[i] = TutPawn(owner, value));
 
   // Capture: the gold pawn lands on the opponent's cell (overwriting it). The bordeaux "leaves" via
   // the cell's AnimatedSwitcher scale-out and the gold pawn pops in with its gold ripple.
@@ -212,12 +251,13 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
               itemBuilder: (context, i) => _cell(theme, i, cell),
             ),
           ),
-          if (_showWin && widget.winLine != null)
+          if (_showWin && _activeWinLine != null)
             Positioned.fill(
               child: TutorialWinLine(
-                start: centerOf(widget.winLine!.first),
-                end: centerOf(widget.winLine!.last),
-                color: theme.accent,
+                start: centerOf(_activeWinLine!.first),
+                end: centerOf(_activeWinLine!.last),
+                // Gold when we win; bordeaux when the opponent does (forced-loss demo).
+                color: widget.demoMode == TutMode.lose ? theme.discGlow(1) : theme.accent,
               ),
             ),
         ],
@@ -227,7 +267,8 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
 
   Widget _cell(GameTheme theme, int i, double size) {
     final pawn = _cellAt(i);
-    final isHighlight = widget.highlight == i && pawn == null;
+    final isHighlight =
+        pawn == null && (widget.highlight == i || (widget.highlights?.contains(i) ?? false));
     final isFlash = _flash == i;
 
     return GestureDetector(
@@ -282,12 +323,133 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
   }
 }
 
-/// A rail of selectable gold medallion chips for demo steps (spec §3, §6).
+/// Bonanza's deal showcase (spec §1, §6): a "Number: N" badge, then the gold group and the bordeaux
+/// group revealed chip-by-chip with a fading glow (gold first, then bordeaux). Non-interactive.
+class DealShowcase extends StatefulWidget {
+  final String badgeText;
+  final List<int> gold;
+  final List<int> bord;
+  final String goldLabel;
+  final String bordLabel;
+
+  const DealShowcase({
+    super.key,
+    required this.badgeText,
+    required this.gold,
+    required this.bord,
+    required this.goldLabel,
+    required this.bordLabel,
+  });
+
+  @override
+  State<DealShowcase> createState() => _DealShowcaseState();
+}
+
+class _DealShowcaseState extends State<DealShowcase> with SingleTickerProviderStateMixin {
+  late final int _total = widget.gold.length + widget.bord.length;
+  late final AnimationController _c =
+      AnimationController(vsync: this, duration: Duration(milliseconds: 500 + _total * 280))..forward();
+  late final List<Animation<double>> _anims = _buildAnims();
+
+  List<Animation<double>> _buildAnims() {
+    final step = 1.0 / _total;
+    return [
+      for (var k = 0; k < _total; k++)
+        CurvedAnimation(
+          parent: _c,
+          // Slight overlap so the reveal flows; each chip pops in within its window.
+          curve: Interval(k * step * 0.85, (k * step * 0.85 + step).clamp(0.0, 1.0),
+              curve: Curves.easeOutBack),
+        ),
+    ];
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = GameTheme.of(context);
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (context, _) {
+        return Column(
+          children: [
+            _badge(theme),
+            const SizedBox(height: 22),
+            _label(theme, widget.goldLabel),
+            const SizedBox(height: 8),
+            _group(theme, widget.gold, owner: 0, indexOffset: 0),
+            const SizedBox(height: 14),
+            Container(width: 120, height: 1, color: theme.muted.withValues(alpha: 0.3)),
+            const SizedBox(height: 14),
+            _label(theme, widget.bordLabel),
+            const SizedBox(height: 8),
+            _group(theme, widget.bord, owner: 1, indexOffset: widget.gold.length),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _badge(GameTheme theme) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: theme.accent.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: theme.accent, width: 1.5),
+        ),
+        child: Text(widget.badgeText,
+            style: theme.display(20, color: theme.accent).copyWith(letterSpacing: 1.2)),
+      );
+
+  Widget _label(GameTheme theme, String s) =>
+      Text(s.toUpperCase(), style: theme.label(11, color: theme.muted, weight: FontWeight.w700));
+
+  Widget _group(GameTheme theme, List<int> values, {required int owner, required int indexOffset}) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        for (var i = 0; i < values.length; i++) _chip(theme, owner, values[i], indexOffset + i),
+      ],
+    );
+  }
+
+  Widget _chip(GameTheme theme, int owner, int value, int globalIndex) {
+    final t = _anims[globalIndex].value.clamp(0.0, 1.0);
+    // A glow that peaks mid-reveal and fades as the chip settles.
+    final glow = (t < 1.0) ? (1.0 - (t - 0.5).abs() * 2).clamp(0.0, 1.0) : 0.0;
+    return Opacity(
+      opacity: t.clamp(0.0, 1.0),
+      child: Transform.scale(
+        scale: 0.6 + 0.4 * t,
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: glow > 0
+                ? [BoxShadow(color: theme.discGlow(owner).withValues(alpha: 0.6 * glow), blurRadius: 16 * glow)]
+                : null,
+          ),
+          child: PawnWidget(owner: owner, value: value, showValue: true, size: 46, animateIn: false),
+        ),
+      ),
+    );
+  }
+}
+
+/// A rail of selectable medallion chips for demo steps (spec §3, §6). [owner] 0 = gold (ours),
+/// 1 = bordeaux (the opponent pawns you're forced to play in Bonanza).
 class HandRail extends StatelessWidget {
   final List<int> values;
   final int? selectedIndex;
   final void Function(int index) onSelect;
   final String label;
+  final int owner;
 
   const HandRail({
     super.key,
@@ -295,6 +457,7 @@ class HandRail extends StatelessWidget {
     required this.selectedIndex,
     required this.onSelect,
     required this.label,
+    this.owner = 0,
   });
 
   @override
@@ -315,7 +478,7 @@ class HandRail extends StatelessWidget {
                   duration: const Duration(milliseconds: 160),
                   transform: Matrix4.translationValues(0, selectedIndex == i ? -6 : 0, 0),
                   child: PawnWidget(
-                    owner: 0,
+                    owner: owner,
                     value: values[i],
                     showValue: true,
                     size: 46,

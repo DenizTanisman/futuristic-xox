@@ -396,4 +396,110 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get tutOrigDoneBody =>
       'Ya conoces el poder de los números, la captura y la victoria. Pruébalo en una partida real — sé tú quien gane.';
+
+  @override
+  String get tutBonWelcomeTitle => 'Bienvenido a Bonanza';
+
+  @override
+  String get tutBonWelcomeBody =>
+      'Aquí es donde la suerte entra en juego. Descubriremos juntos el giro de este modo en unos turnos — tranquilo, la parte divertida está cerca.';
+
+  @override
+  String get tutBonOriginalTitle => 'Primero, lo básico';
+
+  @override
+  String get tutBonOriginalBody =>
+      'Colocas peones y ganas alineando tres de los tuyos — igual que en Original. Si aún no lo has aprendido, pásate antes por allí.';
+
+  @override
+  String get tutBonHookTitle => '¿Y si…';
+
+  @override
+  String get tutBonHookBody =>
+      'y si tuvieras algunos peones de tu rival desde el principio? 🙂 Eso es justo lo que hace Bonanza.';
+
+  @override
+  String get tutBonRandomTitle => 'Todo empieza con un número';
+
+  @override
+  String get tutBonRandomBody =>
+      'En Bonanza se sortea un número al inicio de cada partida. Ese número decide cuántos peones propios tendrás en la mano.';
+
+  @override
+  String get tutBonLuckTitle => 'El resto son del rival';
+
+  @override
+  String get tutBonLuckBody =>
+      'El resto de tus peones vienen del color del rival. Si tienes suerte — podrías jugar casi toda la partida con peones del rival.';
+
+  @override
+  String get tutBonDealTitle => 'Veamos qué te tocó';
+
+  @override
+  String get tutBonDealBody =>
+      'En esta partida el número es 4: 4 peones propios (oro) y 2 peones del rival (burdeos). Aquí tienes tu mano.';
+
+  @override
+  String get tutBonDemowinTitle => 'Gana con tu propio peón';
+
+  @override
+  String get tutBonDemowinBody =>
+      'Elige uno de tus peones de oro y completa el trío de la fila inferior colocándolo en la casilla brillante.';
+
+  @override
+  String get tutBonWarningTitle => 'Pero un día se acaban tus peones';
+
+  @override
+  String get tutBonWarningBody =>
+      'Cuando se acaben tus peones de oro, solo quedarán los del rival en tu mano. Y colocarlos… puede ayudar a tu rival.';
+
+  @override
+  String get tutBonDemoloseTitle => 'Una jugada forzada';
+
+  @override
+  String get tutBonDemoloseBody =>
+      'Solo quedan peones del rival en tu mano y debes colocar uno en una casilla vacía. Pero mira — dondequiera que lo pongas, le regalas una línea a tu rival.';
+
+  @override
+  String get tutBonDoneTitle => '¡Eso es Bonanza!';
+
+  @override
+  String get tutBonDoneBody =>
+      'Bonanza es donde la suerte se encuentra con la estrategia. A veces los peones del rival te sonríen, a veces te muerden. Inténtalo — ¿está la suerte de tu lado?';
+
+  @override
+  String tutBonBadgeNumber(String n) {
+    return 'Número: $n';
+  }
+
+  @override
+  String get tutBonRailGold => 'Tus peones de oro';
+
+  @override
+  String get tutBonRailBord => 'Los peones del rival que te quedan';
+
+  @override
+  String get tutBonHintLose =>
+      'Elige un peón y colócalo en una casilla vacía — mira qué pasa';
+
+  @override
+  String get tutBonHintRedirectEmpty => 'Colócalo en una casilla vacía';
+
+  @override
+  String get tutBonHintOppWin => 'Gana el rival — ese es el riesgo de Bonanza';
+
+  @override
+  String get tutBonBtnKnown => 'Lo sé, continuar';
+
+  @override
+  String get tutBonBtnCurious => 'Tengo curiosidad';
+
+  @override
+  String get tutBonBtnShow => 'Muéstrame';
+
+  @override
+  String get tutBonBtnWhy => '¿Por qué?';
+
+  @override
+  String get tutBonBtnLearnOriginal => 'Aprender Original';
 }

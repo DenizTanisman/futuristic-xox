@@ -394,4 +394,109 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get tutOrigDoneBody =>
       'Artık sayıların gücünü, yemeyi ve kazanmayı biliyorsun. Hadi gerçek bir oyunda dene — kazanan sen ol.';
+
+  @override
+  String get tutBonWelcomeTitle => 'Bonanza\'ya hoş geldin';
+
+  @override
+  String get tutBonWelcomeBody =>
+      'Şansın oyuna karıştığı yer burası. Birlikte birkaç turda bu modun sürprizini çözeceğiz — merak etme, en eğlenceli kısmı çok yakında.';
+
+  @override
+  String get tutBonOriginalTitle => 'Önce temel';
+
+  @override
+  String get tutBonOriginalBody =>
+      'Taşları alana koyup üç taşını bir hizaya getirerek kazanırsın — tıpkı Original\'deki gibi. Henüz öğrenmediysen, önce oraya bir uğra.';
+
+  @override
+  String get tutBonHookTitle => 'Peki ya…';
+
+  @override
+  String get tutBonHookBody =>
+      'Rakibinin bazı taşları en baştan sende olsaydı, nasıl olurdu? 🙂 Bonanza tam da bunu yapıyor.';
+
+  @override
+  String get tutBonRandomTitle => 'Her şey bir sayıyla başlar';
+
+  @override
+  String get tutBonRandomBody =>
+      'Bonanza\'da her oyunun başında rastgele bir sayı seçilir. Bu sayı, kaç tane kendi taşına sahip olacağını belirler.';
+
+  @override
+  String get tutBonLuckTitle => 'Gerisi rakipten';
+
+  @override
+  String get tutBonLuckBody =>
+      'Kalan taşların ise rakibinin renginde olur. Yeterince şanslıysan — neredeyse tüm oyunu rakibin taşlarıyla bile oynayabilirsin.';
+
+  @override
+  String get tutBonDealTitle => 'Bakalım sana ne düştü';
+
+  @override
+  String get tutBonDealBody =>
+      'Bu oyunda sayı 4 çıktı: 4 kendi taşın (altın), 2 de rakip taşın (bordo). İşte elin.';
+
+  @override
+  String get tutBonDemowinTitle => 'Kendi taşınla kazan';
+
+  @override
+  String get tutBonDemowinBody =>
+      'Altın taşlarından birini seç ve parlayan kareye koyarak alt sıradaki üçlüyü tamamla.';
+
+  @override
+  String get tutBonWarningTitle => 'Ama bir gün taşların biter';
+
+  @override
+  String get tutBonWarningBody =>
+      'Kendi altın taşların tükendiğinde elinde yalnızca rakibin taşları kalır. Ve onları koymak… rakibine yarayabilir.';
+
+  @override
+  String get tutBonDemoloseTitle => 'Mecburi hamle';
+
+  @override
+  String get tutBonDemoloseBody =>
+      'Elinde sadece rakip taşları kaldı ve boş bir kareye koymak zorundasın. Ama bak — hangi boş kareye ne koyarsan koy, rakibine bir hat kazandırıyorsun.';
+
+  @override
+  String get tutBonDoneTitle => 'İşte Bonanza bu kadar!';
+
+  @override
+  String get tutBonDoneBody =>
+      'Bonanza, şansla stratejinin buluştuğu yer. Bazen rakibin taşları sana gülümser, bazen başına dert olur. Hadi dene — bakalım şans senden yana mı?';
+
+  @override
+  String tutBonBadgeNumber(String n) {
+    return 'Sayı: $n';
+  }
+
+  @override
+  String get tutBonRailGold => 'Senin altın taşların';
+
+  @override
+  String get tutBonRailBord => 'Elinde kalan rakip taşları';
+
+  @override
+  String get tutBonHintLose => 'Bir taş seç ve boş bir kareye koy — sonucu gör';
+
+  @override
+  String get tutBonHintRedirectEmpty => 'Boş bir kareye koy';
+
+  @override
+  String get tutBonHintOppWin => 'Rakip kazandı — Bonanza\'nın riski işte bu';
+
+  @override
+  String get tutBonBtnKnown => 'Biliyorum, devam';
+
+  @override
+  String get tutBonBtnCurious => 'Merak ettim';
+
+  @override
+  String get tutBonBtnShow => 'Göster bana';
+
+  @override
+  String get tutBonBtnWhy => 'Neden?';
+
+  @override
+  String get tutBonBtnLearnOriginal => 'Original\'i öğren';
 }

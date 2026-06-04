@@ -4,8 +4,9 @@ import '../../l10n/app_localizations.dart';
 /// literals — spec §5).
 typedef L10nText = String Function(AppLocalizations l);
 
-/// The kind of tutorial step (spec §0).
-enum TutKind { info, loop, triple, demo }
+/// The kind of tutorial step (spec §0). `deal` is Bonanza's showcase that reveals a random number
+/// and a sequenced gold-then-bordeaux hand.
+enum TutKind { info, loop, triple, demo, deal }
 
 /// A Classic mark.
 enum Mark { x, o }
@@ -13,8 +14,9 @@ enum Mark { x, o }
 /// The decorative visual for an `info` step.
 enum InfoVisual { none, bigX, bigXO }
 
-/// Demo interaction mode for Futuristic (Original) tutorials (spec §3).
-enum TutMode { free, eat, win, eatwin }
+/// Demo interaction mode for Futuristic tutorials (spec §3). `lose` is Bonanza-only: any empty cell is
+/// a forced loss — placing a bordeaux pawn there completes an opponent line.
+enum TutMode { free, eat, win, eatwin, lose }
 
 /// A valued, owned pawn for Futuristic tutorials: owner 0 = gold (ours), 1 = bordeaux (opponent).
 class TutPawn {
@@ -96,6 +98,32 @@ class TutorialStep {
   final List<TutPawn>? bigMedallions;
   final bool gtrSeparator;
 
+  // ---- Bonanza extensions (spec §1, §4) ----
+
+  /// `info` (Bonanza): show a "Number: N" badge instead of medallions; the value plugged into the
+  /// localized badge (e.g. "?" before the deal, "4" on the deal step).
+  final String? infoBadge;
+
+  /// `deal`: the drawn number + the sequenced gold-then-bordeaux hand reveal.
+  final int? dealNumber;
+  final List<int>? dealGold;
+  final List<int>? dealBord;
+
+  /// Demo hand owner: 0 = gold (ours), 1 = bordeaux (opponent rail).
+  final int handOwner;
+
+  /// `demo`: multiple highlighted cells (Bonanza's forced-loss step highlights every empty cell).
+  final List<int>? highlights;
+
+  /// `lose` demo: maps each empty (forced) cell to the opponent line it completes when played.
+  final Map<int, List<int>>? loseMap;
+
+  /// `info`: an optional secondary "ghost" button (e.g. "Learn Original" cross-link).
+  final L10nText? secondary;
+
+  /// `demo`: overrides the hand rail label (e.g. gold vs bordeaux rail); falls back to the shared one.
+  final L10nText? railLabel;
+
   const TutorialStep({
     required this.kind,
     this.board = const [null, null, null, null, null, null, null, null, null],
@@ -120,6 +148,15 @@ class TutorialStep {
     this.eatAt,
     this.bigMedallions,
     this.gtrSeparator = false,
+    this.infoBadge,
+    this.dealNumber,
+    this.dealGold,
+    this.dealBord,
+    this.handOwner = 0,
+    this.highlights,
+    this.loseMap,
+    this.secondary,
+    this.railLabel,
   });
 }
 
@@ -352,6 +389,119 @@ List<TutorialStep> originalTutorialSteps() => [
         bigMedallions: [g(6)],
         title: (l) => l.tutOrigDoneTitle,
         body: (l) => l.tutOrigDoneBody,
+        button: (l) => l.tutBtnFinish,
+      ),
+    ];
+
+/// The Futuristic · Bonanza tutorial's 10 steps (spec §4). Extends the Original engine with a deal
+/// showcase, a bordeaux hand rail, a cross-link to Original, and a forced-loss demo. Text via ARB.
+List<TutorialStep> bonanzaTutorialSteps() => [
+      // 1 — welcome
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [g(6), b(4)],
+        title: (l) => l.tutBonWelcomeTitle,
+        body: (l) => l.tutBonWelcomeBody,
+        button: (l) => l.tutBtnStart,
+      ),
+      // 2 — first the basics (+ cross-link to Original)
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [g(4), g(2), g(6)],
+        title: (l) => l.tutBonOriginalTitle,
+        body: (l) => l.tutBonOriginalBody,
+        button: (l) => l.tutBonBtnKnown,
+        secondary: (l) => l.tutBonBtnLearnOriginal,
+      ),
+      // 3 — the hook
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [g(5), b(5)],
+        title: (l) => l.tutBonHookTitle,
+        body: (l) => l.tutBonHookBody,
+        button: (l) => l.tutBonBtnCurious,
+      ),
+      // 4 — it starts with a number (badge "Number: ?")
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        infoBadge: '?',
+        title: (l) => l.tutBonRandomTitle,
+        body: (l) => l.tutBonRandomBody,
+        button: (l) => l.tutBtnNext,
+      ),
+      // 5 — the rest are the opponent's
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [g(3), b(6)],
+        title: (l) => l.tutBonLuckTitle,
+        body: (l) => l.tutBonLuckBody,
+        button: (l) => l.tutBonBtnShow,
+      ),
+      // 6 — deal showcase (number 4, gold then bordeaux)
+      TutorialStep(
+        kind: TutKind.deal,
+        futuristic: true,
+        dealNumber: 4,
+        dealGold: [2, 4, 5, 6],
+        dealBord: [3, 4],
+        title: (l) => l.tutBonDealTitle,
+        body: (l) => l.tutBonDealBody,
+        button: (l) => l.tutBtnOk,
+      ),
+      // 7 — win with your own (gold) pawn: complete the bottom row [6,7,8] at cell 7
+      TutorialStep(
+        kind: TutKind.demo,
+        futuristic: true,
+        fcells: [b(5), null, b(6), null, null, null, g(2), null, g(4)],
+        hand: [5, 6],
+        target: 7,
+        highlight: 7,
+        winLine: [6, 7, 8],
+        demoMode: TutMode.win,
+        title: (l) => l.tutBonDemowinTitle,
+        body: (l) => l.tutBonDemowinBody,
+        hint: (l) => l.tutHintWinPlace,
+        railLabel: (l) => l.tutBonRailGold,
+      ),
+      // 8 — the warning
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [b(1), b(2)],
+        title: (l) => l.tutBonWarningTitle,
+        body: (l) => l.tutBonWarningBody,
+        button: (l) => l.tutBonBtnWhy,
+      ),
+      // 9 — forced loss: only empties are 1 & 5; a bordeaux pawn on either completes an opponent line
+      TutorialStep(
+        kind: TutKind.demo,
+        futuristic: true,
+        fcells: [b(5), null, b(6), g(5), g(6), null, b(3), g(4), b(4)],
+        hand: [1, 2],
+        handOwner: 1,
+        highlights: [1, 5],
+        loseMap: {
+          1: [0, 1, 2],
+          5: [2, 5, 8],
+        },
+        demoMode: TutMode.lose,
+        title: (l) => l.tutBonDemoloseTitle,
+        body: (l) => l.tutBonDemoloseBody,
+        hint: (l) => l.tutBonHintLose,
+        railLabel: (l) => l.tutBonRailBord,
+      ),
+      // 10 — done
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [g(6), b(6)],
+        title: (l) => l.tutBonDoneTitle,
+        body: (l) => l.tutBonDoneBody,
         button: (l) => l.tutBtnFinish,
       ),
     ];

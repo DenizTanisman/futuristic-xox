@@ -76,6 +76,35 @@ void main() {
     expect(find.text('go'), findsOneWidget);
   });
 
+  testWidgets('Bonanza tutorial reaches the deal step with the Number badge', (tester) async {
+    await tester.pumpWidget(_wrap(Builder(
+      builder: (ctx) => Center(
+        child: TextButton(
+          onPressed: () => Navigator.of(ctx).push(MaterialPageRoute(
+            builder: (_) => BonanzaTutorialScreen(onExit: () => Navigator.of(ctx).pop()),
+          )),
+          child: const Text('go'),
+        ),
+      ),
+    )));
+    await tester.tap(find.text('go'));
+    await tester.pumpAndSettle();
+    expect(find.text('Welcome to Bonanza'), findsOneWidget);
+
+    // Advance through the intro info steps to the deal showcase (steps 1→6).
+    for (final btn in const ["Let's begin", 'I know it, continue', "I'm curious", 'Continue', 'Show me']) {
+      await tester.tap(find.text(btn));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+    expect(find.text('Number: 4'), findsOneWidget);
+
+    await tester.tap(find.text('Skip'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('go'), findsOneWidget);
+  });
+
   testWidgets('advances through steps and Skip pops cleanly from a loop step (no leaked timer)',
       (tester) async {
     await tester.pumpWidget(_wrap(Builder(

@@ -278,7 +278,11 @@ class TutorialsPage extends StatelessWidget {
               builder: (_) => OriginalTutorialScreen(onExit: () => Navigator.of(context).maybePop()),
             ));
           }),
-          _tut(context, lux, l.modeBonanza, soon: l.tutSoon),
+          _tut(context, lux, l.modeBonanza, onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => BonanzaTutorialScreen(onExit: () => Navigator.of(context).maybePop()),
+            ));
+          }),
           _tut(context, lux, l.modeMorph, soon: l.tutSoon),
         ],
       ),

@@ -398,4 +398,110 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get tutOrigDoneBody =>
       'Теперь вы знаете силу чисел, захват и победу. Попробуйте в настоящей игре — станьте победителем.';
+
+  @override
+  String get tutBonWelcomeTitle => 'Добро пожаловать в Bonanza';
+
+  @override
+  String get tutBonWelcomeBody =>
+      'Здесь в игру вступает удача. За несколько ходов мы вместе раскроем хитрость этого режима — не волнуйся, самое весёлое уже близко.';
+
+  @override
+  String get tutBonOriginalTitle => 'Сначала основы';
+
+  @override
+  String get tutBonOriginalBody =>
+      'Ты ставишь фишки и побеждаешь, выстроив три своих в ряд — как в Original. Если ещё не освоил это, загляни сначала туда.';
+
+  @override
+  String get tutBonHookTitle => 'А что, если…';
+
+  @override
+  String get tutBonHookBody =>
+      'что, если часть фишек соперника окажется у тебя с самого начала? 🙂 Именно это и делает Bonanza.';
+
+  @override
+  String get tutBonRandomTitle => 'Всё начинается с числа';
+
+  @override
+  String get tutBonRandomBody =>
+      'В Bonanza в начале каждой игры выпадает случайное число. Оно решает, сколько собственных фишек будет у тебя на руках.';
+
+  @override
+  String get tutBonLuckTitle => 'Остальные — соперника';
+
+  @override
+  String get tutBonLuckBody =>
+      'Остальные фишки достаются тебе в цвете соперника. Если повезёт — почти всю партию можно сыграть чужими фишками.';
+
+  @override
+  String get tutBonDealTitle => 'Посмотрим, что тебе досталось';
+
+  @override
+  String get tutBonDealBody =>
+      'В этой игре число — 4: четыре твои фишки (золото) и две фишки соперника (бордо). Вот твоя рука.';
+
+  @override
+  String get tutBonDemowinTitle => 'Победи своей фишкой';
+
+  @override
+  String get tutBonDemowinBody =>
+      'Выбери одну из своих золотых фишек и заверши тройку в нижнем ряду, поставив её на светящуюся клетку.';
+
+  @override
+  String get tutBonWarningTitle => 'Но однажды фишки кончатся';
+
+  @override
+  String get tutBonWarningBody =>
+      'Когда твои золотые фишки закончатся, на руках останутся только фишки соперника. А ставить их… может сыграть ему на руку.';
+
+  @override
+  String get tutBonDemoloseTitle => 'Вынужденный ход';
+
+  @override
+  String get tutBonDemoloseBody =>
+      'На руках остались только фишки соперника, и ты обязан поставить одну на пустую клетку. Но смотри — куда бы ты ни поставил, ты даришь сопернику линию.';
+
+  @override
+  String get tutBonDoneTitle => 'Вот и весь Bonanza!';
+
+  @override
+  String get tutBonDoneBody =>
+      'Bonanza — это место, где удача встречается со стратегией. Иногда фишки соперника тебе улыбаются, иногда кусают. Попробуй — удача на твоей стороне?';
+
+  @override
+  String tutBonBadgeNumber(String n) {
+    return 'Число: $n';
+  }
+
+  @override
+  String get tutBonRailGold => 'Твои золотые фишки';
+
+  @override
+  String get tutBonRailBord => 'Оставшиеся фишки соперника';
+
+  @override
+  String get tutBonHintLose =>
+      'Выбери фишку и поставь её на пустую клетку — посмотри, что будет';
+
+  @override
+  String get tutBonHintRedirectEmpty => 'Поставь на пустую клетку';
+
+  @override
+  String get tutBonHintOppWin => 'Соперник побеждает — таков риск Bonanza';
+
+  @override
+  String get tutBonBtnKnown => 'Знаю, дальше';
+
+  @override
+  String get tutBonBtnCurious => 'Мне интересно';
+
+  @override
+  String get tutBonBtnShow => 'Покажи мне';
+
+  @override
+  String get tutBonBtnWhy => 'Почему?';
+
+  @override
+  String get tutBonBtnLearnOriginal => 'Изучить Original';
 }

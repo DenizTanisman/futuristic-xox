@@ -421,7 +421,8 @@ void _go(BuildContext context, Widget screen) {
 Widget? tutorialScreenFor(Mode4 mode, VoidCallback onExit) => switch (mode) {
       Mode4.classic => ClassicTutorialScreen(onExit: onExit),
       Mode4.original => OriginalTutorialScreen(onExit: onExit),
-      _ => null, // Bonanza / Morph tutorials: coming soon
+      Mode4.bonanza => BonanzaTutorialScreen(onExit: onExit),
+      _ => null, // Morph tutorial: coming soon
     };
 
 /// Enter a mode's setup. The first time the player enters a mode whose tutorial exists, auto-show

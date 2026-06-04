@@ -395,4 +395,110 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tutOrigDoneBody =>
       'Now you know the power of numbers, capturing, and winning. Try it in a real game — be the one who wins.';
+
+  @override
+  String get tutBonWelcomeTitle => 'Welcome to Bonanza';
+
+  @override
+  String get tutBonWelcomeBody =>
+      'This is where luck joins the game. We\'ll uncover this mode\'s twist together in a few turns — don\'t worry, the fun part is close.';
+
+  @override
+  String get tutBonOriginalTitle => 'First, the basics';
+
+  @override
+  String get tutBonOriginalBody =>
+      'You place pawns and win by lining up three of yours — just like in Original. If you haven\'t learned that yet, drop by there first.';
+
+  @override
+  String get tutBonHookTitle => 'What if…';
+
+  @override
+  String get tutBonHookBody =>
+      'what if you held some of your opponent\'s pawns from the very start? 🙂 That\'s exactly what Bonanza does.';
+
+  @override
+  String get tutBonRandomTitle => 'It all starts with a number';
+
+  @override
+  String get tutBonRandomBody =>
+      'In Bonanza a random number is drawn at the start of every game. It decides how many of your own pawns you\'ll hold.';
+
+  @override
+  String get tutBonLuckTitle => 'The rest are the opponent\'s';
+
+  @override
+  String get tutBonLuckBody =>
+      'The rest of your pawns come in your opponent\'s color. If you\'re lucky enough, you could play almost the whole game with the opponent\'s pawns.';
+
+  @override
+  String get tutBonDealTitle => 'Let\'s see what you got';
+
+  @override
+  String get tutBonDealBody =>
+      'This game the number is 4: 4 of your own pawns (gold) and 2 opponent pawns (bordeaux). Here\'s your hand.';
+
+  @override
+  String get tutBonDemowinTitle => 'Win with your own pawn';
+
+  @override
+  String get tutBonDemowinBody =>
+      'Pick one of your gold pawns and complete the bottom-row trio by placing it on the glowing square.';
+
+  @override
+  String get tutBonWarningTitle => 'But one day your pawns run out';
+
+  @override
+  String get tutBonWarningBody =>
+      'When your gold pawns run out, only the opponent\'s remain in your hand. And placing those… can help your opponent.';
+
+  @override
+  String get tutBonDemoloseTitle => 'A forced move';
+
+  @override
+  String get tutBonDemoloseBody =>
+      'Only opponent pawns are left in your hand and you must place one on an empty square. But look — wherever you place it, you hand your opponent a line.';
+
+  @override
+  String get tutBonDoneTitle => 'That\'s Bonanza!';
+
+  @override
+  String get tutBonDoneBody =>
+      'Bonanza is where luck meets strategy. Sometimes the opponent\'s pawns smile on you, sometimes they bite. Give it a go — is luck on your side?';
+
+  @override
+  String tutBonBadgeNumber(String n) {
+    return 'Number: $n';
+  }
+
+  @override
+  String get tutBonRailGold => 'Your gold pawns';
+
+  @override
+  String get tutBonRailBord => 'The opponent pawns you have left';
+
+  @override
+  String get tutBonHintLose =>
+      'Pick a pawn and place it on an empty square — see what happens';
+
+  @override
+  String get tutBonHintRedirectEmpty => 'Place it on an empty square';
+
+  @override
+  String get tutBonHintOppWin => 'Opponent wins — that\'s Bonanza\'s risk';
+
+  @override
+  String get tutBonBtnKnown => 'I know it, continue';
+
+  @override
+  String get tutBonBtnCurious => 'I\'m curious';
+
+  @override
+  String get tutBonBtnShow => 'Show me';
+
+  @override
+  String get tutBonBtnWhy => 'Why?';
+
+  @override
+  String get tutBonBtnLearnOriginal => 'Learn Original';
 }

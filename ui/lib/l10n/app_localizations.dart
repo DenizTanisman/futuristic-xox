@@ -821,6 +821,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Now you know the power of numbers, capturing, and winning. Try it in a real game — be the one who wins.'**
   String get tutOrigDoneBody;
+
+  /// No description provided for @tutBonWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Bonanza'**
+  String get tutBonWelcomeTitle;
+
+  /// No description provided for @tutBonWelcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This is where luck joins the game. We\'ll uncover this mode\'s twist together in a few turns — don\'t worry, the fun part is close.'**
+  String get tutBonWelcomeBody;
+
+  /// No description provided for @tutBonOriginalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'First, the basics'**
+  String get tutBonOriginalTitle;
+
+  /// No description provided for @tutBonOriginalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You place pawns and win by lining up three of yours — just like in Original. If you haven\'t learned that yet, drop by there first.'**
+  String get tutBonOriginalBody;
+
+  /// No description provided for @tutBonHookTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What if…'**
+  String get tutBonHookTitle;
+
+  /// No description provided for @tutBonHookBody.
+  ///
+  /// In en, this message translates to:
+  /// **'what if you held some of your opponent\'s pawns from the very start? 🙂 That\'s exactly what Bonanza does.'**
+  String get tutBonHookBody;
+
+  /// No description provided for @tutBonRandomTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'It all starts with a number'**
+  String get tutBonRandomTitle;
+
+  /// No description provided for @tutBonRandomBody.
+  ///
+  /// In en, this message translates to:
+  /// **'In Bonanza a random number is drawn at the start of every game. It decides how many of your own pawns you\'ll hold.'**
+  String get tutBonRandomBody;
+
+  /// No description provided for @tutBonLuckTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The rest are the opponent\'s'**
+  String get tutBonLuckTitle;
+
+  /// No description provided for @tutBonLuckBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The rest of your pawns come in your opponent\'s color. If you\'re lucky enough, you could play almost the whole game with the opponent\'s pawns.'**
+  String get tutBonLuckBody;
+
+  /// No description provided for @tutBonDealTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s see what you got'**
+  String get tutBonDealTitle;
+
+  /// No description provided for @tutBonDealBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This game the number is 4: 4 of your own pawns (gold) and 2 opponent pawns (bordeaux). Here\'s your hand.'**
+  String get tutBonDealBody;
+
+  /// No description provided for @tutBonDemowinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Win with your own pawn'**
+  String get tutBonDemowinTitle;
+
+  /// No description provided for @tutBonDemowinBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick one of your gold pawns and complete the bottom-row trio by placing it on the glowing square.'**
+  String get tutBonDemowinBody;
+
+  /// No description provided for @tutBonWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'But one day your pawns run out'**
+  String get tutBonWarningTitle;
+
+  /// No description provided for @tutBonWarningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When your gold pawns run out, only the opponent\'s remain in your hand. And placing those… can help your opponent.'**
+  String get tutBonWarningBody;
+
+  /// No description provided for @tutBonDemoloseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A forced move'**
+  String get tutBonDemoloseTitle;
+
+  /// No description provided for @tutBonDemoloseBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Only opponent pawns are left in your hand and you must place one on an empty square. But look — wherever you place it, you hand your opponent a line.'**
+  String get tutBonDemoloseBody;
+
+  /// No description provided for @tutBonDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s Bonanza!'**
+  String get tutBonDoneTitle;
+
+  /// No description provided for @tutBonDoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Bonanza is where luck meets strategy. Sometimes the opponent\'s pawns smile on you, sometimes they bite. Give it a go — is luck on your side?'**
+  String get tutBonDoneBody;
+
+  /// No description provided for @tutBonBadgeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Number: {n}'**
+  String tutBonBadgeNumber(String n);
+
+  /// No description provided for @tutBonRailGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Your gold pawns'**
+  String get tutBonRailGold;
+
+  /// No description provided for @tutBonRailBord.
+  ///
+  /// In en, this message translates to:
+  /// **'The opponent pawns you have left'**
+  String get tutBonRailBord;
+
+  /// No description provided for @tutBonHintLose.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a pawn and place it on an empty square — see what happens'**
+  String get tutBonHintLose;
+
+  /// No description provided for @tutBonHintRedirectEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Place it on an empty square'**
+  String get tutBonHintRedirectEmpty;
+
+  /// No description provided for @tutBonHintOppWin.
+  ///
+  /// In en, this message translates to:
+  /// **'Opponent wins — that\'s Bonanza\'s risk'**
+  String get tutBonHintOppWin;
+
+  /// No description provided for @tutBonBtnKnown.
+  ///
+  /// In en, this message translates to:
+  /// **'I know it, continue'**
+  String get tutBonBtnKnown;
+
+  /// No description provided for @tutBonBtnCurious.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m curious'**
+  String get tutBonBtnCurious;
+
+  /// No description provided for @tutBonBtnShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show me'**
+  String get tutBonBtnShow;
+
+  /// No description provided for @tutBonBtnWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Why?'**
+  String get tutBonBtnWhy;
+
+  /// No description provided for @tutBonBtnLearnOriginal.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn Original'**
+  String get tutBonBtnLearnOriginal;
 }
 
 class _AppLocalizationsDelegate

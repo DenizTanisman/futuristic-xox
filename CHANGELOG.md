@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Futuristic (Bonanza) mode interactive tutorial.** Extends the Futuristic tutorial engine for
+  Bonanza's randomized hands: a 10-step walkthrough with a **deal showcase** (a "Number: 4" badge
+  plus the hand revealed chip-by-chip with a fading glow — gold group first, then bordeaux), a
+  **bordeaux hand rail** (you can be forced to play opponent-colored pawns), a **win-with-your-own-pawn**
+  demo (gold win line), and a **forced-loss** demo where the only empty cells are both losing: placing
+  a bordeaux pawn on either completes an opponent line (bordeaux win line + "Opponent wins"). Win-line
+  color reflects the winner (gold for us, bordeaux for the opponent). Step 2 carries a **"Learn
+  Original"** ghost button that opens the Original tutorial and returns. Fully localized (tr/en/ru/es).
+  Auto-shows on first Bonanza entry and replayable from the **Tutorials** drawer (Morph still "coming
+  soon").
+
 - **Futuristic (Original) mode interactive tutorial.** Extends the reusable tutorial engine for the
   valued-pawn rules: an 11-step walkthrough that introduces pawn numbers, free placement, capture
   (strictly higher value: a gold pawn can only land on a bordeaux one whose value is *strictly*

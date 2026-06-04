@@ -21,7 +21,12 @@ class TutorialScreen extends StatefulWidget {
   final List<TutorialStep> steps;
   final GameTheme theme;
   final VoidCallback onExit;
-  const TutorialScreen({super.key, required this.steps, required this.theme, required this.onExit});
+
+  /// Action for a step's secondary "ghost" button (e.g. Bonanza's "Learn Original" cross-link).
+  final VoidCallback? onSecondary;
+
+  const TutorialScreen(
+      {super.key, required this.steps, required this.theme, required this.onExit, this.onSecondary});
 
   @override
   State<TutorialScreen> createState() => _TutorialScreenState();
@@ -107,6 +112,12 @@ class _TutorialScreenState extends State<TutorialScreen> {
       case FutTapResult.placedWin:
       case FutTapResult.capturedWin:
         _fb(l.tutHintWin, _green);
+        _scheduleAdvance();
+      case FutTapResult.placeEmpty:
+        _fb(l.tutBonHintRedirectEmpty, t.danger);
+      case FutTapResult.lost:
+        // Forced loss: the opponent completes a line (bordeaux). Still advance — the lesson landed.
+        _fb(l.tutBonHintOppWin, t.discGlow(1));
         _scheduleAdvance();
     }
   }
@@ -197,7 +208,8 @@ class _TutorialScreenState extends State<TutorialScreen> {
               values: step.hand!,
               selectedIndex: _selectedHand,
               onSelect: (i) => setState(() => _selectedHand = i),
-              label: l.tutRailLabel,
+              label: step.railLabel?.call(l) ?? l.tutRailLabel,
+              owner: step.handOwner,
             ),
           ],
           const SizedBox(height: 14),
@@ -212,6 +224,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
   Widget _futVisual(AppLocalizations l, TutorialStep step, double boardSize) {
     switch (step.kind) {
       case TutKind.info:
+        if (step.infoBadge != null) return _numberBadge(l, step.infoBadge!);
         if (step.bigMedallions != null) return _bigMedallions(step);
         // static info board (e.g. the win-rule showcase)
         return FuturisticTutorialBoard(
@@ -220,6 +233,15 @@ class _TutorialScreenState extends State<TutorialScreen> {
           size: boardSize,
           winLine: step.winLine,
           showWin: step.winLine != null,
+        );
+      case TutKind.deal:
+        return DealShowcase(
+          key: ValueKey('deal-${c.stepIndex}'),
+          badgeText: l.tutBonBadgeNumber('${step.dealNumber}'),
+          gold: step.dealGold ?? const [],
+          bord: step.dealBord ?? const [],
+          goldLabel: l.tutBonRailGold,
+          bordLabel: l.tutBonRailBord,
         );
       case TutKind.loop:
         return FuturisticTutorialBoard(
@@ -239,9 +261,12 @@ class _TutorialScreenState extends State<TutorialScreen> {
           cells: step.fcells,
           size: boardSize,
           highlight: step.highlight,
+          highlights: step.highlights,
           interactive: true,
           target: step.target,
           demoMode: step.demoMode,
+          placeOwner: step.handOwner,
+          loseMap: step.loseMap,
           winLine: step.winLine,
           selectedValue:
               (_selectedHand != null && step.hand != null) ? step.hand![_selectedHand!] : null,
@@ -250,6 +275,20 @@ class _TutorialScreenState extends State<TutorialScreen> {
       case TutKind.triple:
         return const SizedBox.shrink();
     }
+  }
+
+  Widget _numberBadge(AppLocalizations l, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+      decoration: BoxDecoration(
+        color: t.accent.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(40),
+        border: Border.all(color: t.accent, width: 2),
+        boxShadow: [BoxShadow(color: t.accentGlow.withValues(alpha: 0.25), blurRadius: 24)],
+      ),
+      child: Text(l.tutBonBadgeNumber(value),
+          style: t.display(30, color: t.accent).copyWith(letterSpacing: 1.5)),
+    );
   }
 
   Widget _bigMedallions(TutorialStep step) {
@@ -321,6 +360,8 @@ class _TutorialScreenState extends State<TutorialScreen> {
         );
       case TutKind.triple:
         return _tripleVisual(l, step);
+      case TutKind.deal:
+        return const SizedBox.shrink(); // Bonanza-only; never used by Classic
     }
   }
 
@@ -360,19 +401,33 @@ class _TutorialScreenState extends State<TutorialScreen> {
   Widget _footer(AppLocalizations l, TutorialStep step) {
     final buttonText = step.button?.call(l);
     if (buttonText == null) return const SizedBox(height: 24);
+    final secondaryText = step.secondary?.call(l);
+    final showSecondary = secondaryText != null && widget.onSecondary != null;
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
-      child: SizedBox(
-        width: double.infinity,
-        child: FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: t.accent,
-            foregroundColor: Colors.black,
-            padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: t.accent,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              onPressed: () => c.isLast ? widget.onExit() : c.next(),
+              child: Text(buttonText, style: t.display(16, color: Colors.black)),
+            ),
           ),
-          onPressed: () => c.isLast ? widget.onExit() : c.next(),
-          child: Text(buttonText, style: t.display(16, color: Colors.black)),
-        ),
+          if (showSecondary)
+            TextButton(
+              onPressed: widget.onSecondary,
+              child: Text(secondaryText,
+                  style: t.label(14, color: t.accent, weight: FontWeight.w700)
+                      .copyWith(decoration: TextDecoration.underline)),
+            ),
+        ],
       ),
     );
   }
@@ -396,4 +451,21 @@ class OriginalTutorialScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       TutorialScreen(steps: originalTutorialSteps(), theme: GameTheme.futuristic, onExit: onExit);
+}
+
+/// The Futuristic · Bonanza tutorial — same warm gold identity, with the deal showcase, a bordeaux
+/// hand rail, a forced-loss demo, and a cross-link that opens the Original tutorial.
+class BonanzaTutorialScreen extends StatelessWidget {
+  final VoidCallback onExit;
+  const BonanzaTutorialScreen({super.key, required this.onExit});
+
+  @override
+  Widget build(BuildContext context) => TutorialScreen(
+        steps: bonanzaTutorialSteps(),
+        theme: GameTheme.futuristic,
+        onExit: onExit,
+        onSecondary: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => OriginalTutorialScreen(onExit: () => Navigator.of(context).maybePop()),
+        )),
+      );
 }
