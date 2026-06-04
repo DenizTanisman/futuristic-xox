@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Classic mode interactive tutorial.** A reusable tutorial engine (`TutorialController` +
+  `TutorialStep` model; works for future modes) driving the 8-step Classic walkthrough: an
+  always-on Skip + progress dots; gif-looped showcase steps (empty → place → win line → reset, 2s,
+  timer cancelled on step change/dispose); tap-to-place demos with correct/wrong feedback (step 3
+  accepts any empty cell, steps 5–7 require the exact target; wrong taps flash the correct cell 3×;
+  occupied taps ignored); animated silver/gold mark stroke-draw + win lines (`MarkPainter`,
+  `WinLinePainter`). Fully localized (tr/en/ru/es); surfaces follow the app theme while the Classic
+  marks keep their fixed silver/gold identity. Launched via "How to play" on the Classic setup screen.
+
 - **App shell — drawer, theme & localization.** Localization (tr/en/ru/es) via `flutter_localizations`
   + ARB (`AppLocalizations`), with a no-hardcoded-strings rule across the shell, entry, menus, setup,
   and game HUD (tutorial-ready). Light/dark theme system (`AppThemes` + `LuxTokens`) with a

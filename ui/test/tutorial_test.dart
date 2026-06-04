@@ -1,0 +1,63 @@
+// Classic tutorial engine tests. Run with `flutter test`.
+
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:futuristic_xox/l10n/app_localizations.dart';
+import 'package:futuristic_xox/main.dart';
+import 'package:futuristic_xox/src/tutorial/tutorial_screen.dart';
+
+Widget _wrap(Widget home) => MaterialApp(
+      locale: const Locale('en'),
+      supportedLocales: kSupportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home: home,
+    );
+
+void main() {
+  testWidgets('skip from the first step exits immediately', (tester) async {
+    var exited = false;
+    // Step 1 (info) has no loop timer, so this is safe without a Navigator.
+    await tester.pumpWidget(_wrap(ClassicTutorialScreen(onExit: () => exited = true)));
+    await tester.pump();
+    expect(find.text('Welcome'), findsOneWidget);
+    await tester.tap(find.text('Skip'));
+    await tester.pump();
+    expect(exited, isTrue);
+  });
+
+  testWidgets('advances through steps and Skip pops cleanly from a loop step (no leaked timer)',
+      (tester) async {
+    await tester.pumpWidget(_wrap(Builder(
+      builder: (ctx) => Center(
+        child: TextButton(
+          onPressed: () => Navigator.of(ctx).push(MaterialPageRoute(
+            builder: (_) => ClassicTutorialScreen(onExit: () => Navigator.of(ctx).pop()),
+          )),
+          child: const Text('go'),
+        ),
+      ),
+    )));
+    await tester.tap(find.text('go'));
+    await tester.pumpAndSettle();
+    expect(find.text('Welcome'), findsOneWidget);
+
+    // Advance info → loop step (which starts a periodic gif timer).
+    await tester.tap(find.text("Let's begin"));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.text('Your turn to start'), findsOneWidget);
+
+    // Skip from the loop step → pop disposes the screen → timer is cancelled (no pending timer).
+    await tester.tap(find.text('Skip'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1)); // let the pop transition finish + dispose
+    expect(find.text('go'), findsOneWidget);
+    expect(find.text('Your turn to start'), findsNothing);
+  });
+}

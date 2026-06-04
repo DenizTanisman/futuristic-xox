@@ -186,4 +186,99 @@ class AppLocalizationsTr extends AppLocalizations {
   String bonanzaHandLine(int own, int total, int opp) {
     return '$total taşının $own tanesi kendi renginde\n($opp tanesi rakibinin)';
   }
+
+  @override
+  String get tutSkip => 'Geç';
+
+  @override
+  String get tutHintGlow => 'Parlayan kareye dokun';
+
+  @override
+  String get tutHintWrong => 'Oraya değil — parlayan kareye koy';
+
+  @override
+  String get tutHintGreat => 'Harika!';
+
+  @override
+  String get tutCapH => 'Yatay';
+
+  @override
+  String get tutCapV => 'Dikey';
+
+  @override
+  String get tutCapD => 'Çapraz';
+
+  @override
+  String get tutBtnStart => 'Başlayalım';
+
+  @override
+  String get tutBtnOk => 'Anladım';
+
+  @override
+  String get tutBtnTry => 'Hadi deneyelim';
+
+  @override
+  String get tutBtnFinish => 'Bitir';
+
+  @override
+  String get tutClassicWelcomeTitle => 'Hoş geldin';
+
+  @override
+  String get tutClassicWelcomeBody =>
+      'Seni burada görmek güzel. Birazdan bu tahtanın dilini birlikte çözeceğiz — acelesi yok, her şeyi adım adım, omuz omuza ilerleyeceğiz. Hazırsan başlıyoruz.';
+
+  @override
+  String get tutClassicTurnTitle => 'Sıra sende başlıyor';
+
+  @override
+  String get tutClassicTurnBody =>
+      'Sıra sana geldiğinde tahtaya bir X bırakırsın. İzle — parlayan kareye bir X düşüveriyor.';
+
+  @override
+  String get tutClassicDemo1Title => 'Şimdi sen dene';
+
+  @override
+  String get tutClassicDemo1Body =>
+      'Parlayan kareye dokun ve ilk X\'ini koy. (Boş kalan herhangi bir kare de olur.)';
+
+  @override
+  String get tutClassicDemo1Hint => 'Parlayan kareye dokun';
+
+  @override
+  String get tutClassicWinruleTitle => 'Kazanmanın tek sırrı';
+
+  @override
+  String get tutClassicWinruleBody =>
+      'Üç X\'i bir hizaya getir — yatay, dikey ya da çapraz, fark etmez. Hattı tamamlayan kazanır.';
+
+  @override
+  String get tutClassicDemo2aTitle => '1 / 3 — Yatay';
+
+  @override
+  String get tutClassicDemo2aBody =>
+      'İki X yan yana hazır. Parlayan kareyi tamamla ve yatay hattı kapat.';
+
+  @override
+  String get tutClassicDemo2bTitle => '2 / 3 — Dikey';
+
+  @override
+  String get tutClassicDemo2bBody =>
+      'Bu kez sütunu tamamlıyoruz. Parlayan kareye X koy.';
+
+  @override
+  String get tutClassicDemo2cTitle => '3 / 3 — Çapraz';
+
+  @override
+  String get tutClassicDemo2cBody =>
+      'Son olarak çapraz hat. Ortadaki parlayan kareye X koyup üçlüyü tamamla.';
+
+  @override
+  String get tutClassicDoneTitle => 'İşte bu kadar!';
+
+  @override
+  String get tutClassicDoneBody =>
+      'Artık Classic tahtası tamamen senin. İstediğin an gerçek bir oyuna geçebilirsin — başarılar, kazanan sen ol.';
+
+  @override
+  String get tutLaunch => 'Nasıl oynanır';
 }

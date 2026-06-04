@@ -443,6 +443,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{own} of your {total} pawns are your own colour\n({opp} are your opponent\'s)'**
   String bonanzaHandLine(int own, int total, int opp);
+
+  /// No description provided for @tutSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get tutSkip;
+
+  /// No description provided for @tutHintGlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the glowing square'**
+  String get tutHintGlow;
+
+  /// No description provided for @tutHintWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Not there — place it on the glowing square'**
+  String get tutHintWrong;
+
+  /// No description provided for @tutHintGreat.
+  ///
+  /// In en, this message translates to:
+  /// **'Nice!'**
+  String get tutHintGreat;
+
+  /// No description provided for @tutCapH.
+  ///
+  /// In en, this message translates to:
+  /// **'Horizontal'**
+  String get tutCapH;
+
+  /// No description provided for @tutCapV.
+  ///
+  /// In en, this message translates to:
+  /// **'Vertical'**
+  String get tutCapV;
+
+  /// No description provided for @tutCapD.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagonal'**
+  String get tutCapD;
+
+  /// No description provided for @tutBtnStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s begin'**
+  String get tutBtnStart;
+
+  /// No description provided for @tutBtnOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get tutBtnOk;
+
+  /// No description provided for @tutBtnTry.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s try'**
+  String get tutBtnTry;
+
+  /// No description provided for @tutBtnFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get tutBtnFinish;
+
+  /// No description provided for @tutClassicWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome'**
+  String get tutClassicWelcomeTitle;
+
+  /// No description provided for @tutClassicWelcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Good to have you here. We\'ll learn this board together in a moment — no rush, step by step, side by side. Ready when you are.'**
+  String get tutClassicWelcomeBody;
+
+  /// No description provided for @tutClassicTurnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your turn to start'**
+  String get tutClassicTurnTitle;
+
+  /// No description provided for @tutClassicTurnBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When it\'s your turn you drop an X on the board. Watch — an X lands on the glowing square.'**
+  String get tutClassicTurnBody;
+
+  /// No description provided for @tutClassicDemo1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Now you try'**
+  String get tutClassicDemo1Title;
+
+  /// No description provided for @tutClassicDemo1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the glowing square and place your first X. (Any empty square works too.)'**
+  String get tutClassicDemo1Body;
+
+  /// No description provided for @tutClassicDemo1Hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the glowing square'**
+  String get tutClassicDemo1Hint;
+
+  /// No description provided for @tutClassicWinruleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The one secret to winning'**
+  String get tutClassicWinruleTitle;
+
+  /// No description provided for @tutClassicWinruleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Line up three X\'s — horizontal, vertical, or diagonal, it doesn\'t matter. Complete the line and you win.'**
+  String get tutClassicWinruleBody;
+
+  /// No description provided for @tutClassicDemo2aTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'1 / 3 — Horizontal'**
+  String get tutClassicDemo2aTitle;
+
+  /// No description provided for @tutClassicDemo2aBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Two X\'s are lined up. Complete the glowing square and close the horizontal line.'**
+  String get tutClassicDemo2aBody;
+
+  /// No description provided for @tutClassicDemo2bTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'2 / 3 — Vertical'**
+  String get tutClassicDemo2bTitle;
+
+  /// No description provided for @tutClassicDemo2bBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This time we complete the column. Place an X on the glowing square.'**
+  String get tutClassicDemo2bBody;
+
+  /// No description provided for @tutClassicDemo2cTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'3 / 3 — Diagonal'**
+  String get tutClassicDemo2cTitle;
+
+  /// No description provided for @tutClassicDemo2cBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Finally, the diagonal. Place an X on the glowing center square to complete the trio.'**
+  String get tutClassicDemo2cBody;
+
+  /// No description provided for @tutClassicDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s all it takes!'**
+  String get tutClassicDoneTitle;
+
+  /// No description provided for @tutClassicDoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The Classic board is all yours now. Jump into a real game whenever you like — good luck, and may you be the one who wins.'**
+  String get tutClassicDoneBody;
+
+  /// No description provided for @tutLaunch.
+  ///
+  /// In en, this message translates to:
+  /// **'How to play'**
+  String get tutLaunch;
 }
 
 class _AppLocalizationsDelegate

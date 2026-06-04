@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../l10n/app_localizations.dart';
 import '../models/game_models.dart';
 import '../theme/game_theme.dart';
+import '../tutorial/tutorial_screen.dart';
 import '../widgets/metallic_panel.dart';
 import '../widgets/pawn_widget.dart';
 import 'game_screen.dart';
@@ -684,6 +685,19 @@ class _SetupScreenState extends State<_SetupScreen> {
               ),
               const SizedBox(height: 22),
               _MultiplayerToggle(value: multiplayer, onChanged: (v) => setState(() => multiplayer = v)),
+              // "How to play": the interactive tutorial (Classic only for now).
+              if (widget.mode == Mode4.classic) ...[
+                const SizedBox(height: 12),
+                Center(
+                  child: TextButton.icon(
+                    icon: Icon(Icons.school_outlined, color: t.muted, size: 18),
+                    label: Text(l.tutLaunch, style: t.label(14, color: t.muted, weight: FontWeight.w600)),
+                    onPressed: () => Navigator.of(ctx).push(MaterialPageRoute(
+                      builder: (_) => ClassicTutorialScreen(onExit: () => Navigator.of(ctx).maybePop()),
+                    )),
+                  ),
+                ),
+              ],
               const SizedBox(height: 26),
               _StartButton(
                 onTap: () => _go(
