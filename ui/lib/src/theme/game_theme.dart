@@ -1,26 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// All visual tokens for one identity (colours, gradients, fonts). Two instances exist —
+/// Per-owner pawn palette for the metallic medallion (spec: medallion §1):
+/// [ring] = same-hue metallic sweep (7 stops), [disc] = inner radial (3 stops),
+/// [number] = metallic number fill (4 stops), [glow] = soft outer glow.
+class PawnPalette {
+  final List<Color> ring;
+  final List<Color> disc;
+  final List<Color> number;
+  final Color glow;
+  const PawnPalette({required this.ring, required this.disc, required this.number, required this.glow});
+}
+
+/// All visual tokens for one identity (colours, gradients, fonts). Two instances —
 /// [GameTheme.futuristic] (warm luxury) and [GameTheme.classic] (cold metallic). Widgets read from
-/// the active theme via [GameTheme.of] and never hardcode colours, so the shared board renders either
-/// look (spec: UI Themes feature §1–§2).
+/// the active theme via [GameTheme.of] and never hardcode colours.
 class GameTheme {
   // Surfaces
   final Gradient background;
-  final Gradient frameRim; // thin metallic rim around the board frame
-  final Gradient panel; // frame panel fill
+  final Gradient frameRim;
+  final Gradient panel;
   final Color cell;
   final Color cellEmptyBorder;
   final Color ink;
   final Color muted;
-  final Color accent; // gold (fut) / steel-hi (classic)
+  final Color accent;
   final Color accentGlow;
   final Color danger;
 
-  /// Per-owner disc gradient stops `[highlight, base, low]` and glow colour.
-  final List<List<Color>> _discStops;
-  final List<Color> _discGlow;
+  /// Per-owner medallion palette `[owner0, owner1]`.
+  final List<PawnPalette> _pawns;
+
+  /// Per-owner 3-tone gradient `[hi, mid, lo]` for the Classic X/O metallic stroke.
+  final List<List<Color>> _markStops;
 
   const GameTheme({
     required this.background,
@@ -33,14 +45,22 @@ class GameTheme {
     required this.accent,
     required this.accentGlow,
     required this.danger,
-    required List<List<Color>> discStops,
-    required List<Color> discGlow,
-  })  : _discStops = discStops,
-        _discGlow = discGlow;
+    required List<PawnPalette> pawns,
+    required List<List<Color>> markStops,
+  })  : _pawns = pawns,
+        _markStops = markStops;
 
-  List<Color> discStops(int owner) => _discStops[owner & 1];
-  Color discGlow(int owner) => _discGlow[owner & 1];
-  Color ownerColor(int owner) => _discStops[owner & 1][1];
+  PawnPalette pawn(int owner) => _pawns[owner & 1];
+  Color discGlow(int owner) => _pawns[owner & 1].glow;
+  Color ownerColor(int owner) => _pawns[owner & 1].disc[1];
+
+  /// Classic stroke gradient `[hi, mid, lo]` for the X/O mark.
+  List<Color> markStops(int owner) => _markStops[owner & 1];
+
+  // Fixed gradient stop positions (spec §1).
+  static const List<double> ringStops = [0.0, 0.12, 0.28, 0.42, 0.60, 0.78, 1.0];
+  static const List<double> discStops = [0.0, 0.46, 1.0];
+  static const List<double> numberStops = [0.0, 0.38, 0.64, 1.0];
 
   // ---- typography ----
   TextStyle display(double size, {Color? color, FontWeight weight = FontWeight.w700}) =>
@@ -51,6 +71,7 @@ class GameTheme {
 
   // ---- instances ----
 
+  /// Futuristic: seat 0 (bottom / player) = GOLD, seat 1 (top / opponent) = BORDEAUX (spec §2).
   static const GameTheme futuristic = GameTheme(
     background: RadialGradient(
       center: Alignment(-0.15, -0.35),
@@ -82,13 +103,45 @@ class GameTheme {
     accent: Color(0xFFD4AF37),
     accentGlow: Color(0xFFF6E6A8),
     danger: Color(0xFFD8556B),
-    discStops: [
-      [Color(0xFFD8556B), Color(0xFF9B2335), Color(0xFF5E121D)], // owner 0 — bordeaux
-      [Color(0xFFF6E6A8), Color(0xFFC79A3A), Color(0xFF8A6A1D)], // owner 1 — gold
+    pawns: [
+      // owner 0 — GOLD
+      PawnPalette(
+        ring: [
+          Color(0xFF6B4F12),
+          Color(0xFFF6E6A8),
+          Color(0xFFC79A3A),
+          Color(0xFFFFF3C8),
+          Color(0xFF8A6A1D),
+          Color(0xFFF6E6A8),
+          Color(0xFF6B4F12),
+        ],
+        disc: [Color(0xFFE9C659), Color(0xFFD4AF37), Color(0xFF7A5D16)],
+        number: [Color(0xFFFFFDF2), Color(0xFFFFEEC2), Color(0xFFF1D171), Color(0xFFD4AF37)],
+        glow: Color(0xFFF6E6A8),
+      ),
+      // owner 1 — BORDEAUX
+      PawnPalette(
+        ring: [
+          Color(0xFF3C0C14),
+          Color(0xFFE87A8E),
+          Color(0xFF9B2335),
+          Color(0xFFFFC0CB),
+          Color(0xFF5E121D),
+          Color(0xFFE87A8E),
+          Color(0xFF3C0C14),
+        ],
+        disc: [Color(0xFFB83247), Color(0xFF9B2335), Color(0xFF4A0E17)],
+        number: [Color(0xFFFFF0F3), Color(0xFFFFC2CD), Color(0xFFF57E92), Color(0xFFD8556B)],
+        glow: Color(0xFFE87A8E),
+      ),
     ],
-    discGlow: [Color(0xFFD8556B), Color(0xFFD4AF37)],
+    markStops: [
+      [Color(0xFFD8556B), Color(0xFF9B2335), Color(0xFF5E121D)],
+      [Color(0xFFF6E6A8), Color(0xFFC79A3A), Color(0xFF8A6A1D)],
+    ],
   );
 
+  /// Classic: owner 0 = silver (X), owner 1 = dark gold (O).
   static const GameTheme classic = GameTheme(
     background: RadialGradient(
       center: Alignment(-0.15, -0.35),
@@ -120,11 +173,40 @@ class GameTheme {
     accent: Color(0xFFEEF1F6),
     accentGlow: Color(0xFFAAB0BE),
     danger: Color(0xFFD9544D),
-    discStops: [
-      [Color(0xFFFFFFFF), Color(0xFFC8CDD8), Color(0xFF878D9C)], // owner 0 — silver (X)
-      [Color(0xFFF3DD8C), Color(0xFFC79A3A), Color(0xFF7E611A)], // owner 1 — dark gold (O)
+    pawns: [
+      PawnPalette(
+        ring: [
+          Color(0xFF3A3F4B),
+          Color(0xFFFFFFFF),
+          Color(0xFFAAB0BE),
+          Color(0xFFFFFFFF),
+          Color(0xFF6E7585),
+          Color(0xFFEEF1F6),
+          Color(0xFF3A3F4B),
+        ],
+        disc: [Color(0xFFFFFFFF), Color(0xFFC8CDD8), Color(0xFF878D9C)],
+        number: [Color(0xFFFFFFFF), Color(0xFFEEF1F6), Color(0xFFC8CDD8), Color(0xFF878D9C)],
+        glow: Color(0xFFEEF1F6),
+      ),
+      PawnPalette(
+        ring: [
+          Color(0xFF7E611A),
+          Color(0xFFF3DD8C),
+          Color(0xFFC79A3A),
+          Color(0xFFF3DD8C),
+          Color(0xFF7E611A),
+          Color(0xFFF3DD8C),
+          Color(0xFF7E611A),
+        ],
+        disc: [Color(0xFFF3DD8C), Color(0xFFC79A3A), Color(0xFF7E611A)],
+        number: [Color(0xFFFFF6D8), Color(0xFFF3DD8C), Color(0xFFC79A3A), Color(0xFF7E611A)],
+        glow: Color(0xFFF3DD8C),
+      ),
     ],
-    discGlow: [Color(0xFFEEF1F6), Color(0xFFF3DD8C)],
+    markStops: [
+      [Color(0xFFFFFFFF), Color(0xFFC8CDD8), Color(0xFF878D9C)],
+      [Color(0xFFF3DD8C), Color(0xFFC79A3A), Color(0xFF7E611A)],
+    ],
   );
 
   // ---- inherited access ----
@@ -152,7 +234,7 @@ class _GameThemeScope extends InheritedWidget {
   bool updateShouldNotify(_GameThemeScope old) => old.theme != theme;
 }
 
-/// Motion timings (spec §1). Centralized so all themed widgets share the same feel.
+/// Motion timings (spec §1).
 class Motion {
   Motion._();
   static const Duration reveal = Duration(milliseconds: 500);

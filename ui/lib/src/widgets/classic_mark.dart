@@ -41,7 +41,7 @@ class _ClassicMarkState extends State<ClassicMark> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     final theme = GameTheme.of(context);
-    final stops = theme.discStops(widget.owner); // [hi, mid, lo]
+    final stops = theme.markStops(widget.owner); // [hi, mid, lo]
     return RepaintBoundary(
       child: AnimatedBuilder(
         animation: _c,

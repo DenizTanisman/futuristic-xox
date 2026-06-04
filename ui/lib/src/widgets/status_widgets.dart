@@ -84,7 +84,9 @@ class _TurnIndicatorState extends State<TurnIndicator> with SingleTickerProvider
   }
 }
 
-/// Persistent Morph target badge: the chosen shape letter (Cinzel) + a 4-cell picture (spec §3.7).
+/// Persistent Morph target badge: the chosen shape rendered as a compact mini-grid of cells (not a
+/// letter), kept vertical so it stays narrow (spec: medallion §3). Filled cells glow gold; empty
+/// cells are faint. Rotation-agnostic, with an "any rotation" sublabel.
 class MorphShapeBadge extends StatelessWidget {
   final MorphShape shape;
   const MorphShapeBadge({super.key, required this.shape});
@@ -92,11 +94,19 @@ class MorphShapeBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = GameTheme.of(context);
-    final cells = shape.previewCells;
-    final maxR = cells.map((c) => c[0]).reduce((a, b) => a > b ? a : b);
-    final maxC = cells.map((c) => c[1]).reduce((a, b) => a > b ? a : b);
+    var cells = shape.previewCells;
+    var maxR = cells.map((c) => c[0]).reduce((a, b) => a > b ? a : b);
+    var maxC = cells.map((c) => c[1]).reduce((a, b) => a > b ? a : b);
+    // Keep it vertical (taller than wide) so the badge never eats horizontal space.
+    if (maxC > maxR) {
+      cells = cells.map((c) => [c[1], c[0]]).toList();
+      final t = maxR;
+      maxR = maxC;
+      maxC = t;
+    }
     final filled = cells.map((c) => c[0] * (maxC + 1) + c[1]).toSet();
-    const unit = 11.0;
+    const unit = 12.0;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -107,17 +117,15 @@ class MorphShapeBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Target', style: theme.label(12, color: theme.muted)),
-          const SizedBox(width: 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(shape.letter, style: theme.display(18, color: theme.accent)),
+              Text('TARGET', style: theme.label(11, color: theme.muted)),
               Text('any rotation', style: theme.label(9, color: theme.muted)),
             ],
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -126,20 +134,28 @@ class MorphShapeBadge extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     for (var c = 0; c <= maxC; c++)
-                      Container(
-                        width: unit,
-                        height: unit,
-                        margin: const EdgeInsets.all(1),
-                        decoration: BoxDecoration(
-                          color: filled.contains(r * (maxC + 1) + c) ? theme.accent : theme.cell,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
+                      _miniCell(theme, filled.contains(r * (maxC + 1) + c), unit),
                   ],
                 ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _miniCell(GameTheme theme, bool on, double unit) {
+    return Container(
+      width: unit,
+      height: unit,
+      margin: const EdgeInsets.all(1.5),
+      decoration: BoxDecoration(
+        gradient: on
+            ? RadialGradient(colors: [theme.accentGlow, theme.accent], center: const Alignment(-0.3, -0.4))
+            : null,
+        color: on ? null : theme.muted.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(3),
+        boxShadow: on ? [BoxShadow(color: theme.accent.withValues(alpha: 0.5), blurRadius: 5)] : null,
       ),
     );
   }

@@ -57,6 +57,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a future name/nickname swap touches one place.
 
 ### Changed
+- Futuristic pawns are now metallic **medallions** (spec v2): a thin same-hue metallic sweep-gradient
+  ring + colored inner radial disc (inset ~7%) + a bevel overlay + a metallic number drawn as a
+  dark-stroke pass under a gradient-fill pass for crisp legibility at any size, in both rails.
+  Seat 0 (player, bottom) = gold, seat 1 (opponent, top) = bordeaux.
+- Morph target badge now shows the shape itself (a compact, vertical tetromino mini-grid with glowing
+  gold cells) instead of a letter; keeps the "any rotation" sublabel.
 - Board, cells, pawns, and typography are now driven by the shared `GameTheme` (no hardcoded colours);
   Classic mode uses the metallic theme + stroke-drawn X/O, Futuristic modes use the luxury theme +
   valued discs.

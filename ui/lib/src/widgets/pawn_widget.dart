@@ -1,11 +1,14 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/game_theme.dart';
 
-/// A glossy 3D-ish disc pawn coloured by the active [GameTheme]: bordeaux/gold (futuristic) or
-/// silver/dark-gold (classic). Shows its value (futuristic) or a glyph (classic rail). On placement
-/// it pops in with an elastic overshoot and emits a one-shot ring ripple (spec §3.4); a capture
-/// tints the ripple in the danger colour (spec §3.6).
+/// A metallic **medallion** pawn (spec: medallion §1): a thin same-hue metallic ring (sweep gradient)
+/// around a colored inner disc (radial gradient) inset by ~7% of the diameter, with a metallic number
+/// drawn as a dark-stroke pass + gradient-fill pass for crisp legibility at any size. On placement it
+/// pops in with an elastic overshoot and emits a one-shot ripple (red on capture).
 class PawnWidget extends StatelessWidget {
   final int owner;
   final int value;
@@ -13,10 +16,10 @@ class PawnWidget extends StatelessWidget {
   final double size;
   final bool selected;
 
-  /// Optional glyph instead of the value (Classic rail tokens: 'X' / 'O').
+  /// Optional glyph instead of the value (e.g. legacy X/O); usually null for valued discs.
   final String? glyph;
 
-  /// Whether to play the pop-in + ripple (off for static rail tokens).
+  /// Whether to play the pop-in + ripple (off for static rail chips).
   final bool animateIn;
 
   /// True if this placement captured an enemy pawn (ripple turns red).
@@ -37,25 +40,22 @@ class PawnWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = GameTheme.of(context);
-    final stops = theme.discStops(owner);
-    final glow = theme.discGlow(owner);
+    final p = theme.pawn(owner);
     final label = glyph ?? (showValue ? '$value' : null);
+    final inset = size * 0.07; // ring thickness ≈ 7% of the diameter
 
-    final disc = Container(
+    final medallion = Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [stops[0], stops[1], stops[2]],
-          stops: const [0.0, 0.55, 1.0],
-          center: const Alignment(-0.32, -0.34),
-          radius: 0.95,
+        gradient: SweepGradient(
+          startAngle: 220 * math.pi / 180,
+          endAngle: 220 * math.pi / 180 + 2 * math.pi,
+          colors: p.ring,
+          stops: GameTheme.ringStops,
         ),
-        border: Border.all(
-          color: selected ? theme.accent : glow.withValues(alpha: 0.5),
-          width: selected ? 3 : 1.4,
-        ),
+        border: selected ? Border.all(color: theme.accentGlow, width: 2.5) : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.45),
@@ -63,44 +63,108 @@ class PawnWidget extends StatelessWidget {
             offset: Offset(0, size * 0.06),
           ),
           BoxShadow(
-            color: glow.withValues(alpha: selected ? 0.6 : 0.35),
+            color: p.glow.withValues(alpha: selected ? 0.6 : 0.32),
             blurRadius: selected ? 16 : 9,
             spreadRadius: selected ? 1 : 0,
           ),
         ],
       ),
-      alignment: Alignment.center,
-      child: label == null
-          ? null
-          : FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Padding(
-                padding: EdgeInsets.all(size * 0.18),
-                child: Text(
-                  label,
-                  style: theme.label(size * 0.5, color: theme.ink, weight: FontWeight.w700),
-                ),
-              ),
+      child: Padding(
+        padding: EdgeInsets.all(inset),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: p.disc,
+              stops: GameTheme.discStops,
+              center: const Alignment(-0.3, -0.45),
+              radius: 0.95,
             ),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Bevel: no inset shadow in Flutter, so fake it with a top-light/bottom-dark overlay.
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0x33FFFFFF), Color(0x00FFFFFF), Color(0x2A000000)],
+                    stops: [0.0, 0.5, 1.0],
+                  ),
+                ),
+                child: SizedBox.expand(),
+              ),
+              if (label != null) _MetalNumber(label: label, size: size, colors: p.number),
+            ],
+          ),
+        ),
+      ),
     );
 
-    if (!animateIn) return disc;
+    if (!animateIn) return medallion;
 
     final popIn = TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: Motion.pawnPop,
       curve: Curves.elasticOut,
       builder: (context, t, child) => Transform.scale(scale: (0.4 + 0.6 * t).clamp(0.0, 1.18), child: child),
-      child: disc,
+      child: medallion,
     );
 
     return Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.center,
       children: [
-        _Ripple(size: size, color: captured ? theme.danger : glow),
+        _Ripple(size: size, color: captured ? theme.danger : p.glow),
         popIn,
       ],
+    );
+  }
+}
+
+/// A metallic number: a dark stroke pass under a gradient-fill pass (crisp at small sizes, spec §1).
+class _MetalNumber extends StatelessWidget {
+  final String label;
+  final double size;
+  final List<Color> colors;
+  const _MetalNumber({required this.label, required this.size, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final fontSize = size * 0.52;
+    final strokeWidth = (fontSize * 0.055).clamp(0.8, 3.0);
+    final base = GoogleFonts.rajdhani(fontSize: fontSize, fontWeight: FontWeight.w700, height: 1.0);
+
+    final strokePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..color = const Color(0x9E120703); // rgba(18,7,3,.62)
+
+    final fillShader = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: colors,
+      stops: GameTheme.numberStops,
+    ).createShader(Rect.fromLTWH(0, 0, fontSize, fontSize * 1.2));
+
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Text(label, style: base.copyWith(foreground: strokePaint)),
+          Text(
+            label,
+            style: base.copyWith(
+              foreground: Paint()..shader = fillShader,
+              shadows: const [Shadow(color: Color(0x99000000), blurRadius: 2, offset: Offset(0, 1))],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
