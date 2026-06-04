@@ -85,13 +85,21 @@ class MorphShapeBadge extends StatelessWidget {
         children: [
           const Text('Target', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
           const SizedBox(width: 8),
-          Text(
-            shape.letter,
-            style: const TextStyle(
-              color: AppColors.accent,
-              fontWeight: FontWeight.w900,
-              fontSize: 18,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                shape.letter,
+                style: const TextStyle(
+                  color: AppColors.accent,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  height: 1.0,
+                ),
+              ),
+              const Text('any rotation', style: TextStyle(color: AppColors.textMuted, fontSize: 9)),
+            ],
           ),
           const SizedBox(width: 10),
           Column(
