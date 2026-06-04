@@ -109,21 +109,25 @@ class _GameScreenState extends State<GameScreen> {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      PawnRail(
-                        owner: 1,
-                        label: controller.playerAt(1).label,
-                        hand: s.hand1,
-                        showValues: showValues,
-                        classic: classic,
-                        active: s.turn == 1 && !s.isOver,
-                        // Selectable only when seat 1 is a human whose turn it is (offline MP).
-                        selectedColor: s.turn == 1 ? controller.selectedColor : null,
-                        selectedValue: s.turn == 1 ? controller.selectedValue : null,
-                        onSelect: widget.mode.valued && controller.isHumanTurn && s.turn == 1
-                            ? controller.selectPawn
-                            : null,
-                      ),
-                      const SizedBox(height: 10),
+                      // Classic has no hand to manage — you place by tapping cells — so the pawn
+                      // rails are omitted; the turn indicator shows whose move it is.
+                      if (!classic) ...[
+                        PawnRail(
+                          owner: 1,
+                          label: controller.playerAt(1).label,
+                          hand: s.hand1,
+                          showValues: showValues,
+                          classic: classic,
+                          active: s.turn == 1 && !s.isOver,
+                          // Selectable only when seat 1 is a human whose turn it is (offline MP).
+                          selectedColor: s.turn == 1 ? controller.selectedColor : null,
+                          selectedValue: s.turn == 1 ? controller.selectedValue : null,
+                          onSelect: widget.mode.valued && controller.isHumanTurn && s.turn == 1
+                              ? controller.selectPawn
+                              : null,
+                        ),
+                        const SizedBox(height: 10),
+                      ],
                       TurnIndicator(
                         turn: s.turn,
                         label: controller.activePlayer.label,
@@ -150,20 +154,22 @@ class _GameScreenState extends State<GameScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      PawnRail(
-                        owner: 0,
-                        label: controller.playerAt(0).label,
-                        hand: s.hand0,
-                        showValues: showValues,
-                        classic: classic,
-                        active: s.turn == 0 && !s.isOver,
-                        selectedColor: s.turn == 0 ? controller.selectedColor : null,
-                        selectedValue: s.turn == 0 ? controller.selectedValue : null,
-                        onSelect: widget.mode.valued && controller.isHumanTurn && s.turn == 0
-                            ? controller.selectPawn
-                            : null,
-                      ),
+                      if (!classic) ...[
+                        const SizedBox(height: 10),
+                        PawnRail(
+                          owner: 0,
+                          label: controller.playerAt(0).label,
+                          hand: s.hand0,
+                          showValues: showValues,
+                          classic: classic,
+                          active: s.turn == 0 && !s.isOver,
+                          selectedColor: s.turn == 0 ? controller.selectedColor : null,
+                          selectedValue: s.turn == 0 ? controller.selectedValue : null,
+                          onSelect: widget.mode.valued && controller.isHumanTurn && s.turn == 0
+                              ? controller.selectPawn
+                              : null,
+                        ),
+                      ],
                     ],
                   ),
                 ),
