@@ -3,11 +3,13 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../models/game_models.dart';
 import '../theme/game_theme.dart';
 import '../widgets/metallic_panel.dart';
 import '../widgets/pawn_widget.dart';
 import 'game_screen.dart';
+import 'shell.dart';
 
 /// Landing screen: a responsive Classic | Futuristic split (side-by-side on wide screens, top/bottom
 /// on phones), with a slide-in entrance, metallic titles, an animated metallic divider, themed
@@ -43,8 +45,11 @@ class _EntryScreenState extends State<EntryScreen> with TickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+      // Entry keeps its fixed dark-luxury look; only its text is localized (spec §0).
+      drawer: const AppDrawer(),
       body: LayoutBuilder(
         builder: (context, c) {
+          final l = AppLocalizations.of(context)!;
           final isRow = c.maxWidth >= c.maxHeight;
           final main = isRow ? c.maxWidth : c.maxHeight;
           final f0 = _hovered == 0
@@ -65,8 +70,9 @@ class _EntryScreenState extends State<EntryScreen> with TickerProviderStateMixin
                   index: 0,
                   isRow: isRow,
                   theme: GameTheme.classic,
-                  title: 'CLASSIC',
-                  tagline: 'Silver × Gold',
+                  title: l.modeClassic.toUpperCase(),
+                  tagline: l.classicTagline,
+                  tapToPlay: l.tapToPlay,
                   titleColors: const [Color(0xFFFFFFFF), Color(0xFFC8CDD8), Color(0xFF878D9C)],
                   motif: const _ClassicMotif(),
                   onTap: () => _go(context, const _SetupScreen(mode: Mode4.classic)),
@@ -81,8 +87,9 @@ class _EntryScreenState extends State<EntryScreen> with TickerProviderStateMixin
                   index: 1,
                   isRow: isRow,
                   theme: GameTheme.futuristic,
-                  title: 'FUTURISTIC',
-                  tagline: 'Capture · Conquer',
+                  title: l.modeFuturistic.toUpperCase(),
+                  tagline: l.futuristicTagline,
+                  tapToPlay: l.tapToPlay,
                   titleColors: const [Color(0xFFF6E6A8), Color(0xFFD4AF37), Color(0xFF8A6A1D)],
                   motif: const _FuturisticMotif(),
                   onTap: () => _go(context, const _FuturisticSelectScreen()),
@@ -97,6 +104,20 @@ class _EntryScreenState extends State<EntryScreen> with TickerProviderStateMixin
                 width: isRow ? 2 : c.maxWidth,
                 height: isRow ? c.maxHeight : 2,
                 child: RepaintBoundary(child: _Divider(isRow: isRow, sheen: _sheen)),
+              ),
+              // Hamburger → drawer (top-left), above the split.
+              Positioned(
+                top: 0,
+                left: 0,
+                child: SafeArea(
+                  child: Builder(
+                    builder: (ctx) => IconButton(
+                      icon: const Icon(Icons.menu, color: Color(0xFFF4ECD8)),
+                      tooltip: l.menuLabel,
+                      onPressed: () => Scaffold.of(ctx).openDrawer(),
+                    ),
+                  ),
+                ),
               ),
             ],
           );
@@ -129,6 +150,7 @@ class _EntryScreenState extends State<EntryScreen> with TickerProviderStateMixin
     required GameTheme theme,
     required String title,
     required String tagline,
+    required String tapToPlay,
     required List<Color> titleColors,
     required Widget motif,
     required VoidCallback onTap,
@@ -179,7 +201,13 @@ class _EntryScreenState extends State<EntryScreen> with TickerProviderStateMixin
                   Center(
                     child: FadeTransition(
                       opacity: contentFade,
-                      child: _HalfContent(theme: theme, title: title, tagline: tagline, titleColors: titleColors),
+                      child: _HalfContent(
+                        theme: theme,
+                        title: title,
+                        tagline: tagline,
+                        tapToPlay: tapToPlay,
+                        titleColors: titleColors,
+                      ),
                     ),
                   ),
                 ],
@@ -197,11 +225,13 @@ class _HalfContent extends StatelessWidget {
   final GameTheme theme;
   final String title;
   final String tagline;
+  final String tapToPlay;
   final List<Color> titleColors;
   const _HalfContent({
     required this.theme,
     required this.title,
     required this.tagline,
+    required this.tapToPlay,
     required this.titleColors,
   });
 
@@ -241,7 +271,7 @@ class _HalfContent extends StatelessWidget {
               border: Border.all(color: theme.accent.withValues(alpha: 0.7)),
               boxShadow: [BoxShadow(color: theme.accent.withValues(alpha: 0.2), blurRadius: 12)],
             ),
-            child: Text('TAP TO PLAY', style: theme.label(12, color: theme.accent, weight: FontWeight.w700)),
+            child: Text(tapToPlay.toUpperCase(), style: theme.label(12, color: theme.accent, weight: FontWeight.w700)),
           ),
         ],
       ),
@@ -385,6 +415,19 @@ void _go(BuildContext context, Widget screen) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
 }
 
+String _modeName(AppLocalizations l, Mode4 mode) => switch (mode) {
+      Mode4.classic => l.modeClassic,
+      Mode4.original => l.modeOriginal,
+      Mode4.bonanza => l.modeBonanza,
+      Mode4.morph => l.modeMorph,
+    };
+
+String _difficultyName(AppLocalizations l, Difficulty d) => switch (d) {
+      Difficulty.easy => l.difficultyEasy,
+      Difficulty.medium => l.difficultyMedium,
+      Difficulty.hard => l.difficultyHard,
+    };
+
 /// Themed shell shared by the submode picker and the setup screen: background gradient + a centered
 /// metallic panel with a Cinzel title (+ optional subtitle, back chevron). Internally consistent per
 /// theme; only hue/texture differ (spec: Mode Picker & Setup §1).
@@ -475,30 +518,31 @@ class _FuturisticSelectScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return _ModeShell(
       theme: GameTheme.futuristic,
-      title: 'FUTURISTIC',
-      subtitle: 'Choose a mode',
+      title: l.modeFuturistic.toUpperCase(),
+      subtitle: l.chooseMode,
       child: Column(
         children: [
           _SubmodeCard(
             letter: 'O',
-            name: 'Original',
-            desc: 'Classic flow with valued pawns & capture',
+            name: l.modeOriginal,
+            desc: l.modeOriginalDesc,
             onTap: () => _go(context, const _SetupScreen(mode: Mode4.original)),
           ),
           const SizedBox(height: 14),
           _SubmodeCard(
             letter: 'B',
-            name: 'Bonanza',
-            desc: 'Randomized starting hands — luck of the draw',
+            name: l.modeBonanza,
+            desc: l.modeBonanzaDesc,
             onTap: () => _go(context, const _SetupScreen(mode: Mode4.bonanza)),
           ),
           const SizedBox(height: 14),
           _SubmodeCard(
             letter: 'M',
-            name: 'Morph',
-            desc: 'Complete a 4-cell shape to win',
+            name: l.modeMorph,
+            desc: l.modeMorphDesc,
             onTap: () => _go(context, const _SetupScreen(mode: Mode4.morph)),
           ),
         ],
@@ -598,10 +642,11 @@ class _SetupScreenState extends State<_SetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = widget.mode == Mode4.classic ? GameTheme.classic : GameTheme.futuristic;
     return _ModeShell(
       theme: theme,
-      title: widget.mode.label.toUpperCase(),
+      title: _modeName(l, widget.mode).toUpperCase(),
       child: Builder(
         builder: (ctx) {
           final t = GameTheme.of(ctx);
@@ -617,11 +662,11 @@ class _SetupScreenState extends State<_SetupScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _sectionLabel(t, 'DIFFICULTY'),
+                      _sectionLabel(t, l.difficultyLabel),
                       _Segmented<Difficulty>(
                         values: Difficulty.values,
                         selected: difficulty,
-                        label: (d) => d.label,
+                        label: (d) => _difficultyName(l, d),
                         onSelect: (d) => setState(() => difficulty = d),
                       ),
                     ],
@@ -629,7 +674,7 @@ class _SetupScreenState extends State<_SetupScreen> {
                 ),
               ),
               const SizedBox(height: 22),
-              _sectionLabel(t, 'GRID'),
+              _sectionLabel(t, l.gridLabel),
               _Segmented<int>(
                 values: widget.mode.grids,
                 selected: grid,
@@ -661,7 +706,7 @@ class _SetupScreenState extends State<_SetupScreen> {
 
 Widget _sectionLabel(GameTheme t, String text) => Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Text(text, style: t.label(12, color: t.muted, weight: FontWeight.w700)),
+      child: Text(text.toUpperCase(), style: t.label(12, color: t.muted, weight: FontWeight.w700)),
     );
 
 /// A themed segmented selector: selected cell = accent gradient + glow + dark text.
@@ -778,6 +823,7 @@ class _MultiplayerToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = GameTheme.of(context);
+    final l = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
@@ -791,9 +837,9 @@ class _MultiplayerToggle extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Offline Multiplayer', style: t.label(15, color: t.ink, weight: FontWeight.w700)),
+                Text(l.offlineMpTitle, style: t.label(15, color: t.ink, weight: FontWeight.w700)),
                 Text(
-                  value ? 'Two players · same device' : 'Play vs computer',
+                  value ? l.offlineMpOn : l.offlineMpOff,
                   style: t.label(12, color: t.muted),
                 ),
               ],
@@ -826,7 +872,7 @@ class _StartButton extends StatelessWidget {
           boxShadow: [BoxShadow(color: t.accent.withValues(alpha: 0.4), blurRadius: 16)],
         ),
         child: Text(
-          'START',
+          AppLocalizations.of(context)!.startButton.toUpperCase(),
           style: GoogleFonts.cinzel(fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 3, color: Colors.black),
         ),
       ),

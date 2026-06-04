@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **App shell — drawer, theme & localization.** Localization (tr/en/ru/es) via `flutter_localizations`
+  + ARB (`AppLocalizations`), with a no-hardcoded-strings rule across the shell, entry, menus, setup,
+  and game HUD (tutorial-ready). Light/dark theme system (`AppThemes` + `LuxTokens`) with a
+  `ThemeController`; a `LocaleController`; both persisted via `SharedPreferences` and restored on
+  launch. A left drawer (hamburger on the home screen) with **Settings** (language + theme),
+  **About** (localized origin story), and **Issue** (5 FAQ placeholders + a `mailto:` contact via
+  `url_launcher`). The entry screen keeps its fixed dark-luxury visuals but its text is localized;
+  every other screen follows the theme. (Backend illegal-move reason strings remain English — a small
+  noted follow-up.)
+
 - Repository scaffold: Cargo workspace (`engine`, `ai`), `aidlc-docs/` artifact tree,
   `CHANGELOG.md`, `README.md`, `.gitignore`.
 - `CLAUDE.md` (copy of the build spec) at repo root for auto-loaded context.

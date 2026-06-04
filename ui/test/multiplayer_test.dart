@@ -3,10 +3,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:futuristic_xox/main.dart';
+import 'package:futuristic_xox/src/app/app_controllers.dart';
 import 'package:futuristic_xox/src/controllers/game_controller.dart';
 import 'package:futuristic_xox/src/game/dart_game_api.dart';
 import 'package:futuristic_xox/src/game/player_controller.dart';
 import 'package:futuristic_xox/src/models/game_models.dart';
+
+const _strings = GameStrings(
+  capture: 'Capture!',
+  noSecondMove: 'No second move',
+  selectPawnFirst: 'Select a pawn first',
+  draw: 'Draw',
+  wins: _wins,
+);
+String _wins(String name) => '$name wins!';
+
+Widget _app() => FuturisticXoxApp(
+      locale: LocaleController(const Locale('en')),
+      theme: ThemeController(ThemeMode.dark),
+    );
 
 GameController mp(Mode4 mode, int grid) => GameController(
       api: DartGameApi(),
@@ -14,6 +29,7 @@ GameController mp(Mode4 mode, int grid) => GameController(
       rows: grid,
       cols: grid,
       players: [HumanController('Player 1'), HumanController('Player 2')],
+      strings: _strings,
       seed: 1,
     );
 
@@ -62,6 +78,7 @@ void main() {
         rows: 3,
         cols: 3,
         players: [HumanController('You'), AiController(Difficulty.hard, label: 'Computer')],
+        strings: _strings,
         seed: 1,
       );
       expect(c.playerAt(1).isHuman, isFalse);
@@ -76,7 +93,7 @@ void main() {
 
   group('setup toggle', () {
     testWidgets('Offline Multiplayer dims the difficulty selector', (tester) async {
-      await tester.pumpWidget(const FuturisticXoxApp());
+      await tester.pumpWidget(_app());
       await tester.pump(const Duration(seconds: 1)); // entrance animation
       await tester.tap(find.text('CLASSIC'));
       await tester.pump();

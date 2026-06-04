@@ -8,8 +8,9 @@ import '../theme/game_theme.dart';
 class TurnIndicator extends StatefulWidget {
   final int turn;
   final String label;
-  final bool twoMovesPerTurn;
-  final int movesLeftInTurn;
+
+  /// Localized "move N of 2" text (Morph only); null otherwise.
+  final String? moveText;
   final bool aiThinking;
   final bool isOver;
 
@@ -17,8 +18,7 @@ class TurnIndicator extends StatefulWidget {
     super.key,
     required this.turn,
     required this.label,
-    required this.twoMovesPerTurn,
-    required this.movesLeftInTurn,
+    required this.moveText,
     required this.aiThinking,
     required this.isOver,
   });
@@ -67,9 +67,9 @@ class _TurnIndicatorState extends State<TurnIndicator> with SingleTickerProvider
         ),
         const SizedBox(width: 10),
         Text(widget.label, style: theme.display(16, color: theme.ink)),
-        if (widget.twoMovesPerTurn) ...[
+        if (widget.moveText != null) ...[
           const SizedBox(width: 10),
-          Text('move ${3 - widget.movesLeftInTurn} of 2', style: theme.label(13, color: theme.muted)),
+          Text(widget.moveText!, style: theme.label(13, color: theme.muted)),
         ],
         if (widget.aiThinking) ...[
           const SizedBox(width: 10),
@@ -89,7 +89,14 @@ class _TurnIndicatorState extends State<TurnIndicator> with SingleTickerProvider
 /// cells are faint. Rotation-agnostic, with an "any rotation" sublabel.
 class MorphShapeBadge extends StatelessWidget {
   final MorphShape shape;
-  const MorphShapeBadge({super.key, required this.shape});
+  final String targetLabel;
+  final String anyRotationLabel;
+  const MorphShapeBadge({
+    super.key,
+    required this.shape,
+    required this.targetLabel,
+    required this.anyRotationLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -121,8 +128,8 @@ class MorphShapeBadge extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('TARGET', style: theme.label(11, color: theme.muted)),
-              Text('any rotation', style: theme.label(9, color: theme.muted)),
+              Text(targetLabel.toUpperCase(), style: theme.label(11, color: theme.muted)),
+              Text(anyRotationLabel, style: theme.label(9, color: theme.muted)),
             ],
           ),
           const SizedBox(width: 12),
@@ -225,6 +232,8 @@ class InlineMessage extends StatelessWidget {
 class ResultBanner extends StatelessWidget {
   final Outcome outcome;
   final String title;
+  final String menuLabel;
+  final String playAgainLabel;
   final VoidCallback onPlayAgain;
   final VoidCallback onMenu;
 
@@ -232,6 +241,8 @@ class ResultBanner extends StatelessWidget {
     super.key,
     required this.outcome,
     required this.title,
+    required this.menuLabel,
+    required this.playAgainLabel,
     required this.onPlayAgain,
     required this.onMenu,
   });
@@ -268,9 +279,12 @@ class ResultBanner extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  OutlinedButton(onPressed: onMenu, child: Text('Menu', style: theme.label(15))),
+                  OutlinedButton(onPressed: onMenu, child: Text(menuLabel, style: theme.label(15))),
                   const SizedBox(width: 12),
-                  FilledButton(onPressed: onPlayAgain, child: Text('Play again', style: theme.label(15, color: Colors.black))),
+                  FilledButton(
+                    onPressed: onPlayAgain,
+                    child: Text(playAgainLabel, style: theme.label(15, color: Colors.black)),
+                  ),
                 ],
               ),
             ],
