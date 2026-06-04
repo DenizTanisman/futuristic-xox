@@ -41,6 +41,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   scaffolding.
 
 ### Added
+- **UI themes** — Classic (cold metallic) and Futuristic (warm luxury), rebuilt natively in Flutter
+  (no WebView): a shared `GameTheme` abstraction (colours/gradients/fonts via an `InheritedWidget`),
+  Cinzel (display) + Rajdhani (UI/numbers) via `google_fonts`, themed radial backgrounds, a beveled
+  metallic frame with a sweeping rim shimmer, staggered board reveal, cell hover/press glow, animated
+  disc pawns (elastic pop-in + ring ripple, red on capture), animated Classic X/O metallic
+  stroke-draw, a pulsing turn indicator, and a themed target badge. Animations are wrapped in
+  `RepaintBoundary` and use transform/opacity for 60fps.
 - **Offline multiplayer** (same-device, two players) via a `PlayerController` abstraction
   (`HumanController` / `AiController`, with a `RemoteController` seam for future online play). The
   game loop asks the active seat's controller for its move, so the engine/UI are identical across
@@ -50,6 +57,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a future name/nickname swap touches one place.
 
 ### Changed
+- Board, cells, pawns, and typography are now driven by the shared `GameTheme` (no hardcoded colours);
+  Classic mode uses the metallic theme + stroke-drawn X/O, Futuristic modes use the luxury theme +
+  valued discs.
 - Mode setup screens now include an **Offline Multiplayer** toggle (default off); turning it on dims
   and disables the Difficulty selector (no AI opponent) while Grid stays selectable.
 - **Morph win condition (play-test, spec §4.4/§5/§13.1):** one target shape (I/L/Z) is chosen at

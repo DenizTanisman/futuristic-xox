@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../models/game_models.dart';
-import '../theme/app_theme.dart';
+import '../theme/game_theme.dart';
 import 'pawn_widget.dart';
 
 /// A player's remaining hand. Both rails are always visible (spec §8). When a pawn is placed the row
-/// reflows and animates its size, so the rail "slides to close the gap". For the active human the
-/// pawns are tappable to select one.
-///
-/// Each token is drawn in **its own colour** — in Bonanza a player may hold opponent-coloured pawns
-/// (spec §4.3), so a rail can show a mix of both colours.
+/// reflows and animates its size, so the rail "slides to close the gap". Each token is drawn in its
+/// own colour (Bonanza mixes colours). The active human seat's tokens are tappable to select one.
 class PawnRail extends StatelessWidget {
   final int owner;
   final String label;
@@ -36,43 +33,47 @@ class PawnRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = GameTheme.of(context);
     const tokenSize = 38.0;
     return AnimatedContainer(
-      duration: AppTheme.railSlide,
+      duration: Motion.railSlide,
       curve: Curves.easeOut,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: active ? AppColors.surfaceHigh : AppColors.surface,
+        gradient: theme.panel,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: active ? AppColors.ownerGlow(owner) : AppColors.gridLine,
+          color: active ? theme.discGlow(owner) : theme.cellEmptyBorder,
           width: active ? 2 : 1,
         ),
+        boxShadow: active
+            ? [BoxShadow(color: theme.discGlow(owner).withValues(alpha: 0.25), blurRadius: 12)]
+            : null,
       ),
       child: Row(
         children: [
-          _dot(),
+          _dot(theme),
           const SizedBox(width: 8),
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 72),
+            constraints: const BoxConstraints(maxWidth: 78),
             child: Text(
               label,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: active ? AppColors.textPrimary : AppColors.textMuted,
-                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 13,
+              style: theme.label(
+                13,
+                color: active ? theme.ink : theme.muted,
+                weight: active ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: AnimatedSize(
-              duration: AppTheme.railSlide,
+              duration: Motion.railSlide,
               curve: Curves.easeOut,
               alignment: Alignment.centerLeft,
               child: hand.isEmpty
-                  ? const Text('—', style: TextStyle(color: AppColors.textMuted))
+                  ? Text('—', style: theme.label(14, color: theme.muted))
                   : Wrap(
                       spacing: 6,
                       runSpacing: 6,
@@ -87,14 +88,14 @@ class PawnRail extends StatelessWidget {
     );
   }
 
-  Widget _dot() {
+  Widget _dot(GameTheme theme) {
     return Container(
       width: 14,
       height: 14,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.owner(owner),
-        boxShadow: active ? [BoxShadow(color: AppColors.ownerGlow(owner), blurRadius: 8)] : null,
+        color: theme.ownerColor(owner),
+        boxShadow: active ? [BoxShadow(color: theme.discGlow(owner), blurRadius: 8)] : null,
       ),
     );
   }
@@ -109,6 +110,7 @@ class PawnRail extends StatelessWidget {
       showValue: showValues,
       size: size,
       selected: selected,
+      animateIn: false,
       glyph: classic ? (h.color == 0 ? 'X' : 'O') : null,
     );
     if (!selectable) return Opacity(opacity: active ? 1 : 0.65, child: pawn);

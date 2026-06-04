@@ -23,7 +23,10 @@ void main() {
     expect(find.text('Play'), findsOneWidget);
 
     await tester.tap(find.text('Play'));
-    await tester.pumpAndSettle();
+    // The game screen has looping animations (frame shimmer, turn pulse), so pumpAndSettle would
+    // never settle — pump fixed frames instead.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 700));
     // Game screen: a board grid is present. Human (player 0) moves first, so no AI timer is pending.
     expect(find.byType(GridView), findsOneWidget);
   });

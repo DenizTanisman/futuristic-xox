@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../models/game_models.dart';
 import '../theme/app_theme.dart';
@@ -14,11 +15,16 @@ class EntryScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
               child: Text(
                 'FUTURISTIC XOX',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: 3),
+                style: GoogleFonts.cinzel(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 3,
+                  color: AppColors.accent,
+                ),
               ),
             ),
             Expanded(

@@ -30,6 +30,9 @@ class GameController extends ChangeNotifier {
   /// The cell touched by the most recent applied move (placement/capture highlight).
   int? lastMoveCell;
 
+  /// Whether the most recent applied move captured an enemy pawn (drives the capture ripple).
+  bool lastWasCapture = false;
+
   /// True while a non-human (AI) seat is "thinking".
   bool aiThinking = false;
 
@@ -142,6 +145,7 @@ class GameController extends ChangeNotifier {
 
   void _onApplied(MoveResult result) {
     lastMoveCell = _firstChangedCell(snapshot, result.snapshot) ?? lastMoveCell;
+    lastWasCapture = result.captured;
     snapshot = result.snapshot;
 
     if (result.snapshot.isOver) {
