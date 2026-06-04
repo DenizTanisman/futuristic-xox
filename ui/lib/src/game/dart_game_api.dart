@@ -259,6 +259,42 @@ class DartGameApi implements GameApi {
   }
 
   @override
+  List<int> completingCells() {
+    final me = _s.turn;
+    final groups = _mode == Mode4.morph ? _placements : _lines;
+    final need = _mode == Mode4.morph ? 3 : 2; // own cells before the finishing one
+    final myColorPawns = _s.hands[me].where((h) => h.color == me);
+    final result = <int>{};
+    for (final g in groups) {
+      var mine = 0;
+      int? open;
+      var blocked = false;
+      for (final c in g) {
+        final p = _s.board[c];
+        if (p != null && p.owner == me) {
+          mine++;
+        } else if (open == null) {
+          open = c;
+        } else {
+          blocked = true;
+        }
+      }
+      if (blocked || mine != need || open == null) continue;
+      final target = _s.board[open];
+      final bool canPlace;
+      if (!_mode.valued) {
+        canPlace = target == null && _s.hands[me].isNotEmpty;
+      } else if (target == null) {
+        canPlace = myColorPawns.isNotEmpty; // need an own-colour pawn to extend my own line/shape
+      } else {
+        canPlace = target.owner != me && myColorPawns.any((h) => h.value > target.value);
+      }
+      if (canPlace) result.add(open);
+    }
+    return result.toList();
+  }
+
+  @override
   MoveResult humanMove({int? color, int? value, required int cell}) {
     final legal = _legalMoves(_s)
         .any((m) => m.cell == cell && m.color == (_mode.valued ? color : m.color) && m.value == value);

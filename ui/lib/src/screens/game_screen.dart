@@ -123,6 +123,7 @@ class _GameScreenState extends State<GameScreen> {
                             showValues: showValues,
                             classic: classic,
                             highlightedCells: controller.highlightedCells,
+                            winningCells: controller.completingCells,
                             lastMoveCell: controller.lastMoveCell,
                             interactive: controller.isHumanTurn && !controller.aiThinking,
                             onTap: controller.onCellTap,

@@ -21,6 +21,7 @@ class AppColors {
   static const Color textPrimary = Color(0xFFF3EEF6);
   static const Color textMuted = Color(0xFF9B91A3);
   static const Color danger = Color(0xFFD9544D);
+  static const Color hint = Color(0xFF4CC38A); // "complete the shape here" highlight
   static const Color gridLine = Color(0xFF3A3040);
 
   /// Owner → primary colour.

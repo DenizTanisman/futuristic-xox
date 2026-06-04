@@ -17,6 +17,10 @@ abstract class GameApi {
   /// hand pawn; both `null` for Classic.
   List<int> legalCells({int? color, int? value});
 
+  /// Cells where the side to move could place a held own-colour pawn to **win immediately**
+  /// (complete a line, or the Morph target shape). Used as an on-board hint (spec §8 clarity).
+  List<int> completingCells();
+
   /// Attempt a human move. For valued modes pass the selected pawn's `color` and `value`; for
   /// Classic both are `null`. Illegal → no state change + an inline reason (spec §3.3).
   MoveResult humanMove({int? color, int? value, required int cell});

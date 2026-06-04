@@ -65,6 +65,13 @@ class GameController extends ChangeNotifier {
     return api.legalCells(color: mode.valued ? selectedColor : null, value: mode.valued ? selectedValue : null);
   }
 
+  /// Morph only: cells where the human can place to complete the target shape this move (an on-board
+  /// hint, since 4-cell shapes are hard to track visually). Empty in other modes.
+  List<int> get completingCells {
+    if (!isHumanTurn || mode != Mode4.morph) return const [];
+    return api.completingCells();
+  }
+
   /// Select/deselect a hand pawn by colour + value (valued modes).
   void selectPawn(int color, int value) {
     if (!isHumanTurn) return;

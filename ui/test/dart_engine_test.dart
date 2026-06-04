@@ -139,6 +139,33 @@ void main() {
     });
   });
 
+  group('completing-cell hint', () {
+    test('valued line: the third cell of a 2-in-a-row is flagged', () {
+      final api = DartGameApi();
+      api.newGame(mode: Mode4.original, rows: 3, cols: 3);
+      api.humanMove(color: 0, value: 1, cell: 0);
+      api.humanMove(color: 1, value: 1, cell: 8);
+      api.humanMove(color: 0, value: 2, cell: 1);
+      api.humanMove(color: 1, value: 2, cell: 7);
+      // Back to player 0: cell 2 completes the top row 0,1,2.
+      expect(api.completingCells(), contains(2));
+    });
+
+    test('morph: the 4th cell that completes the chosen shape is flagged', () {
+      final api = DartGameApi();
+      final s0 = api.newGame(mode: Mode4.morph, rows: 5, cols: 5, seed: 9);
+      final target = morphPlacementsForShape(5, 5, MorphShape.values.indexOf(s0.morphShape!)).first;
+      final park = [for (var c = 0; c < 25; c++) if (!target.contains(c)) c];
+      api.humanMove(color: 0, value: 1, cell: target[0]);
+      api.humanMove(color: 0, value: 1, cell: target[1]);
+      api.humanMove(color: 1, value: 1, cell: park[0]);
+      api.humanMove(color: 1, value: 1, cell: park[1]);
+      api.humanMove(color: 0, value: 2, cell: target[2]);
+      // Player 0 now owns 3 of the 4 shape cells; target[3] should be flagged as completing.
+      expect(api.completingCells(), contains(target[3]));
+    });
+  });
+
   group('AI', () {
     test('easy plays only legal moves and games terminate (all modes)', () async {
       for (final mode in Mode4.values) {
