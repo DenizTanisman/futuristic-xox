@@ -116,6 +116,12 @@ class _GameScreenState extends State<GameScreen> {
                         showValues: showValues,
                         classic: classic,
                         active: s.turn == 1 && !s.isOver,
+                        // Selectable only when seat 1 is a human whose turn it is (offline MP).
+                        selectedColor: s.turn == 1 ? controller.selectedColor : null,
+                        selectedValue: s.turn == 1 ? controller.selectedValue : null,
+                        onSelect: widget.mode.valued && controller.isHumanTurn && s.turn == 1
+                            ? controller.selectPawn
+                            : null,
                       ),
                       const SizedBox(height: 10),
                       TurnIndicator(
@@ -151,10 +157,12 @@ class _GameScreenState extends State<GameScreen> {
                         hand: s.hand0,
                         showValues: showValues,
                         classic: classic,
-                        active: controller.isHumanTurn && s.turn == 0,
-                        selectedColor: controller.selectedColor,
-                        selectedValue: controller.selectedValue,
-                        onSelect: widget.mode.valued && s.turn == 0 ? controller.selectPawn : null,
+                        active: s.turn == 0 && !s.isOver,
+                        selectedColor: s.turn == 0 ? controller.selectedColor : null,
+                        selectedValue: s.turn == 0 ? controller.selectedValue : null,
+                        onSelect: widget.mode.valued && controller.isHumanTurn && s.turn == 0
+                            ? controller.selectPawn
+                            : null,
                       ),
                     ],
                   ),
