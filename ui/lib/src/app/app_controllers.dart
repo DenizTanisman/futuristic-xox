@@ -39,11 +39,30 @@ class ThemeController extends ChangeNotifier {
   }
 }
 
+/// Tracks which modes' tutorials the player has already seen, so each mode's tutorial auto-shows only
+/// the first time that mode is entered (persisted). Keyed by `Mode4.name`.
+class TutorialProgress extends ChangeNotifier {
+  static const _prefix = 'tut_seen_';
+  final Set<String> _seen;
+  TutorialProgress(this._seen);
+
+  bool seen(String modeKey) => _seen.contains(modeKey);
+
+  Future<void> markSeen(String modeKey) async {
+    if (_seen.add(modeKey)) {
+      notifyListeners();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('$_prefix$modeKey', true);
+    }
+  }
+}
+
 /// The persisted app preferences, loaded once at startup.
 class AppPrefs {
   final Locale? locale;
   final ThemeMode themeMode;
-  const AppPrefs(this.locale, this.themeMode);
+  final Set<String> seenTutorials;
+  const AppPrefs(this.locale, this.themeMode, this.seenTutorials);
 
   static Future<AppPrefs> load(Iterable<Locale> supported) async {
     final prefs = await SharedPreferences.getInstance();
@@ -52,7 +71,11 @@ class AppPrefs {
         ? Locale(code)
         : null; // null → MaterialApp resolves the device locale (with fallback)
     final theme = prefs.getString('theme') == 'light' ? ThemeMode.light : ThemeMode.dark;
-    return AppPrefs(locale, theme);
+    final seen = <String>{};
+    for (final m in const ['classic', 'original', 'bonanza', 'morph']) {
+      if (prefs.getBool('${TutorialProgress._prefix}$m') ?? false) seen.add(m);
+    }
+    return AppPrefs(locale, theme, seen);
   }
 }
 
@@ -60,7 +83,14 @@ class AppPrefs {
 class AppScope extends InheritedWidget {
   final LocaleController locale;
   final ThemeController theme;
-  const AppScope({super.key, required this.locale, required this.theme, required super.child});
+  final TutorialProgress tutorialProgress;
+  const AppScope({
+    super.key,
+    required this.locale,
+    required this.theme,
+    required this.tutorialProgress,
+    required super.child,
+  });
 
   static AppScope of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<AppScope>()!;

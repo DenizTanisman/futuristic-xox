@@ -186,4 +186,105 @@ class AppLocalizationsEn extends AppLocalizations {
   String bonanzaHandLine(int own, int total, int opp) {
     return '$own of your $total pawns are your own colour\n($opp are your opponent\'s)';
   }
+
+  @override
+  String get tutSkip => 'Skip';
+
+  @override
+  String get tutHintGlow => 'Tap the glowing square';
+
+  @override
+  String get tutHintWrong => 'Not there — place it on the glowing square';
+
+  @override
+  String get tutHintGreat => 'Nice!';
+
+  @override
+  String get tutCapH => 'Horizontal';
+
+  @override
+  String get tutCapV => 'Vertical';
+
+  @override
+  String get tutCapD => 'Diagonal';
+
+  @override
+  String get tutBtnStart => 'Let\'s begin';
+
+  @override
+  String get tutBtnOk => 'Got it';
+
+  @override
+  String get tutBtnTry => 'Let\'s try';
+
+  @override
+  String get tutBtnFinish => 'Finish';
+
+  @override
+  String get tutClassicWelcomeTitle => 'Welcome';
+
+  @override
+  String get tutClassicWelcomeBody =>
+      'Good to have you here. We\'ll learn this board together in a moment — no rush, step by step, side by side. Ready when you are.';
+
+  @override
+  String get tutClassicTurnTitle => 'Your turn to start';
+
+  @override
+  String get tutClassicTurnBody =>
+      'When it\'s your turn you drop an X on the board. Watch — an X lands on the glowing square.';
+
+  @override
+  String get tutClassicDemo1Title => 'Now you try';
+
+  @override
+  String get tutClassicDemo1Body =>
+      'Tap the glowing square and place your first X. (Any empty square works too.)';
+
+  @override
+  String get tutClassicDemo1Hint => 'Tap the glowing square';
+
+  @override
+  String get tutClassicWinruleTitle => 'The one secret to winning';
+
+  @override
+  String get tutClassicWinruleBody =>
+      'Line up three X\'s — horizontal, vertical, or diagonal, it doesn\'t matter. Complete the line and you win.';
+
+  @override
+  String get tutClassicDemo2aTitle => '1 / 3 — Horizontal';
+
+  @override
+  String get tutClassicDemo2aBody =>
+      'Two X\'s are lined up. Complete the glowing square and close the horizontal line.';
+
+  @override
+  String get tutClassicDemo2bTitle => '2 / 3 — Vertical';
+
+  @override
+  String get tutClassicDemo2bBody =>
+      'This time we complete the column. Place an X on the glowing square.';
+
+  @override
+  String get tutClassicDemo2cTitle => '3 / 3 — Diagonal';
+
+  @override
+  String get tutClassicDemo2cBody =>
+      'Finally, the diagonal. Place an X on the glowing center square to complete the trio.';
+
+  @override
+  String get tutClassicDoneTitle => 'That\'s all it takes!';
+
+  @override
+  String get tutClassicDoneBody =>
+      'The Classic board is all yours now. Jump into a real game whenever you like — good luck, and may you be the one who wins.';
+
+  @override
+  String get tutLaunch => 'How to play';
+
+  @override
+  String get navTutorials => 'Tutorials';
+
+  @override
+  String get tutSoon => 'Coming soon';
 }

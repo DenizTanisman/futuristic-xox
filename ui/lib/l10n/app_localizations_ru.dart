@@ -187,4 +187,105 @@ class AppLocalizationsRu extends AppLocalizations {
   String bonanzaHandLine(int own, int total, int opp) {
     return '$own из ваших $total фишек вашего цвета\n($opp — цвета соперника)';
   }
+
+  @override
+  String get tutSkip => 'Пропустить';
+
+  @override
+  String get tutHintGlow => 'Коснитесь светящейся клетки';
+
+  @override
+  String get tutHintWrong => 'Не туда — поставьте на светящуюся клетку';
+
+  @override
+  String get tutHintGreat => 'Отлично!';
+
+  @override
+  String get tutCapH => 'Горизонталь';
+
+  @override
+  String get tutCapV => 'Вертикаль';
+
+  @override
+  String get tutCapD => 'Диагональ';
+
+  @override
+  String get tutBtnStart => 'Начнём';
+
+  @override
+  String get tutBtnOk => 'Понятно';
+
+  @override
+  String get tutBtnTry => 'Давайте попробуем';
+
+  @override
+  String get tutBtnFinish => 'Готово';
+
+  @override
+  String get tutClassicWelcomeTitle => 'Добро пожаловать';
+
+  @override
+  String get tutClassicWelcomeBody =>
+      'Рады видеть вас здесь. Сейчас вместе разберём эту доску — не спеша, шаг за шагом, бок о бок. Начнём, когда будете готовы.';
+
+  @override
+  String get tutClassicTurnTitle => 'Ваш ход — вы начинаете';
+
+  @override
+  String get tutClassicTurnBody =>
+      'Когда ваш ход, вы ставите X на доску. Смотрите — X появляется на светящейся клетке.';
+
+  @override
+  String get tutClassicDemo1Title => 'Теперь попробуйте сами';
+
+  @override
+  String get tutClassicDemo1Body =>
+      'Коснитесь светящейся клетки и поставьте свой первый X. (Любая пустая клетка тоже подойдёт.)';
+
+  @override
+  String get tutClassicDemo1Hint => 'Коснитесь светящейся клетки';
+
+  @override
+  String get tutClassicWinruleTitle => 'Единственный секрет победы';
+
+  @override
+  String get tutClassicWinruleBody =>
+      'Соберите три X в ряд — по горизонтали, вертикали или диагонали, неважно. Завершите линию и победите.';
+
+  @override
+  String get tutClassicDemo2aTitle => '1 / 3 — Горизонталь';
+
+  @override
+  String get tutClassicDemo2aBody =>
+      'Два X уже в ряд. Завершите светящуюся клетку и закройте горизонтальную линию.';
+
+  @override
+  String get tutClassicDemo2bTitle => '2 / 3 — Вертикаль';
+
+  @override
+  String get tutClassicDemo2bBody =>
+      'На этот раз завершаем столбец. Поставьте X на светящуюся клетку.';
+
+  @override
+  String get tutClassicDemo2cTitle => '3 / 3 — Диагональ';
+
+  @override
+  String get tutClassicDemo2cBody =>
+      'И наконец, диагональ. Поставьте X на светящуюся центральную клетку и завершите тройку.';
+
+  @override
+  String get tutClassicDoneTitle => 'Вот и всё!';
+
+  @override
+  String get tutClassicDoneBody =>
+      'Теперь доска Classic полностью ваша. Переходите к настоящей игре в любой момент — удачи, и пусть победа будет за вами.';
+
+  @override
+  String get tutLaunch => 'Как играть';
+
+  @override
+  String get navTutorials => 'Обучение';
+
+  @override
+  String get tutSoon => 'Скоро';
 }

@@ -14,19 +14,27 @@ Future<void> main() async {
   runApp(FuturisticXoxApp(
     locale: LocaleController(prefs.locale),
     theme: ThemeController(prefs.themeMode),
+    tutorialProgress: TutorialProgress(prefs.seenTutorials),
   ));
 }
 
 class FuturisticXoxApp extends StatelessWidget {
   final LocaleController locale;
   final ThemeController theme;
-  const FuturisticXoxApp({super.key, required this.locale, required this.theme});
+  final TutorialProgress tutorialProgress;
+  const FuturisticXoxApp({
+    super.key,
+    required this.locale,
+    required this.theme,
+    required this.tutorialProgress,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AppScope(
       locale: locale,
       theme: theme,
+      tutorialProgress: tutorialProgress,
       // Rebuild MaterialApp whenever locale or theme changes.
       child: AnimatedBuilder(
         animation: Listenable.merge([locale, theme]),
