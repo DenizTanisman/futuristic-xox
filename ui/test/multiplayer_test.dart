@@ -90,7 +90,7 @@ void main() {
       await tester.tap(find.byType(Switch));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-      expect(difficultyOpacity().opacity, 0.4, reason: 'difficulty dimmed when MP on');
+      expect(difficultyOpacity().opacity, 0.34, reason: 'difficulty dimmed when MP on');
     });
   });
 }

@@ -41,6 +41,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   scaffolding.
 
 ### Added
+- **Mode picker & setup screens** — rebuilt inside a shared metallic shimmer panel (reusable
+  `MetallicPanel`) with Cinzel metallic titles and a back chevron. Futuristic submode picker shows
+  Original / Bonanza / Morph cards (metallic icon tile + description, hover lift + glow). Setup uses
+  themed segmented selectors for Difficulty and Grid (grid options adapt per mode; each shows an n×n
+  mini-grid dot icon), a styled Offline-Multiplayer toggle (dims + disables Difficulty while Grid
+  stays active), and a metallic gradient Start button. Fully themed per mode.
 - **Entry/landing screen** — responsive Classic | Futuristic split (side-by-side on wide screens,
   top/bottom on phones via `LayoutBuilder`), slide-in entrance, metallic gradient titles (Cinzel 900
   via `ShaderMask`), an animated steel→gold divider with a sheen shift, themed motifs (Classic X/O

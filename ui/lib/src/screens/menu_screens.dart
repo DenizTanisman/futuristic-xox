@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../models/game_models.dart';
-import '../theme/app_theme.dart';
 import '../theme/game_theme.dart';
+import '../widgets/metallic_panel.dart';
 import '../widgets/pawn_widget.dart';
 import 'game_screen.dart';
 
@@ -347,41 +347,208 @@ class _FuturisticMotif extends StatelessWidget {
   }
 }
 
-/// Futuristic submode selection: Original / Bonanza / Morph (spec §8.3).
-class _FuturisticSelectScreen extends StatelessWidget {
-  const _FuturisticSelectScreen();
+void _go(BuildContext context, Widget screen) {
+  Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
+}
+
+/// Themed shell shared by the submode picker and the setup screen: background gradient + a centered
+/// metallic panel with a Cinzel title (+ optional subtitle, back chevron). Internally consistent per
+/// theme; only hue/texture differ (spec: Mode Picker & Setup §1).
+class _ModeShell extends StatelessWidget {
+  final GameTheme theme;
+  final String title;
+  final String? subtitle;
+  final Widget child;
+  const _ModeShell({
+    required this.theme,
+    required this.title,
+    this.subtitle,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Futuristic')),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            _MenuCard(
-              title: 'Original',
-              subtitle: 'Valued pawns, capture, 3 in a row',
-              onTap: () => _go(context, const _SetupScreen(mode: Mode4.original)),
+    return GameThemeProvider(
+      theme: theme,
+      child: Container(
+        decoration: BoxDecoration(gradient: theme.background),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SafeArea(
+            child: Stack(
+              children: [
+                Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 460),
+                      child: MetallicPanel(
+                        padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ShaderMask(
+                              shaderCallback: (r) => LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [theme.accentGlow, theme.accent],
+                              ).createShader(r),
+                              blendMode: BlendMode.srcIn,
+                              child: Text(
+                                title,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.cinzel(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 3,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            if (subtitle != null) ...[
+                              const SizedBox(height: 6),
+                              Text(subtitle!, textAlign: TextAlign.center, style: theme.label(13, color: theme.muted)),
+                            ],
+                            const SizedBox(height: 22),
+                            child,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                    top: 4,
+                    left: 4,
+                    child: IconButton(
+                      icon: Icon(Icons.chevron_left, color: theme.muted),
+                      onPressed: () => Navigator.of(context).maybePop(),
+                    ),
+                  ),
+              ],
             ),
-            _MenuCard(
-              title: 'Bonanza',
-              subtitle: 'Original with randomized starting hands',
-              onTap: () => _go(context, const _SetupScreen(mode: Mode4.bonanza)),
-            ),
-            _MenuCard(
-              title: 'Morph',
-              subtitle: 'Two moves per turn · complete a 4-cell shape',
-              onTap: () => _go(context, const _SetupScreen(mode: Mode4.morph)),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-/// Difficulty + grid selection, then launch the game (spec §8.2–8.3).
+/// Futuristic submode selection: Original / Bonanza / Morph (spec §8.3).
+class _FuturisticSelectScreen extends StatelessWidget {
+  const _FuturisticSelectScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ModeShell(
+      theme: GameTheme.futuristic,
+      title: 'FUTURISTIC',
+      subtitle: 'Choose a mode',
+      child: Column(
+        children: [
+          _SubmodeCard(
+            letter: 'O',
+            name: 'Original',
+            desc: 'Classic flow with valued pawns & capture',
+            onTap: () => _go(context, const _SetupScreen(mode: Mode4.original)),
+          ),
+          const SizedBox(height: 14),
+          _SubmodeCard(
+            letter: 'B',
+            name: 'Bonanza',
+            desc: 'Randomized starting hands — luck of the draw',
+            onTap: () => _go(context, const _SetupScreen(mode: Mode4.bonanza)),
+          ),
+          const SizedBox(height: 14),
+          _SubmodeCard(
+            letter: 'M',
+            name: 'Morph',
+            desc: 'Complete a 4-cell shape to win',
+            onTap: () => _go(context, const _SetupScreen(mode: Mode4.morph)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A selectable submode card with a metallic icon tile, name, description, and hover lift + glow.
+class _SubmodeCard extends StatefulWidget {
+  final String letter;
+  final String name;
+  final String desc;
+  final VoidCallback onTap;
+  const _SubmodeCard({required this.letter, required this.name, required this.desc, required this.onTap});
+
+  @override
+  State<_SubmodeCard> createState() => _SubmodeCardState();
+}
+
+class _SubmodeCardState extends State<_SubmodeCard> {
+  bool _h = false;
+  @override
+  Widget build(BuildContext context) {
+    final t = GameTheme.of(context);
+    return MouseRegion(
+      onEnter: (_) => setState(() => _h = true),
+      onExit: (_) => setState(() => _h = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          transform: Matrix4.translationValues(0, _h ? -3 : 0, 0),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: const Alignment(-0.6, -0.8),
+              radius: 1.4,
+              colors: [t.accent.withValues(alpha: 0.10), t.cell],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _h ? t.accent : t.accent.withValues(alpha: 0.4), width: _h ? 2 : 1),
+            boxShadow: _h ? [BoxShadow(color: t.accent.withValues(alpha: 0.3), blurRadius: 16)] : null,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [t.accentGlow, t.accent],
+                  ),
+                ),
+                child: Text(widget.letter,
+                    style: GoogleFonts.cinzel(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.black)),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.name, style: t.display(18, color: t.ink)),
+                    const SizedBox(height: 2),
+                    Text(widget.desc, style: t.label(12, color: t.muted)),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: t.muted),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Difficulty + grid + offline-multiplayer, then launch the game (spec §8.2–8.3).
 class _SetupScreen extends StatefulWidget {
   final Mode4 mode;
   const _SetupScreen({required this.mode});
@@ -397,61 +564,175 @@ class _SetupScreenState extends State<_SetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.mode.label)),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    final theme = widget.mode == Mode4.classic ? GameTheme.classic : GameTheme.futuristic;
+    return _ModeShell(
+      theme: theme,
+      title: widget.mode.label.toUpperCase(),
+      child: Builder(
+        builder: (ctx) {
+          final t = GameTheme.of(ctx);
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Difficulty is meaningless with two human players, so dim + disable it.
-              _SectionLabel('Difficulty', dimmed: multiplayer),
-              _ChoiceRow<Difficulty>(
-                values: Difficulty.values,
-                selected: difficulty,
-                label: (d) => d.label,
-                enabled: !multiplayer,
-                onSelect: (d) => setState(() => difficulty = d),
+              // Difficulty — dims + disables under offline multiplayer (no AI opponent).
+              IgnorePointer(
+                ignoring: multiplayer,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: multiplayer ? 0.34 : 1.0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _sectionLabel(t, 'DIFFICULTY'),
+                      _Segmented<Difficulty>(
+                        values: Difficulty.values,
+                        selected: difficulty,
+                        label: (d) => d.label,
+                        onSelect: (d) => setState(() => difficulty = d),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 28),
-              const _SectionLabel('Grid'),
-              _ChoiceRow<int>(
+              const SizedBox(height: 22),
+              _sectionLabel(t, 'GRID'),
+              _Segmented<int>(
                 values: widget.mode.grids,
                 selected: grid,
                 label: (g) => '$g×$g',
+                iconBuilder: (g, color) => _GridIcon(n: g, color: color),
                 onSelect: (g) => setState(() => grid = g),
               ),
-              const SizedBox(height: 28),
-              _MultiplayerToggle(
-                value: multiplayer,
-                onChanged: (v) => setState(() => multiplayer = v),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+              const SizedBox(height: 22),
+              _MultiplayerToggle(value: multiplayer, onChanged: (v) => setState(() => multiplayer = v)),
+              const SizedBox(height: 26),
+              _StartButton(
+                onTap: () => _go(
+                  ctx,
+                  GameScreen(
+                    mode: widget.mode,
+                    grid: grid,
+                    difficulty: difficulty,
+                    multiplayer: multiplayer,
                   ),
-                  onPressed: () => _go(
-                    context,
-                    GameScreen(
-                      mode: widget.mode,
-                      grid: grid,
-                      difficulty: difficulty,
-                      multiplayer: multiplayer,
-                    ),
-                  ),
-                  child: const Text('Play', style: TextStyle(fontSize: 18)),
                 ),
               ),
             ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+Widget _sectionLabel(GameTheme t, String text) => Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Text(text, style: t.label(12, color: t.muted, weight: FontWeight.w700)),
+    );
+
+/// A themed segmented selector: selected cell = accent gradient + glow + dark text.
+class _Segmented<T> extends StatelessWidget {
+  final List<T> values;
+  final T selected;
+  final String Function(T) label;
+  final Widget Function(T value, Color color)? iconBuilder;
+  final void Function(T) onSelect;
+  const _Segmented({
+    required this.values,
+    required this.selected,
+    required this.label,
+    this.iconBuilder,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = GameTheme.of(context);
+    return Row(
+      children: [
+        for (final v in values)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              child: _SegCell(
+                t: t,
+                selected: v == selected,
+                label: label(v),
+                icon: iconBuilder?.call(v, v == selected ? Colors.black : t.muted),
+                onTap: () => onSelect(v),
+              ),
+            ),
           ),
+      ],
+    );
+  }
+}
+
+class _SegCell extends StatelessWidget {
+  final GameTheme t;
+  final bool selected;
+  final String label;
+  final Widget? icon;
+  final VoidCallback onTap;
+  const _SegCell({required this.t, required this.selected, required this.label, required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          gradient: selected ? LinearGradient(colors: [t.accentGlow, t.accent]) : null,
+          color: selected ? null : t.cell,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: selected ? t.accent : t.accent.withValues(alpha: 0.3), width: selected ? 2 : 1),
+          boxShadow: selected ? [BoxShadow(color: t.accent.withValues(alpha: 0.4), blurRadius: 12)] : null,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[icon!, const SizedBox(height: 6)],
+            Text(label, style: t.label(15, color: selected ? Colors.black : t.ink, weight: FontWeight.w700)),
+          ],
         ),
       ),
     );
   }
+}
+
+/// A small n×n grid of dots illustrating the board size.
+class _GridIcon extends StatelessWidget {
+  final int n;
+  final Color color;
+  const _GridIcon({required this.n, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(width: 26, height: 26, child: CustomPaint(painter: _GridDotsPainter(n, color)));
+  }
+}
+
+class _GridDotsPainter extends CustomPainter {
+  final int n;
+  final Color color;
+  _GridDotsPainter(this.n, this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    final step = size.width / n;
+    final r = (step * 0.26).clamp(1.0, 3.0);
+    for (var row = 0; row < n; row++) {
+      for (var col = 0; col < n; col++) {
+        canvas.drawCircle(Offset((col + 0.5) * step, (row + 0.5) * step), r, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_GridDotsPainter old) => old.n != n || old.color != color;
 }
 
 /// Offline-multiplayer (same-device, two humans) switch. Foundation for online play.
@@ -462,15 +743,13 @@ class _MultiplayerToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = GameTheme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: t.cell,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: value ? AppColors.accent : AppColors.gridLine,
-          width: value ? 2 : 1,
-        ),
+        border: Border.all(color: value ? t.accent : t.accent.withValues(alpha: 0.3), width: value ? 2 : 1),
       ),
       child: Row(
         children: [
@@ -478,135 +757,45 @@ class _MultiplayerToggle extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Offline Multiplayer',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                Text('Offline Multiplayer', style: t.label(15, color: t.ink, weight: FontWeight.w700)),
                 Text(
-                  value ? 'Two players, same device' : 'Play against the computer',
-                  style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                  value ? 'Two players · same device' : 'Play vs computer',
+                  style: t.label(12, color: t.muted),
                 ),
               ],
             ),
           ),
-          Switch(value: value, activeThumbColor: AppColors.accent, onChanged: onChanged),
+          Switch(value: value, activeThumbColor: t.accent, onChanged: onChanged),
         ],
       ),
     );
   }
 }
 
-// ---- small shared widgets ----
-
-void _go(BuildContext context, Widget screen) {
-  Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
-}
-
-class _MenuCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
+/// Full-width metallic gradient start button.
+class _StartButton extends StatelessWidget {
   final VoidCallback onTap;
-  const _MenuCard({required this.title, required this.subtitle, required this.onTap});
+  const _StartButton({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: AppColors.surface,
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(color: AppColors.gridLine),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        title: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(subtitle, style: const TextStyle(color: AppColors.textMuted)),
+    final t = GameTheme.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: [t.accentGlow, t.accent]),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [BoxShadow(color: t.accent.withValues(alpha: 0.4), blurRadius: 16)],
         ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
-      ),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  final String text;
-  final bool dimmed;
-  const _SectionLabel(this.text, {this.dimmed = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Text(
-        text.toUpperCase(),
-        style: TextStyle(
-          color: AppColors.textMuted.withValues(alpha: dimmed ? 0.4 : 1.0),
-          letterSpacing: 1.5,
-          fontWeight: FontWeight.w600,
+        child: Text(
+          'START',
+          style: GoogleFonts.cinzel(fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 3, color: Colors.black),
         ),
       ),
-    );
-  }
-}
-
-class _ChoiceRow<T> extends StatelessWidget {
-  final List<T> values;
-  final T selected;
-  final String Function(T) label;
-  final void Function(T) onSelect;
-
-  /// When false, the row is dimmed and non-interactive (Difficulty under offline multiplayer).
-  final bool enabled;
-
-  const _ChoiceRow({
-    required this.values,
-    required this.selected,
-    required this.label,
-    required this.onSelect,
-    this.enabled = true,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final row = Row(
-      children: [
-        for (final v in values)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 10),
-              child: GestureDetector(
-                onTap: enabled ? () => onSelect(v) : null,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color: v == selected ? AppColors.accent.withValues(alpha: 0.18) : AppColors.surface,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: v == selected ? AppColors.accent : AppColors.gridLine,
-                      width: v == selected ? 2 : 1,
-                    ),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    label(v),
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: v == selected ? AppColors.accent : AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-    // Dim the whole row when disabled.
-    return AnimatedOpacity(
-      duration: const Duration(milliseconds: 180),
-      opacity: enabled ? 1.0 : 0.4,
-      child: row,
     );
   }
 }

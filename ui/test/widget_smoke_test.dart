@@ -23,9 +23,11 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500)); // nav to setup
     expect(find.text('DIFFICULTY'), findsOneWidget);
-    expect(find.text('Play'), findsOneWidget);
+    expect(find.text('START'), findsOneWidget);
 
-    await tester.tap(find.text('Play'));
+    await tester.ensureVisible(find.text('START'));
+    await tester.pump();
+    await tester.tap(find.text('START'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 700));
     expect(find.byType(GridView), findsOneWidget);
