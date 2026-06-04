@@ -11,8 +11,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # No third-party packages: the UI runs on the pure-Dart mock backend out of the box. The native
-  # Rust backend (flutter_rust_bridge + ffi) is added during the integration step — see ui/README.md.
+  # Cinzel (display/headings) + Rajdhani (UI/numbers) for the themed look.
+  google_fonts: ^6.2.1
+  # The game backend runs on the pure-Dart mock out of the box. The native Rust backend
+  # (flutter_rust_bridge + ffi) is added during the integration step — see ui/README.md.
 
 dev_dependencies:
   flutter_test:

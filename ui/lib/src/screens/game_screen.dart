@@ -7,6 +7,7 @@ import '../game/dart_game_api.dart';
 import '../game/player_controller.dart';
 import '../models/game_models.dart';
 import '../theme/app_theme.dart';
+import '../theme/game_theme.dart';
 import '../widgets/board_view.dart';
 import '../widgets/pawn_rail.dart';
 import '../widgets/status_widgets.dart';
@@ -91,9 +92,25 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     final showValues = widget.mode.valued;
     final classic = widget.mode == Mode4.classic;
+    final theme = classic ? GameTheme.classic : GameTheme.futuristic;
+    return GameThemeProvider(
+      theme: theme,
+      child: Container(
+        decoration: BoxDecoration(gradient: theme.background),
+        child: _scaffold(context, theme, showValues, classic),
+      ),
+    );
+  }
+
+  Widget _scaffold(BuildContext context, GameTheme theme, bool showValues, bool classic) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Text('${widget.mode.label} · ${widget.grid}×${widget.grid}'),
+        title: Text(
+          '${widget.mode.label} · ${widget.grid}×${widget.grid}',
+          style: theme.display(18, color: theme.ink),
+        ),
+        iconTheme: IconThemeData(color: theme.muted),
         actions: [
           IconButton(icon: const Icon(Icons.refresh), tooltip: 'Restart', onPressed: _playAgain),
         ],
