@@ -283,7 +283,11 @@ class TutorialsPage extends StatelessWidget {
               builder: (_) => BonanzaTutorialScreen(onExit: () => Navigator.of(context).maybePop()),
             ));
           }),
-          _tut(context, lux, l.modeMorph, soon: l.tutSoon),
+          _tut(context, lux, l.modeMorph, onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => MorphTutorialScreen(onExit: () => Navigator.of(context).maybePop()),
+            ));
+          }),
         ],
       ),
     );

@@ -9,7 +9,8 @@ import 'tutorial_step.dart';
 
 /// Result of a demo tap on the Futuristic board (spec §3); the screen maps it to a localized hint.
 /// `placeEmpty` / `lost` are Bonanza's forced-loss outcomes (tapped a filled cell / completed an
-/// opponent line).
+/// opponent line). `shapeProgress` / `shapeWin` are Morph's shape-completion outcomes (one target
+/// filled with more to go / all targets filled → shape glows).
 enum FutTapResult {
   noSelection,
   redirect,
@@ -20,6 +21,8 @@ enum FutTapResult {
   capturedWin,
   placeEmpty,
   lost,
+  shapeProgress,
+  shapeWin,
 }
 
 /// A Futuristic (Original) tutorial board: valued medallion cells (gold = ours, bordeaux = opponent),
@@ -30,6 +33,10 @@ class FuturisticTutorialBoard extends StatefulWidget {
   final List<TutPawn?> cells;
   final double size;
   final int? highlight;
+
+  /// Board dimensions (Morph uses 4×4; Original/Bonanza default 3×3).
+  final int cols;
+  final int rows;
 
   /// Extra highlighted cells (Bonanza's forced-loss step glows every empty cell).
   final List<int>? highlights;
@@ -54,6 +61,12 @@ class FuturisticTutorialBoard extends StatefulWidget {
   /// `lose` demo: each empty (forced) cell → the opponent line it completes when played.
   final Map<int, List<int>>? loseMap;
 
+  /// `shape` demo: the empty cells to fill (one or two for the double move).
+  final List<int>? targets;
+
+  /// `shape` demo: the 4 cells that pulse with a gold glow on win.
+  final List<int>? winShape;
+
   final List<int>? winLine;
 
   /// Force the win line to always show (static info board, e.g. the win-rule showcase).
@@ -64,6 +77,8 @@ class FuturisticTutorialBoard extends StatefulWidget {
     required this.cells,
     required this.size,
     this.highlight,
+    this.cols = 3,
+    this.rows = 3,
     this.highlights,
     this.loop = false,
     this.loopPlaceCell,
@@ -77,6 +92,8 @@ class FuturisticTutorialBoard extends StatefulWidget {
     this.onResult,
     this.placeOwner = 0,
     this.loseMap,
+    this.targets,
+    this.winShape,
     this.winLine,
     this.showWin = false,
   });
@@ -95,6 +112,7 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
   int? _flash;
   bool _won = false;
   List<int>? _loseLine; // the opponent line completed in a forced-loss demo
+  List<int>? _winShape; // the 4 Morph shape cells to glow on win (no line)
 
   @override
   void initState() {
@@ -196,6 +214,28 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
           });
           widget.onResult?.call(FutTapResult.lost);
         }
+      case TutMode.shape:
+        // Shape completion is value-agnostic: fill every target cell with our pawn, then the shape
+        // glows. The win triggers only once ALL targets are filled (two-pawns-per-turn supported).
+        final targets = widget.targets ?? const [];
+        if (cell == null && targets.contains(i)) {
+          _place(i, sel);
+          final remaining = targets.where((t) => _cellAt(t) == null).toList();
+          if (remaining.isEmpty) {
+            setState(() {
+              _won = true;
+              _winShape = widget.winShape;
+            });
+            widget.onResult?.call(FutTapResult.shapeWin);
+          } else {
+            widget.onResult?.call(FutTapResult.shapeProgress);
+          }
+        } else {
+          // Wrong cell (non-target or occupied): nudge toward a still-open target.
+          widget.onResult?.call(FutTapResult.redirect);
+          final open = targets.where((t) => _cellAt(t) == null).toList();
+          _flashCell(open.isEmpty ? widget.target : open.first);
+        }
     }
   }
 
@@ -214,12 +254,14 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
   @override
   Widget build(BuildContext context) {
     final theme = GameTheme.of(context);
-    const gap = 8.0;
+    final cols = widget.cols;
+    final rows = widget.rows;
+    final gap = cols >= 4 ? 6.0 : 8.0;
     const pad = 10.0;
-    final cell = (widget.size - pad * 2 - gap * 2) / 3;
+    final cell = (widget.size - pad * 2 - gap * (cols - 1)) / cols;
 
     Offset centerOf(int i) {
-      final r = i ~/ 3, c = i % 3;
+      final r = i ~/ cols, c = i % cols;
       return Offset(pad + c * (cell + gap) + cell / 2, pad + r * (cell + gap) + cell / 2);
     }
 
@@ -242,9 +284,9 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
             padding: const EdgeInsets.all(pad),
             child: GridView.builder(
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: 9,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
+              itemCount: cols * rows,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: cols,
                 mainAxisSpacing: gap,
                 crossAxisSpacing: gap,
               ),
@@ -267,9 +309,15 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
 
   Widget _cell(GameTheme theme, int i, double size) {
     final pawn = _cellAt(i);
-    final isHighlight =
-        pawn == null && (widget.highlight == i || (widget.highlights?.contains(i) ?? false));
+    // In shape mode the still-open target cells pulse gold (alongside any explicit highlight).
+    final isTarget = pawn == null &&
+        widget.demoMode == TutMode.shape &&
+        (widget.targets?.contains(i) ?? false);
+    final isHighlight = pawn == null &&
+        (widget.highlight == i || (widget.highlights?.contains(i) ?? false) || isTarget);
     final isFlash = _flash == i;
+    // On a Morph win the 4 shape cells pulse with a gold glow (no line).
+    final isWinShape = _won && (_winShape?.contains(i) ?? false);
 
     return GestureDetector(
       onTap: widget.interactive ? () => _onTap(i) : null,
@@ -279,7 +327,12 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
           final t = _pulse.value;
           Color border = theme.cellEmptyBorder;
           List<BoxShadow>? glow;
-          if (isFlash) {
+          if (isWinShape) {
+            border = Color.lerp(theme.accent, theme.accentGlow, t)!;
+            glow = [
+              BoxShadow(color: theme.accentGlow.withValues(alpha: 0.35 + 0.45 * t), blurRadius: 14 + 12 * t),
+            ];
+          } else if (isFlash) {
             border = theme.danger;
             glow = [BoxShadow(color: theme.danger.withValues(alpha: 0.6), blurRadius: 14)];
           } else if (isHighlight) {
@@ -290,7 +343,7 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
             decoration: BoxDecoration(
               color: theme.cell,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: border, width: isHighlight || isFlash ? 2 : 1),
+              border: Border.all(color: border, width: isHighlight || isFlash || isWinShape ? 2 : 1),
               boxShadow: glow,
             ),
             alignment: Alignment.center,

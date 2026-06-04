@@ -501,4 +501,110 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutBonBtnLearnOriginal => 'Learn Original';
+
+  @override
+  String get tutMorphWelcomeTitle => 'Welcome to Morph';
+
+  @override
+  String get tutMorphWelcomeBody =>
+      'This is the most different place you\'ll reach. Morph bends everything you\'re used to — but don\'t worry, we\'ll work through it together, step by step. Ready when you are.';
+
+  @override
+  String get tutMorphOriginalTitle => 'First, the basics';
+
+  @override
+  String get tutMorphOriginalBody =>
+      'You place and capture pawns just like in Original. If you haven\'t learned that yet, drop by there first.';
+
+  @override
+  String get tutMorphMysteryTitle => 'But winning…';
+
+  @override
+  String get tutMorphMysteryBody =>
+      'In this mode you\'ll need to do something else to win…';
+
+  @override
+  String get tutMorphShapesTitle => 'Four pawns, one shape';
+
+  @override
+  String get tutMorphShapesBody =>
+      'To win you must bring four of your pawns together into a shape: an I, an L, or a Z.';
+
+  @override
+  String get tutMorphTwomovesTitle => 'That\'s why you move twice';
+
+  @override
+  String get tutMorphTwomovesBody =>
+      'Building a four-pawn shape one at a time would be very hard. So in Morph you place two pawns each turn — and you hold two of every value.';
+
+  @override
+  String get tutMorphIvTitle => 'Complete the shape — I';
+
+  @override
+  String get tutMorphIvBody =>
+      'That column is almost ready. Pick a pawn and complete a vertical I by placing it on the glowing square.';
+
+  @override
+  String get tutMorphIhTitle => 'Two pawns this time';
+
+  @override
+  String get tutMorphIhBody =>
+      'Now it\'s the double move. Pick two pawns in turn and place them on the two glowing squares to complete a horizontal I.';
+
+  @override
+  String get tutMorphDiagTitle => 'Shapes can be slanted too';
+
+  @override
+  String get tutMorphDiagBody =>
+      'I, L, and Z don\'t have to stand upright — a diagonal, slanted shape wins just as well.';
+
+  @override
+  String get tutMorphZTitle => 'A diagonal Z';
+
+  @override
+  String get tutMorphZBody =>
+      'Place your pawn on the glowing square and complete a slanted Z.';
+
+  @override
+  String get tutMorphMirrorTitle => 'The mirror counts too';
+
+  @override
+  String get tutMorphMirrorBody =>
+      'A shape\'s mirror image wins just like the shape itself. A flipped L is still an L.';
+
+  @override
+  String get tutMorphLTitle => 'A mirrored L';
+
+  @override
+  String get tutMorphLBody =>
+      'Finally: place on the glowing square and complete a mirrored L.';
+
+  @override
+  String get tutMorphDoneTitle => 'That\'s Morph!';
+
+  @override
+  String get tutMorphDoneBody =>
+      'Now you speak the language of shapes — I, L, Z; straight, slanted, or mirrored. Try it in a real game; build a shape and claim the win.';
+
+  @override
+  String get tutMorphHintFirst =>
+      'Pick the first pawn and place it on a glowing square';
+
+  @override
+  String get tutMorphHintOneMore =>
+      'One more — place it on the other glowing square';
+
+  @override
+  String get tutMorphHintRedirect => 'Place it on a glowing square';
+
+  @override
+  String tutMorphHintWin(String shape) {
+    return 'You win! You made a $shape';
+  }
+
+  @override
+  String get tutMorphBtnHow => 'How so?';
+
+  @override
+  String get tutMorphBtnOneMore => 'One last example';
 }

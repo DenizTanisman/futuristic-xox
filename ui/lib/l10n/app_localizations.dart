@@ -1007,6 +1007,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Learn Original'**
   String get tutBonBtnLearnOriginal;
+
+  /// No description provided for @tutMorphWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Morph'**
+  String get tutMorphWelcomeTitle;
+
+  /// No description provided for @tutMorphWelcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the most different place you\'ll reach. Morph bends everything you\'re used to — but don\'t worry, we\'ll work through it together, step by step. Ready when you are.'**
+  String get tutMorphWelcomeBody;
+
+  /// No description provided for @tutMorphOriginalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'First, the basics'**
+  String get tutMorphOriginalTitle;
+
+  /// No description provided for @tutMorphOriginalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You place and capture pawns just like in Original. If you haven\'t learned that yet, drop by there first.'**
+  String get tutMorphOriginalBody;
+
+  /// No description provided for @tutMorphMysteryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'But winning…'**
+  String get tutMorphMysteryTitle;
+
+  /// No description provided for @tutMorphMysteryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'In this mode you\'ll need to do something else to win…'**
+  String get tutMorphMysteryBody;
+
+  /// No description provided for @tutMorphShapesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Four pawns, one shape'**
+  String get tutMorphShapesTitle;
+
+  /// No description provided for @tutMorphShapesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To win you must bring four of your pawns together into a shape: an I, an L, or a Z.'**
+  String get tutMorphShapesBody;
+
+  /// No description provided for @tutMorphTwomovesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s why you move twice'**
+  String get tutMorphTwomovesTitle;
+
+  /// No description provided for @tutMorphTwomovesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Building a four-pawn shape one at a time would be very hard. So in Morph you place two pawns each turn — and you hold two of every value.'**
+  String get tutMorphTwomovesBody;
+
+  /// No description provided for @tutMorphIvTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete the shape — I'**
+  String get tutMorphIvTitle;
+
+  /// No description provided for @tutMorphIvBody.
+  ///
+  /// In en, this message translates to:
+  /// **'That column is almost ready. Pick a pawn and complete a vertical I by placing it on the glowing square.'**
+  String get tutMorphIvBody;
+
+  /// No description provided for @tutMorphIhTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Two pawns this time'**
+  String get tutMorphIhTitle;
+
+  /// No description provided for @tutMorphIhBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Now it\'s the double move. Pick two pawns in turn and place them on the two glowing squares to complete a horizontal I.'**
+  String get tutMorphIhBody;
+
+  /// No description provided for @tutMorphDiagTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shapes can be slanted too'**
+  String get tutMorphDiagTitle;
+
+  /// No description provided for @tutMorphDiagBody.
+  ///
+  /// In en, this message translates to:
+  /// **'I, L, and Z don\'t have to stand upright — a diagonal, slanted shape wins just as well.'**
+  String get tutMorphDiagBody;
+
+  /// No description provided for @tutMorphZTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A diagonal Z'**
+  String get tutMorphZTitle;
+
+  /// No description provided for @tutMorphZBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Place your pawn on the glowing square and complete a slanted Z.'**
+  String get tutMorphZBody;
+
+  /// No description provided for @tutMorphMirrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The mirror counts too'**
+  String get tutMorphMirrorTitle;
+
+  /// No description provided for @tutMorphMirrorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A shape\'s mirror image wins just like the shape itself. A flipped L is still an L.'**
+  String get tutMorphMirrorBody;
+
+  /// No description provided for @tutMorphLTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A mirrored L'**
+  String get tutMorphLTitle;
+
+  /// No description provided for @tutMorphLBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Finally: place on the glowing square and complete a mirrored L.'**
+  String get tutMorphLBody;
+
+  /// No description provided for @tutMorphDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s Morph!'**
+  String get tutMorphDoneTitle;
+
+  /// No description provided for @tutMorphDoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Now you speak the language of shapes — I, L, Z; straight, slanted, or mirrored. Try it in a real game; build a shape and claim the win.'**
+  String get tutMorphDoneBody;
+
+  /// No description provided for @tutMorphHintFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the first pawn and place it on a glowing square'**
+  String get tutMorphHintFirst;
+
+  /// No description provided for @tutMorphHintOneMore.
+  ///
+  /// In en, this message translates to:
+  /// **'One more — place it on the other glowing square'**
+  String get tutMorphHintOneMore;
+
+  /// No description provided for @tutMorphHintRedirect.
+  ///
+  /// In en, this message translates to:
+  /// **'Place it on a glowing square'**
+  String get tutMorphHintRedirect;
+
+  /// No description provided for @tutMorphHintWin.
+  ///
+  /// In en, this message translates to:
+  /// **'You win! You made a {shape}'**
+  String tutMorphHintWin(String shape);
+
+  /// No description provided for @tutMorphBtnHow.
+  ///
+  /// In en, this message translates to:
+  /// **'How so?'**
+  String get tutMorphBtnHow;
+
+  /// No description provided for @tutMorphBtnOneMore.
+  ///
+  /// In en, this message translates to:
+  /// **'One last example'**
+  String get tutMorphBtnOneMore;
 }
 
 class _AppLocalizationsDelegate

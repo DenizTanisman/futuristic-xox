@@ -105,6 +105,35 @@ void main() {
     expect(find.text('go'), findsOneWidget);
   });
 
+  testWidgets('Morph tutorial reaches the first shape demo on a 4x4 board', (tester) async {
+    await tester.pumpWidget(_wrap(Builder(
+      builder: (ctx) => Center(
+        child: TextButton(
+          onPressed: () => Navigator.of(ctx).push(MaterialPageRoute(
+            builder: (_) => MorphTutorialScreen(onExit: () => Navigator.of(ctx).pop()),
+          )),
+          child: const Text('go'),
+        ),
+      ),
+    )));
+    await tester.tap(find.text('go'));
+    await tester.pumpAndSettle();
+    expect(find.text('Welcome to Morph'), findsOneWidget);
+
+    // Advance through the intro info steps to the vertical-I shape demo (steps 1→6).
+    for (final btn in const ["Let's begin", 'I know it, continue', 'How so?', 'Continue', 'Got it']) {
+      await tester.tap(find.text(btn));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+    expect(find.text('Complete the shape — I'), findsOneWidget);
+
+    await tester.tap(find.text('Skip'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('go'), findsOneWidget);
+  });
+
   testWidgets('advances through steps and Skip pops cleanly from a loop step (no leaked timer)',
       (tester) async {
     await tester.pumpWidget(_wrap(Builder(

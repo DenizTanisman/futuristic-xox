@@ -502,4 +502,110 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tutBonBtnLearnOriginal => 'Aprender Original';
+
+  @override
+  String get tutMorphWelcomeTitle => 'Bienvenido a Morph';
+
+  @override
+  String get tutMorphWelcomeBody =>
+      'Este es el lugar más diferente al que llegarás. Morph tuerce todo lo que conoces — pero tranquilo, lo resolveremos juntos, paso a paso. Cuando estés listo, empezamos.';
+
+  @override
+  String get tutMorphOriginalTitle => 'Primero, lo básico';
+
+  @override
+  String get tutMorphOriginalBody =>
+      'Colocas y capturas peones igual que en Original. Si aún no lo has aprendido, pásate antes por allí.';
+
+  @override
+  String get tutMorphMysteryTitle => 'Pero ganar…';
+
+  @override
+  String get tutMorphMysteryBody =>
+      'En este modo tendrás que hacer otra cosa para ganar…';
+
+  @override
+  String get tutMorphShapesTitle => 'Cuatro peones, una forma';
+
+  @override
+  String get tutMorphShapesBody =>
+      'Para ganar debes reunir cuatro de tus peones en una forma: una I, una L o una Z.';
+
+  @override
+  String get tutMorphTwomovesTitle => 'Por eso mueves dos veces';
+
+  @override
+  String get tutMorphTwomovesBody =>
+      'Construir una forma de cuatro peones de uno en uno sería muy difícil. Así que en Morph colocas dos peones por turno — y tienes dos de cada valor.';
+
+  @override
+  String get tutMorphIvTitle => 'Completa la forma — I';
+
+  @override
+  String get tutMorphIvBody =>
+      'Esa columna casi está lista. Elige un peón y completa una I vertical colocándolo en la casilla brillante.';
+
+  @override
+  String get tutMorphIhTitle => 'Dos peones esta vez';
+
+  @override
+  String get tutMorphIhBody =>
+      'Ahora es el movimiento doble. Elige dos peones por turno y colócalos en las dos casillas brillantes para completar una I horizontal.';
+
+  @override
+  String get tutMorphDiagTitle => 'Las formas también pueden inclinarse';
+
+  @override
+  String get tutMorphDiagBody =>
+      'La I, la L y la Z no tienen que estar rectas — una forma diagonal, inclinada, gana igual.';
+
+  @override
+  String get tutMorphZTitle => 'Una Z diagonal';
+
+  @override
+  String get tutMorphZBody =>
+      'Coloca tu peón en la casilla brillante y completa una Z inclinada.';
+
+  @override
+  String get tutMorphMirrorTitle => 'El espejo también cuenta';
+
+  @override
+  String get tutMorphMirrorBody =>
+      'La imagen reflejada de una forma gana igual que la forma misma. Una L volteada sigue siendo una L.';
+
+  @override
+  String get tutMorphLTitle => 'Una L reflejada';
+
+  @override
+  String get tutMorphLBody =>
+      'Por último: coloca en la casilla brillante y completa una L reflejada.';
+
+  @override
+  String get tutMorphDoneTitle => '¡Eso es Morph!';
+
+  @override
+  String get tutMorphDoneBody =>
+      'Ya hablas el idioma de las formas — I, L, Z; rectas, inclinadas o reflejadas. Pruébalo en una partida real; construye una forma y reclama la victoria.';
+
+  @override
+  String get tutMorphHintFirst =>
+      'Elige el primer peón y colócalo en una casilla brillante';
+
+  @override
+  String get tutMorphHintOneMore =>
+      'Uno más — colócalo en la otra casilla brillante';
+
+  @override
+  String get tutMorphHintRedirect => 'Colócalo en una casilla brillante';
+
+  @override
+  String tutMorphHintWin(String shape) {
+    return '¡Ganaste! Hiciste una $shape';
+  }
+
+  @override
+  String get tutMorphBtnHow => '¿Cómo así?';
+
+  @override
+  String get tutMorphBtnOneMore => 'Un último ejemplo';
 }

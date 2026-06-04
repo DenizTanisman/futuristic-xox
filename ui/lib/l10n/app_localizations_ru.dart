@@ -504,4 +504,110 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get tutBonBtnLearnOriginal => 'Изучить Original';
+
+  @override
+  String get tutMorphWelcomeTitle => 'Добро пожаловать в Morph';
+
+  @override
+  String get tutMorphWelcomeBody =>
+      'Это самое необычное, до чего ты доберёшься. Morph слегка выворачивает всё привычное — но не волнуйся, мы разберёмся вместе, шаг за шагом. Готов — начинаем.';
+
+  @override
+  String get tutMorphOriginalTitle => 'Сначала основы';
+
+  @override
+  String get tutMorphOriginalBody =>
+      'Ты ставишь и захватываешь фишки так же, как в Original. Если ещё не освоил это, загляни сначала туда.';
+
+  @override
+  String get tutMorphMysteryTitle => 'Но победа…';
+
+  @override
+  String get tutMorphMysteryBody =>
+      'В этом режиме, чтобы победить, тебе нужно сделать кое-что другое…';
+
+  @override
+  String get tutMorphShapesTitle => 'Четыре фишки, одна фигура';
+
+  @override
+  String get tutMorphShapesBody =>
+      'Чтобы победить, нужно собрать четыре свои фишки в фигуру: I, L или Z.';
+
+  @override
+  String get tutMorphTwomovesTitle => 'Поэтому ты ходишь дважды';
+
+  @override
+  String get tutMorphTwomovesBody =>
+      'Строить фигуру из четырёх фишек по одной было бы очень трудно. Поэтому в Morph за ход ты ставишь две фишки — и каждой ценности у тебя по две.';
+
+  @override
+  String get tutMorphIvTitle => 'Заверши фигуру — I';
+
+  @override
+  String get tutMorphIvBody =>
+      'Этот столбец почти готов. Выбери фишку и заверши вертикальную I, поставив её на светящуюся клетку.';
+
+  @override
+  String get tutMorphIhTitle => 'На этот раз две фишки';
+
+  @override
+  String get tutMorphIhBody =>
+      'Теперь двойной ход. Выбери две фишки по очереди и поставь их на две светящиеся клетки, чтобы завершить горизонтальную I.';
+
+  @override
+  String get tutMorphDiagTitle => 'Фигуры бывают и наклонными';
+
+  @override
+  String get tutMorphDiagBody =>
+      'I, L и Z не обязаны стоять прямо — диагональная, наклонная фигура побеждает так же.';
+
+  @override
+  String get tutMorphZTitle => 'Диагональная Z';
+
+  @override
+  String get tutMorphZBody =>
+      'Поставь фишку на светящуюся клетку и заверши наклонную Z.';
+
+  @override
+  String get tutMorphMirrorTitle => 'Зеркало тоже считается';
+
+  @override
+  String get tutMorphMirrorBody =>
+      'Зеркальное отражение фигуры побеждает так же, как и сама фигура. Перевёрнутая L — это всё ещё L.';
+
+  @override
+  String get tutMorphLTitle => 'Зеркальная L';
+
+  @override
+  String get tutMorphLBody =>
+      'Напоследок: поставь на светящуюся клетку и заверши зеркальную L.';
+
+  @override
+  String get tutMorphDoneTitle => 'Вот и весь Morph!';
+
+  @override
+  String get tutMorphDoneBody =>
+      'Теперь ты владеешь языком фигур — I, L, Z; прямых, наклонных или зеркальных. Попробуй в настоящей игре; собери фигуру и добудь победу.';
+
+  @override
+  String get tutMorphHintFirst =>
+      'Выбери первую фишку и поставь её на светящуюся клетку';
+
+  @override
+  String get tutMorphHintOneMore =>
+      'Ещё одна — поставь на другую светящуюся клетку';
+
+  @override
+  String get tutMorphHintRedirect => 'Поставь на светящуюся клетку';
+
+  @override
+  String tutMorphHintWin(String shape) {
+    return 'Победа! Ты собрал $shape';
+  }
+
+  @override
+  String get tutMorphBtnHow => 'Это как?';
+
+  @override
+  String get tutMorphBtnOneMore => 'Последний пример';
 }

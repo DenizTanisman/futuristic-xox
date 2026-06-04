@@ -15,8 +15,17 @@ enum Mark { x, o }
 enum InfoVisual { none, bigX, bigXO }
 
 /// Demo interaction mode for Futuristic tutorials (spec §3). `lose` is Bonanza-only: any empty cell is
-/// a forced loss — placing a bordeaux pawn there completes an opponent line.
-enum TutMode { free, eat, win, eatwin, lose }
+/// a forced loss — placing a bordeaux pawn there completes an opponent line. `shape` is Morph-only:
+/// fill the target cells (value-agnostic); the win glows the 4 shape cells (no line).
+enum TutMode { free, eat, win, eatwin, lose, shape }
+
+/// A small shape-icon (Morph explainer steps §4): a [cols]×[rows] mini-grid with [filled] cells lit.
+class MorphIcon {
+  final int cols;
+  final int rows;
+  final List<int> filled;
+  const MorphIcon({required this.cols, required this.rows, required this.filled});
+}
 
 /// A valued, owned pawn for Futuristic tutorials: owner 0 = gold (ours), 1 = bordeaux (opponent).
 class TutPawn {
@@ -124,6 +133,24 @@ class TutorialStep {
   /// `demo`: overrides the hand rail label (e.g. gold vs bordeaux rail); falls back to the shared one.
   final L10nText? railLabel;
 
+  // ---- Morph extensions (spec §3, §4) ----
+
+  /// Board dimension for futuristic boards (Morph uses 4×4; Original/Bonanza default 3×3).
+  final int gridCols;
+  final int gridRows;
+
+  /// `shape` demo: the empty cells to fill (one or two for the double move).
+  final List<int>? targets;
+
+  /// `shape` demo: the 4 cells that pulse with a gold glow on win.
+  final List<int>? winShape;
+
+  /// `shape` demo: the shape's name (I / L / Z) for the win hint.
+  final String? shapeName;
+
+  /// `info` (Morph): small shape-icon mini-grids (I/L/Z, diagonal, mirror examples).
+  final List<MorphIcon>? shapeIcons;
+
   const TutorialStep({
     required this.kind,
     this.board = const [null, null, null, null, null, null, null, null, null],
@@ -157,6 +184,12 @@ class TutorialStep {
     this.loseMap,
     this.secondary,
     this.railLabel,
+    this.gridCols = 3,
+    this.gridRows = 3,
+    this.targets,
+    this.winShape,
+    this.shapeName,
+    this.shapeIcons,
   });
 }
 
@@ -502,6 +535,164 @@ List<TutorialStep> bonanzaTutorialSteps() => [
         bigMedallions: [g(6), b(6)],
         title: (l) => l.tutBonDoneTitle,
         body: (l) => l.tutBonDoneBody,
+        button: (l) => l.tutBtnFinish,
+      ),
+    ];
+
+/// A 16-cell (4×4) Morph board with our gold pawns pre-placed at the given `index → value` pairs.
+List<TutPawn?> _morphBoard(Map<int, int> gold) {
+  final cells = List<TutPawn?>.filled(16, null);
+  gold.forEach((i, v) => cells[i] = g(v));
+  return cells;
+}
+
+/// The Futuristic · Morph tutorial's 12 steps (spec §4). Adds a 4×4 board, shape-completion (I/L/Z,
+/// axis + diagonal, mirror) with a gold shape-glow win, and a two-pawns-per-turn demo. Text via ARB.
+List<TutorialStep> morphTutorialSteps() => [
+      // 1 — welcome
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [g(6), g(2)],
+        title: (l) => l.tutMorphWelcomeTitle,
+        body: (l) => l.tutMorphWelcomeBody,
+        button: (l) => l.tutBtnStart,
+      ),
+      // 2 — first the basics (+ cross-link to Original)
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [g(4), g(2), g(6)],
+        title: (l) => l.tutMorphOriginalTitle,
+        body: (l) => l.tutMorphOriginalBody,
+        button: (l) => l.tutBonBtnKnown,
+        secondary: (l) => l.tutBonBtnLearnOriginal,
+      ),
+      // 3 — but winning…
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [g(5)],
+        title: (l) => l.tutMorphMysteryTitle,
+        body: (l) => l.tutMorphMysteryBody,
+        button: (l) => l.tutMorphBtnHow,
+      ),
+      // 4 — four pawns, one shape (I / L / Z icons)
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        shapeIcons: const [
+          MorphIcon(cols: 2, rows: 4, filled: [0, 2, 4, 6]), // I (vertical)
+          MorphIcon(cols: 2, rows: 3, filled: [0, 2, 4, 5]), // L
+          MorphIcon(cols: 3, rows: 2, filled: [1, 2, 3, 4]), // Z
+        ],
+        title: (l) => l.tutMorphShapesTitle,
+        body: (l) => l.tutMorphShapesBody,
+        button: (l) => l.tutBtnNext,
+      ),
+      // 5 — that's why you move twice (two pairs)
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [g(2), g(2), g(5), g(5)],
+        title: (l) => l.tutMorphTwomovesTitle,
+        body: (l) => l.tutMorphTwomovesBody,
+        button: (l) => l.tutBtnOk,
+      ),
+      // 6 — vertical I (single target 13 → column [1,5,9,13])
+      TutorialStep(
+        kind: TutKind.demo,
+        futuristic: true,
+        gridCols: 4,
+        gridRows: 4,
+        fcells: _morphBoard({1: 2, 5: 3, 9: 5}),
+        hand: [2, 4, 6],
+        targets: [13],
+        winShape: [1, 5, 9, 13],
+        shapeName: 'I',
+        demoMode: TutMode.shape,
+        title: (l) => l.tutMorphIvTitle,
+        body: (l) => l.tutMorphIvBody,
+        hint: (l) => l.tutHintWinPlace,
+      ),
+      // 7 — horizontal I, TWO pawns this turn (targets 6 & 7 → row [4,5,6,7])
+      TutorialStep(
+        kind: TutKind.demo,
+        futuristic: true,
+        gridCols: 4,
+        gridRows: 4,
+        fcells: _morphBoard({4: 2, 5: 3}),
+        hand: [4, 5, 6, 1],
+        targets: [6, 7],
+        winShape: [4, 5, 6, 7],
+        shapeName: 'I',
+        demoMode: TutMode.shape,
+        title: (l) => l.tutMorphIhTitle,
+        body: (l) => l.tutMorphIhBody,
+        hint: (l) => l.tutMorphHintFirst,
+      ),
+      // 8 — shapes can be slanted (diagonal staircase icon)
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        shapeIcons: const [
+          MorphIcon(cols: 4, rows: 4, filled: [0, 5, 10, 15]), // diagonal I
+        ],
+        title: (l) => l.tutMorphDiagTitle,
+        body: (l) => l.tutMorphDiagBody,
+        button: (l) => l.tutBonBtnShow,
+      ),
+      // 9 — diagonal Z (single target 3 → [1,3,4,6]) — Deniz-verified
+      TutorialStep(
+        kind: TutKind.demo,
+        futuristic: true,
+        gridCols: 4,
+        gridRows: 4,
+        fcells: _morphBoard({1: 3, 4: 2, 6: 3}),
+        hand: [2, 4, 5],
+        targets: [3],
+        winShape: [1, 3, 4, 6],
+        shapeName: 'Z',
+        demoMode: TutMode.shape,
+        title: (l) => l.tutMorphZTitle,
+        body: (l) => l.tutMorphZBody,
+        hint: (l) => l.tutHintWinPlace,
+      ),
+      // 10 — the mirror counts (L + mirrored-L icons)
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        shapeIcons: const [
+          MorphIcon(cols: 2, rows: 3, filled: [0, 2, 4, 5]), // L
+          MorphIcon(cols: 2, rows: 3, filled: [1, 3, 5, 4]), // mirrored L
+        ],
+        title: (l) => l.tutMorphMirrorTitle,
+        body: (l) => l.tutMorphMirrorBody,
+        button: (l) => l.tutMorphBtnOneMore,
+      ),
+      // 11 — mirrored/diagonal L (single target 13 → [0,5,10,13]) — Deniz-verified
+      TutorialStep(
+        kind: TutKind.demo,
+        futuristic: true,
+        gridCols: 4,
+        gridRows: 4,
+        fcells: _morphBoard({0: 2, 5: 3, 10: 6}),
+        hand: [3, 5, 6],
+        targets: [13],
+        winShape: [0, 5, 10, 13],
+        shapeName: 'L',
+        demoMode: TutMode.shape,
+        title: (l) => l.tutMorphLTitle,
+        body: (l) => l.tutMorphLBody,
+        hint: (l) => l.tutHintWinPlace,
+      ),
+      // 12 — done
+      TutorialStep(
+        kind: TutKind.info,
+        futuristic: true,
+        bigMedallions: [g(6)],
+        title: (l) => l.tutMorphDoneTitle,
+        body: (l) => l.tutMorphDoneBody,
         button: (l) => l.tutBtnFinish,
       ),
     ];

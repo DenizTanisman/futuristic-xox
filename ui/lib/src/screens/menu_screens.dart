@@ -422,7 +422,7 @@ Widget? tutorialScreenFor(Mode4 mode, VoidCallback onExit) => switch (mode) {
       Mode4.classic => ClassicTutorialScreen(onExit: onExit),
       Mode4.original => OriginalTutorialScreen(onExit: onExit),
       Mode4.bonanza => BonanzaTutorialScreen(onExit: onExit),
-      _ => null, // Morph tutorial: coming soon
+      Mode4.morph => MorphTutorialScreen(onExit: onExit),
     };
 
 /// Enter a mode's setup. The first time the player enters a mode whose tutorial exists, auto-show

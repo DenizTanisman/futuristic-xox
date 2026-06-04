@@ -499,4 +499,108 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get tutBonBtnLearnOriginal => 'Original\'i öğren';
+
+  @override
+  String get tutMorphWelcomeTitle => 'Morph\'a hoş geldin';
+
+  @override
+  String get tutMorphWelcomeBody =>
+      'Geldiğin en farklı yer burası. Morph, alıştığın her şeyi biraz büküyor — ama merak etme, birlikte adım adım çözeceğiz. Hazırsan başlıyoruz.';
+
+  @override
+  String get tutMorphOriginalTitle => 'Önce temel';
+
+  @override
+  String get tutMorphOriginalBody =>
+      'Taşları alana koymayı ve yemeyi Original\'deki gibi yaparsın. Henüz öğrenmediysen, önce oraya bir uğra.';
+
+  @override
+  String get tutMorphMysteryTitle => 'Ama kazanmak…';
+
+  @override
+  String get tutMorphMysteryBody =>
+      'Bu modda kazanmak için başka şeyler yapman lazım…';
+
+  @override
+  String get tutMorphShapesTitle => 'Dört taş, bir şekil';
+
+  @override
+  String get tutMorphShapesBody =>
+      'Kazanmak için dört taşını bir araya getirip bir şekil oluşturmalısın: I, L ya da Z.';
+
+  @override
+  String get tutMorphTwomovesTitle => 'Bu yüzden çift hamle';
+
+  @override
+  String get tutMorphTwomovesBody =>
+      'Dört taşlık bir şekli tek tek koyarak kurmak çok zor olurdu. O yüzden Morph\'ta her sıranda iki taş birden koyarsın — ve her taştan elinde ikişer tane vardır.';
+
+  @override
+  String get tutMorphIvTitle => 'Şekli tamamla — I';
+
+  @override
+  String get tutMorphIvBody =>
+      'Şu sütun neredeyse hazır. Bir taş seç ve parlayan kareye koyarak dikey bir I tamamla.';
+
+  @override
+  String get tutMorphIhTitle => 'Bu kez iki taş';
+
+  @override
+  String get tutMorphIhBody =>
+      'Sıra çift hamlede. İki taşı sırayla seçip iki parlayan kareye koy ve yatay I\'yı tamamla.';
+
+  @override
+  String get tutMorphDiagTitle => 'Şekiller eğik de olur';
+
+  @override
+  String get tutMorphDiagBody =>
+      'I, L ve Z dik durmak zorunda değil — çapraz, yani eğik olarak da kazandırır.';
+
+  @override
+  String get tutMorphZTitle => 'Çapraz bir Z';
+
+  @override
+  String get tutMorphZBody =>
+      'Parlayan kareye taşını koy ve eğik bir Z şeklini tamamla.';
+
+  @override
+  String get tutMorphMirrorTitle => 'Aynalı da geçerli';
+
+  @override
+  String get tutMorphMirrorBody =>
+      'Bir şeklin aynalanmış hâli de tıpkı kendisi gibi kazandırır. Yani ters dönmüş bir L de bir L\'dir.';
+
+  @override
+  String get tutMorphLTitle => 'Aynalanmış bir L';
+
+  @override
+  String get tutMorphLBody =>
+      'Son olarak: parlayan kareye koy ve aynalanmış bir L tamamla.';
+
+  @override
+  String get tutMorphDoneTitle => 'İşte Morph bu kadar!';
+
+  @override
+  String get tutMorphDoneBody =>
+      'Artık şekillerin dilini biliyorsun — I, L, Z; düz, çapraz ya da aynalı. Hadi gerçek bir oyunda dene; bir şekil kurup zafere ulaş.';
+
+  @override
+  String get tutMorphHintFirst => 'İlk taşı seç ve parlayan bir kareye koy';
+
+  @override
+  String get tutMorphHintOneMore => 'Bir taş daha — diğer parlayan kareye koy';
+
+  @override
+  String get tutMorphHintRedirect => 'Parlayan kareye koy';
+
+  @override
+  String tutMorphHintWin(String shape) {
+    return 'Kazandın! Bir $shape kurdun';
+  }
+
+  @override
+  String get tutMorphBtnHow => 'Nasıl yani?';
+
+  @override
+  String get tutMorphBtnOneMore => 'Son bir örnek';
 }

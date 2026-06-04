@@ -119,6 +119,12 @@ class _TutorialScreenState extends State<TutorialScreen> {
         // Forced loss: the opponent completes a line (bordeaux). Still advance — the lesson landed.
         _fb(l.tutBonHintOppWin, t.discGlow(1));
         _scheduleAdvance();
+      case FutTapResult.shapeProgress:
+        // Morph two-pawns-per-turn: first target filled, one more to go.
+        _fb(l.tutMorphHintOneMore, t.accent);
+      case FutTapResult.shapeWin:
+        _fb(l.tutMorphHintWin(c.current.shapeName ?? ''), _green);
+        _scheduleAdvance();
     }
   }
 
@@ -225,6 +231,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
     switch (step.kind) {
       case TutKind.info:
         if (step.infoBadge != null) return _numberBadge(l, step.infoBadge!);
+        if (step.shapeIcons != null) return _shapeIcons(step.shapeIcons!);
         if (step.bigMedallions != null) return _bigMedallions(step);
         // static info board (e.g. the win-rule showcase)
         return FuturisticTutorialBoard(
@@ -260,6 +267,8 @@ class _TutorialScreenState extends State<TutorialScreen> {
           key: ValueKey('fdemo-${c.stepIndex}'),
           cells: step.fcells,
           size: boardSize,
+          cols: step.gridCols,
+          rows: step.gridRows,
           highlight: step.highlight,
           highlights: step.highlights,
           interactive: true,
@@ -267,6 +276,8 @@ class _TutorialScreenState extends State<TutorialScreen> {
           demoMode: step.demoMode,
           placeOwner: step.handOwner,
           loseMap: step.loseMap,
+          targets: step.targets,
+          winShape: step.winShape,
           winLine: step.winLine,
           selectedValue:
               (_selectedHand != null && step.hand != null) ? step.hand![_selectedHand!] : null,
@@ -288,6 +299,54 @@ class _TutorialScreenState extends State<TutorialScreen> {
       ),
       child: Text(l.tutBonBadgeNumber(value),
           style: t.display(30, color: t.accent).copyWith(letterSpacing: 1.5)),
+    );
+  }
+
+  /// Morph shape-icon explainers: small gold/dim mini-grids for I/L/Z, the diagonal, and mirror.
+  Widget _shapeIcons(List<MorphIcon> icons) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 20,
+      runSpacing: 16,
+      children: [for (final icon in icons) _shapeIcon(icon)],
+    );
+  }
+
+  Widget _shapeIcon(MorphIcon icon) {
+    const dot = 18.0;
+    const gap = 5.0;
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: t.cell.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: t.accent.withValues(alpha: 0.3)),
+      ),
+      child: SizedBox(
+        width: icon.cols * dot + (icon.cols - 1) * gap,
+        height: icon.rows * dot + (icon.rows - 1) * gap,
+        child: GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: icon.cols * icon.rows,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: icon.cols,
+            mainAxisSpacing: gap,
+            crossAxisSpacing: gap,
+          ),
+          itemBuilder: (context, i) {
+            final on = icon.filled.contains(i);
+            return Container(
+              decoration: BoxDecoration(
+                color: on ? t.accent : t.muted.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(4),
+                boxShadow: on
+                    ? [BoxShadow(color: t.accentGlow.withValues(alpha: 0.4), blurRadius: 6)]
+                    : null,
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -462,6 +521,23 @@ class BonanzaTutorialScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => TutorialScreen(
         steps: bonanzaTutorialSteps(),
+        theme: GameTheme.futuristic,
+        onExit: onExit,
+        onSecondary: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => OriginalTutorialScreen(onExit: () => Navigator.of(context).maybePop()),
+        )),
+      );
+}
+
+/// The Futuristic · Morph tutorial — warm gold identity on a 4×4 board, with shape-completion wins
+/// (I/L/Z, axis + diagonal, mirror), a two-pawns-per-turn demo, and a cross-link to Original.
+class MorphTutorialScreen extends StatelessWidget {
+  final VoidCallback onExit;
+  const MorphTutorialScreen({super.key, required this.onExit});
+
+  @override
+  Widget build(BuildContext context) => TutorialScreen(
+        steps: morphTutorialSteps(),
         theme: GameTheme.futuristic,
         onExit: onExit,
         onSecondary: () => Navigator.of(context).push(MaterialPageRoute(

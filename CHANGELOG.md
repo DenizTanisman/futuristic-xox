@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Futuristic (Morph) mode interactive tutorial.** Completes the tutorial set (Classic, Original,
+  Bonanza, Morph). A 12-step walkthrough on a **4×4 board** teaching Morph's shape-completion win:
+  bring four pawns into an **I, L, or Z** — in any rotation, on the **axis or diagonal** frame, and
+  its **mirror**. The win is a **pulsing gold glow on the 4 shape cells** (not a line). Includes a
+  **two-pawns-per-turn** demo (place both glowing targets, with a "one more" hint between) and
+  value-agnostic completion (any pawn fills a target). Shape-icon explainers (I/L/Z, a diagonal
+  staircase, and L + mirrored-L mini-grids), a "Learn Original" ghost cross-link, and full i18n
+  (tr/en/ru/es). The shared `FuturisticTutorialBoard` was generalized to any grid size (3×3/4×4).
+  Auto-shows on first Morph entry and replayable from the **Tutorials** drawer (all four modes now
+  available).
+
 - **Futuristic (Bonanza) mode interactive tutorial.** Extends the Futuristic tutorial engine for
   Bonanza's randomized hands: a 10-step walkthrough with a **deal showcase** (a "Number: 4" badge
   plus the hand revealed chip-by-chip with a fading glow — gold group first, then bordeaux), a
