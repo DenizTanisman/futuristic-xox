@@ -262,7 +262,10 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
                 duration: const Duration(milliseconds: 260),
                 transitionBuilder: (c, anim) => ScaleTransition(scale: anim, child: c),
                 child: Padding(
-                  key: ValueKey('fp-$i-${pawn.owner}-${pawn.value}-${widget.loop ? _placedPhase : true}'),
+                  // Only the loop's active cell varies with the phase, so surrounding pawns stay put
+                  // and don't re-pop every cycle — keeping the capture effect on the center pawn alone.
+                  key: ValueKey('fp-$i-${pawn.owner}-${pawn.value}-'
+                      '${widget.loop && i == widget.loopPlaceCell ? _placedPhase : false}'),
                   padding: EdgeInsets.all(size * 0.08),
                   child: PawnWidget(
                     owner: pawn.owner,
