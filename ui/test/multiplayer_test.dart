@@ -21,6 +21,8 @@ String _wins(String name) => '$name wins!';
 Widget _app() => FuturisticXoxApp(
       locale: LocaleController(const Locale('en')),
       theme: ThemeController(ThemeMode.dark),
+      // Mark tutorials seen so tapping a mode goes straight to setup (no auto tutorial).
+      tutorialProgress: TutorialProgress({'classic', 'original', 'bonanza', 'morph'}),
     );
 
 GameController mp(Mode4 mode, int grid) => GameController(

@@ -9,6 +9,7 @@ import 'package:futuristic_xox/src/app/app_controllers.dart';
 Widget _app() => FuturisticXoxApp(
       locale: LocaleController(const Locale('en')),
       theme: ThemeController(ThemeMode.dark),
+      tutorialProgress: TutorialProgress({'classic', 'original', 'bonanza', 'morph'}),
     );
 
 void main() {

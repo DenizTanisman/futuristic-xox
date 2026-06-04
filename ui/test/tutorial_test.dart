@@ -5,7 +5,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:futuristic_xox/l10n/app_localizations.dart';
 import 'package:futuristic_xox/main.dart';
+import 'package:futuristic_xox/src/app/app_controllers.dart';
 import 'package:futuristic_xox/src/tutorial/tutorial_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Widget _wrap(Widget home) => MaterialApp(
       locale: const Locale('en'),
@@ -20,6 +22,23 @@ Widget _wrap(Widget home) => MaterialApp(
     );
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('Classic auto-shows its tutorial on first entry, then setup afterwards', (tester) async {
+    await tester.pumpWidget(FuturisticXoxApp(
+      locale: LocaleController(const Locale('en')),
+      theme: ThemeController(ThemeMode.dark),
+      tutorialProgress: TutorialProgress({}), // nothing seen yet
+    ));
+    await tester.pump(const Duration(seconds: 1)); // entrance
+    await tester.tap(find.text('CLASSIC'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    // First entry → tutorial, not the setup screen.
+    expect(find.text('Welcome'), findsOneWidget);
+    expect(find.text('DIFFICULTY'), findsNothing);
+  });
+
   testWidgets('skip from the first step exits immediately', (tester) async {
     var exited = false;
     // Step 1 (info) has no loop timer, so this is safe without a Navigator.

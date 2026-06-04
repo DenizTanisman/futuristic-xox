@@ -282,4 +282,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get tutLaunch => 'Как играть';
+
+  @override
+  String get navTutorials => 'Обучение';
+
+  @override
+  String get tutSoon => 'Скоро';
 }

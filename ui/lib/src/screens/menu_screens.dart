@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../app/app_controllers.dart';
 import '../models/game_models.dart';
 import '../theme/game_theme.dart';
 import '../tutorial/tutorial_screen.dart';
@@ -76,7 +77,7 @@ class _EntryScreenState extends State<EntryScreen> with TickerProviderStateMixin
                   tapToPlay: l.tapToPlay,
                   titleColors: const [Color(0xFFFFFFFF), Color(0xFFC8CDD8), Color(0xFF878D9C)],
                   motif: const _ClassicMotif(),
-                  onTap: () => _go(context, const _SetupScreen(mode: Mode4.classic)),
+                  onTap: () => _enterMode(context, Mode4.classic),
                 ),
               ),
               _positioned(
@@ -416,6 +417,26 @@ void _go(BuildContext context, Widget screen) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
 }
 
+/// Enter a mode's setup. The first time the player enters a mode whose tutorial exists, auto-show
+/// that tutorial first (then the difficulty/setup screen); afterwards go straight to setup. Gated by a
+/// persisted per-mode "seen" flag (spec: tutorials only on first entry per mode).
+void _enterMode(BuildContext context, Mode4 mode) {
+  final progress = AppScope.of(context).tutorialProgress;
+  final hasTutorial = mode == Mode4.classic; // only Classic has a tutorial for now
+  if (hasTutorial && !progress.seen(mode.name)) {
+    progress.markSeen(mode.name);
+    final nav = Navigator.of(context);
+    nav.push(MaterialPageRoute(
+      builder: (_) => ClassicTutorialScreen(
+        // On finish/skip, replace the tutorial with the mode's setup (back from setup → home).
+        onExit: () => nav.pushReplacement(MaterialPageRoute(builder: (_) => _SetupScreen(mode: mode))),
+      ),
+    ));
+  } else {
+    _go(context, _SetupScreen(mode: mode));
+  }
+}
+
 String _modeName(AppLocalizations l, Mode4 mode) => switch (mode) {
       Mode4.classic => l.modeClassic,
       Mode4.original => l.modeOriginal,
@@ -530,21 +551,21 @@ class _FuturisticSelectScreen extends StatelessWidget {
             letter: 'O',
             name: l.modeOriginal,
             desc: l.modeOriginalDesc,
-            onTap: () => _go(context, const _SetupScreen(mode: Mode4.original)),
+            onTap: () => _enterMode(context, Mode4.original),
           ),
           const SizedBox(height: 14),
           _SubmodeCard(
             letter: 'B',
             name: l.modeBonanza,
             desc: l.modeBonanzaDesc,
-            onTap: () => _go(context, const _SetupScreen(mode: Mode4.bonanza)),
+            onTap: () => _enterMode(context, Mode4.bonanza),
           ),
           const SizedBox(height: 14),
           _SubmodeCard(
             letter: 'M',
             name: l.modeMorph,
             desc: l.modeMorphDesc,
-            onTap: () => _go(context, const _SetupScreen(mode: Mode4.morph)),
+            onTap: () => _enterMode(context, Mode4.morph),
           ),
         ],
       ),
@@ -685,19 +706,6 @@ class _SetupScreenState extends State<_SetupScreen> {
               ),
               const SizedBox(height: 22),
               _MultiplayerToggle(value: multiplayer, onChanged: (v) => setState(() => multiplayer = v)),
-              // "How to play": the interactive tutorial (Classic only for now).
-              if (widget.mode == Mode4.classic) ...[
-                const SizedBox(height: 12),
-                Center(
-                  child: TextButton.icon(
-                    icon: Icon(Icons.school_outlined, color: t.muted, size: 18),
-                    label: Text(l.tutLaunch, style: t.label(14, color: t.muted, weight: FontWeight.w600)),
-                    onPressed: () => Navigator.of(ctx).push(MaterialPageRoute(
-                      builder: (_) => ClassicTutorialScreen(onExit: () => Navigator.of(ctx).maybePop()),
-                    )),
-                  ),
-                ),
-              ],
               const SizedBox(height: 26),
               _StartButton(
                 onTap: () => _go(

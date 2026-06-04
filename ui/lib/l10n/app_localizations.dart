@@ -617,6 +617,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'How to play'**
   String get tutLaunch;
+
+  /// No description provided for @navTutorials.
+  ///
+  /// In en, this message translates to:
+  /// **'Tutorials'**
+  String get navTutorials;
+
+  /// No description provided for @tutSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get tutSoon;
 }
 
 class _AppLocalizationsDelegate

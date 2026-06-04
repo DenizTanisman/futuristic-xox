@@ -281,4 +281,10 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get tutLaunch => 'Nasıl oynanır';
+
+  @override
+  String get navTutorials => 'Eğitimler';
+
+  @override
+  String get tutSoon => 'Yakında';
 }

@@ -281,4 +281,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutLaunch => 'How to play';
+
+  @override
+  String get navTutorials => 'Tutorials';
+
+  @override
+  String get tutSoon => 'Coming soon';
 }

@@ -15,7 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   accepts any empty cell, steps 5–7 require the exact target; wrong taps flash the correct cell 3×;
   occupied taps ignored); animated silver/gold mark stroke-draw + win lines (`MarkPainter`,
   `WinLinePainter`). Fully localized (tr/en/ru/es); surfaces follow the app theme while the Classic
-  marks keep their fixed silver/gold identity. Launched via "How to play" on the Classic setup screen.
+  marks keep their fixed silver/gold identity. **Each mode's tutorial auto-shows the first time that
+  mode is entered** (right before its setup/difficulty screen), gated by a persisted per-mode "seen"
+  flag (`TutorialProgress`). A **Tutorials** drawer item lets players replay any tutorial anytime
+  (Classic available; other modes shown as "coming soon" until built).
 
 - **App shell — drawer, theme & localization.** Localization (tr/en/ru/es) via `flutter_localizations`
   + ARB (`AppLocalizations`), with a no-hardcoded-strings rule across the shell, entry, menus, setup,

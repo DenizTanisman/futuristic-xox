@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../l10n/app_localizations.dart';
 import '../app/app_controllers.dart';
 import '../theme/app_themes.dart';
+import '../tutorial/tutorial_screen.dart';
 
 AppLocalizations _l(BuildContext c) => AppLocalizations.of(c)!;
 
@@ -37,6 +38,7 @@ class AppDrawer extends StatelessWidget {
             ),
             Divider(color: lux.line, height: 1),
             _item(context, Icons.settings_outlined, l.navSettings, const SettingsPage()),
+            _item(context, Icons.school_outlined, l.navTutorials, const TutorialsPage()),
             _item(context, Icons.info_outline, l.navAbout, const AboutPage()),
             _item(context, Icons.bug_report_outlined, l.navIssue, const IssuePage()),
           ],
@@ -249,6 +251,55 @@ class IssuePage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Tutorials hub: replay a mode's interactive tutorial any time (spec: drawer Tutorials item).
+class TutorialsPage extends StatelessWidget {
+  const TutorialsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = _l(context);
+    final lux = LuxTokens.of(context);
+    return _ShellPage(
+      title: l.navTutorials,
+      body: Column(
+        children: [
+          _tut(context, lux, l.modeClassic, onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => ClassicTutorialScreen(onExit: () => Navigator.of(context).maybePop()),
+            ));
+          }),
+          _tut(context, lux, l.modeOriginal, soon: l.tutSoon),
+          _tut(context, lux, l.modeBonanza, soon: l.tutSoon),
+          _tut(context, lux, l.modeMorph, soon: l.tutSoon),
+        ],
+      ),
+    );
+  }
+
+  Widget _tut(BuildContext context, LuxTokens lux, String name, {VoidCallback? onTap, String? soon}) {
+    final available = onTap != null;
+    return Card(
+      color: Theme.of(context).cardColor,
+      margin: const EdgeInsets.only(bottom: 10),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: lux.line),
+      ),
+      child: Opacity(
+        opacity: available ? 1 : 0.5,
+        child: ListTile(
+          leading: Icon(Icons.school_outlined, color: available ? lux.accent : lux.muted),
+          title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
+          trailing: available
+              ? const Icon(Icons.chevron_right)
+              : Text(soon ?? '', style: TextStyle(color: lux.muted, fontSize: 12)),
+          onTap: onTap,
+        ),
       ),
     );
   }

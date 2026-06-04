@@ -92,5 +92,7 @@
   "tutClassicDemo2cBody": "Por último, la diagonal. Coloca una X en la casilla central que brilla y completa el trío.",
   "tutClassicDoneTitle": "¡Eso es todo!",
   "tutClassicDoneBody": "El tablero Classic ya es todo tuyo. Salta a una partida real cuando quieras — suerte, y que seas tú quien gane.",
-  "tutLaunch": "Cómo jugar"
+  "tutLaunch": "Cómo jugar",
+  "navTutorials": "Tutoriales",
+  "tutSoon": "Próximamente"
 }

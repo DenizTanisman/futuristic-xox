@@ -95,5 +95,7 @@
   "tutClassicDemo2cBody": "Finally, the diagonal. Place an X on the glowing center square to complete the trio.",
   "tutClassicDoneTitle": "That's all it takes!",
   "tutClassicDoneBody": "The Classic board is all yours now. Jump into a real game whenever you like — good luck, and may you be the one who wins.",
-  "tutLaunch": "How to play"
+  "tutLaunch": "How to play",
+  "navTutorials": "Tutorials",
+  "tutSoon": "Coming soon"
 }
