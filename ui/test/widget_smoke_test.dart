@@ -8,26 +8,26 @@ import 'package:futuristic_xox/main.dart';
 void main() {
   testWidgets('entry screen shows the Classic/Futuristic split', (tester) async {
     await tester.pumpWidget(const FuturisticXoxApp());
-    expect(find.text('Classic'), findsOneWidget);
-    expect(find.text('Futuristic'), findsOneWidget);
-    expect(find.text('FUTURISTIC XOX'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1)); // entrance animation
+    expect(find.text('CLASSIC'), findsOneWidget);
+    expect(find.text('FUTURISTIC'), findsOneWidget);
   });
 
   testWidgets('Classic flow reaches a rendered board', (tester) async {
+    // The entry + game screens have looping animations (sheen, shimmer, pulse), so pumpAndSettle
+    // would never settle — pump fixed frames instead.
     await tester.pumpWidget(const FuturisticXoxApp());
+    await tester.pump(const Duration(seconds: 1)); // entrance
 
-    await tester.tap(find.text('Classic'));
-    await tester.pumpAndSettle();
-    // Setup screen.
+    await tester.tap(find.text('CLASSIC'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500)); // nav to setup
     expect(find.text('DIFFICULTY'), findsOneWidget);
     expect(find.text('Play'), findsOneWidget);
 
     await tester.tap(find.text('Play'));
-    // The game screen has looping animations (frame shimmer, turn pulse), so pumpAndSettle would
-    // never settle — pump fixed frames instead.
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 700));
-    // Game screen: a board grid is present. Human (player 0) moves first, so no AI timer is pending.
     expect(find.byType(GridView), findsOneWidget);
   });
 }

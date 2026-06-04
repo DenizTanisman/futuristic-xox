@@ -77,8 +77,10 @@ void main() {
   group('setup toggle', () {
     testWidgets('Offline Multiplayer dims the difficulty selector', (tester) async {
       await tester.pumpWidget(const FuturisticXoxApp());
-      await tester.tap(find.text('Classic'));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 1)); // entrance animation
+      await tester.tap(find.text('CLASSIC'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500)); // nav to setup
 
       AnimatedOpacity difficultyOpacity() => tester.widget<AnimatedOpacity>(
             find.ancestor(of: find.text('Easy'), matching: find.byType(AnimatedOpacity)),
@@ -86,7 +88,8 @@ void main() {
       expect(difficultyOpacity().opacity, 1.0);
 
       await tester.tap(find.byType(Switch));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       expect(difficultyOpacity().opacity, 0.4, reason: 'difficulty dimmed when MP on');
     });
   });

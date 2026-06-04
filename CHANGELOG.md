@@ -41,6 +41,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   scaffolding.
 
 ### Added
+- **Entry/landing screen** — responsive Classic | Futuristic split (side-by-side on wide screens,
+  top/bottom on phones via `LayoutBuilder`), slide-in entrance, metallic gradient titles (Cinzel 900
+  via `ShaderMask`), an animated steel→gold divider with a sheen shift, themed motifs (Classic X/O
+  `CustomPaint`, Futuristic corner medallions reusing the pawn widget), hover-to-expand on desktop,
+  and a "tap to play" pill; tapping a side opens that mode's setup.
 - **UI themes** — Classic (cold metallic) and Futuristic (warm luxury), rebuilt natively in Flutter
   (no WebView): a shared `GameTheme` abstraction (colours/gradients/fonts via an `InheritedWidget`),
   Cinzel (display) + Rajdhani (UI/numbers) via `google_fonts`, themed radial backgrounds, a beveled
