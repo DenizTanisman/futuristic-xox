@@ -86,10 +86,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get futuristicTagline => 'Captura · Conquista';
 
   @override
-  String get modeClassic => 'Clásico';
+  String get modeClassic => 'Classic';
 
   @override
-  String get modeFuturistic => 'Futurista';
+  String get modeFuturistic => 'Futuristic';
 
   @override
   String get chooseMode => 'Elige un modo';

@@ -86,10 +86,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get futuristicTagline => 'Захват · Господство';
 
   @override
-  String get modeClassic => 'Классика';
+  String get modeClassic => 'Classic';
 
   @override
-  String get modeFuturistic => 'Футуристик';
+  String get modeFuturistic => 'Futuristic';
 
   @override
   String get chooseMode => 'Выберите режим';

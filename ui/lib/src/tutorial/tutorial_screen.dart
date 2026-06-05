@@ -151,8 +151,12 @@ class _TutorialScreenState extends State<TutorialScreen> {
                   children: [
                     _header(l),
                     Expanded(
+                      // Fade-through: the old step fades fully out in the first half before the new one
+                      // fades in — so medallions/boards never overlap mid-transition (no ghost copy).
                       child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
+                        duration: const Duration(milliseconds: 360),
+                        switchInCurve: const Interval(0.5, 1.0, curve: Curves.easeOut),
+                        switchOutCurve: const Interval(0.5, 1.0, curve: Curves.easeIn),
                         child: SingleChildScrollView(
                           key: ValueKey(c.stepIndex),
                           padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),

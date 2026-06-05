@@ -561,7 +561,7 @@ class _FuturisticSelectScreen extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     return _ModeShell(
       theme: GameTheme.futuristic,
-      title: l.modeFuturistic.toUpperCase(),
+      title: 'FUTURISTIC', // brand name — fixed across languages (matches the entry screen)
       subtitle: l.chooseMode,
       child: Column(
         children: [

@@ -86,10 +86,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get futuristicTagline => 'Ele geçir · Hükmet';
 
   @override
-  String get modeClassic => 'Klasik';
+  String get modeClassic => 'Classic';
 
   @override
-  String get modeFuturistic => 'Fütüristik';
+  String get modeFuturistic => 'Futuristic';
 
   @override
   String get chooseMode => 'Bir mod seç';
