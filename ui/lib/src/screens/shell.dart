@@ -10,6 +10,16 @@ import '../tutorial/tutorial_screen.dart';
 
 AppLocalizations _l(BuildContext c) => AppLocalizations.of(c)!;
 
+/// Locale-aware upper-casing. Dart's [String.toUpperCase] is not Turkish-aware ('i' → 'I'), and the
+/// Cinzel display font renders lowercase as dotless small-caps — so a Turkish title like "Eğitimler"
+/// must be pre-cased with the dotted İ (U+0130) to read correctly ("EĞİTİMLER", not "EĞITIMLER").
+String _localeUpper(BuildContext c, String s) {
+  if (Localizations.localeOf(c).languageCode == 'tr') {
+    s = s.replaceAll('ı', 'I').replaceAll('i', 'İ');
+  }
+  return s.toUpperCase();
+}
+
 /// Left navigation drawer: brand header + Settings / About / Issue (spec §3).
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -70,7 +80,8 @@ class _ShellPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title, style: GoogleFonts.cinzel(fontWeight: FontWeight.w700))),
+      appBar: AppBar(
+          title: Text(_localeUpper(context, title), style: GoogleFonts.cinzel(fontWeight: FontWeight.w700))),
       body: SafeArea(child: SingleChildScrollView(padding: const EdgeInsets.all(20), child: body)),
     );
   }
@@ -208,10 +219,12 @@ class SettingsPage extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
+                // Medium (not bold) weight: selection is already shown by colour + border + check, and
+                // the Cyrillic fallback ("Русский", no glyph in the UI font) renders heavy at w700.
                 child: Text(label,
                     style: TextStyle(
                         color: selected ? lux.accent : lux.ink,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                         fontSize: 15)),
               ),
               if (selected) Icon(Icons.check, color: lux.accent, size: 20),

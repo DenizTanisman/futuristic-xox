@@ -408,6 +408,12 @@ abstract class AppLocalizations {
   /// **'{name} wins!'**
   String resultWins(String name);
 
+  /// No description provided for @resultYouWin.
+  ///
+  /// In en, this message translates to:
+  /// **'You win!'**
+  String get resultYouWin;
+
   /// No description provided for @resultDraw.
   ///
   /// In en, this message translates to:

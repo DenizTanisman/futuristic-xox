@@ -57,6 +57,7 @@
   "noSecondMove": "Второго хода нет — ход переходит",
   "selectPawnFirst": "Сначала выберите фишку",
   "resultWins": "{name} победил!",
+  "resultYouWin": "Вы победили!",
   "resultDraw": "Ничья",
   "target": "Цель",
   "anyRotation": "любой поворот",

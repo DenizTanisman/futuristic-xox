@@ -169,6 +169,9 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get resultYouWin => 'Вы победили!';
+
+  @override
   String get resultDraw => 'Ничья';
 
   @override

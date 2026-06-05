@@ -13,12 +13,21 @@ class GameStrings {
   final String selectPawnFirst;
   final String draw;
   final String Function(String name) wins;
+
+  /// The local human's label ("You") and the grammatically-correct 2nd-person win line ("You win!"),
+  /// used instead of the generic 3rd-person [wins] when the human themselves wins (e.g. Turkish needs
+  /// "Sen kazandın!", not "Sen kazandı!").
+  final String you;
+  final String youWins;
+
   const GameStrings({
     required this.capture,
     required this.noSecondMove,
     required this.selectPawnFirst,
     required this.draw,
     required this.wins,
+    required this.you,
+    required this.youWins,
   });
 }
 
@@ -207,13 +216,19 @@ class GameController extends ChangeNotifier {
         Outcome.inProgress => SoundId.place, // unreachable (only called when over)
       };
 
-  /// Outcome message from the winning seat's perspective (uses player labels).
+  /// Outcome message from the winning seat's perspective (uses player labels). When the winner is the
+  /// local human ("You"), use the 2nd-person line for correct grammar (e.g. TR "Sen kazandın!").
   String _resultText(Outcome o) => switch (o) {
-        Outcome.win0 => strings.wins(players[0].label),
-        Outcome.win1 => strings.wins(players[1].label),
+        Outcome.win0 => _winText(0),
+        Outcome.win1 => _winText(1),
         Outcome.draw => strings.draw,
         Outcome.inProgress => '',
       };
+
+  String _winText(int seat) {
+    final label = players[seat].label;
+    return label == strings.you ? strings.youWins : strings.wins(label);
+  }
 
   void _setMessage(String text, {required bool isError}) {
     message = text;

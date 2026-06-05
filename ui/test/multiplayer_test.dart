@@ -15,6 +15,8 @@ const _strings = GameStrings(
   selectPawnFirst: 'Select a pawn first',
   draw: 'Draw',
   wins: _wins,
+  you: 'You',
+  youWins: 'You win!',
 );
 String _wins(String name) => '$name wins!';
 

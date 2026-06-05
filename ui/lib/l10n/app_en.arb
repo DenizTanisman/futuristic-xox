@@ -59,6 +59,7 @@
   "selectPawnFirst": "Select a pawn first",
   "resultWins": "{name} wins!",
   "@resultWins": { "placeholders": { "name": { "type": "String" } } },
+  "resultYouWin": "You win!",
   "resultDraw": "Draw",
   "target": "Target",
   "anyRotation": "any rotation",

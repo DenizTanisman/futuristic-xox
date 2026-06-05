@@ -169,6 +169,9 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get resultYouWin => '¡Ganaste!';
+
+  @override
   String get resultDraw => 'Empate';
 
   @override

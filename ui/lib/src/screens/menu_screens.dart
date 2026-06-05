@@ -73,7 +73,7 @@ class _EntryScreenState extends State<EntryScreen> with TickerProviderStateMixin
                   index: 0,
                   isRow: isRow,
                   theme: GameTheme.classic,
-                  title: l.modeClassic.toUpperCase(),
+                  title: 'CLASSIC', // brand name — fixed across languages (spec: entry names)
                   tagline: l.classicTagline,
                   tapToPlay: l.tapToPlay,
                   titleColors: const [Color(0xFFFFFFFF), Color(0xFFC8CDD8), Color(0xFF878D9C)],
@@ -90,7 +90,7 @@ class _EntryScreenState extends State<EntryScreen> with TickerProviderStateMixin
                   index: 1,
                   isRow: isRow,
                   theme: GameTheme.futuristic,
-                  title: l.modeFuturistic.toUpperCase(),
+                  title: 'FUTURISTIC', // brand name — fixed across languages (spec: entry names)
                   tagline: l.futuristicTagline,
                   tapToPlay: l.tapToPlay,
                   titleColors: const [Color(0xFFF6E6A8), Color(0xFFD4AF37), Color(0xFF8A6A1D)],

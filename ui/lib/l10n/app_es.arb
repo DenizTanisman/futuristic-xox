@@ -57,6 +57,7 @@
   "noSecondMove": "No hay segundo movimiento — pasa el turno",
   "selectPawnFirst": "Primero elige una ficha",
   "resultWins": "¡{name} gana!",
+  "resultYouWin": "¡Ganaste!",
   "resultDraw": "Empate",
   "target": "Objetivo",
   "anyRotation": "cualquier rotación",

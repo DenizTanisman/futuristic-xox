@@ -168,6 +168,9 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String get resultYouWin => 'Sen kazandın!';
+
+  @override
   String get resultDraw => 'Berabere';
 
   @override

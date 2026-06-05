@@ -66,6 +66,8 @@ class _GameScreenState extends State<GameScreen> {
         selectPawnFirst: l.selectPawnFirst,
         draw: l.resultDraw,
         wins: (name) => l.resultWins(name),
+        you: l.playerYou,
+        youWins: l.resultYouWin,
       ),
       seed: DateTime.now().millisecondsSinceEpoch & 0xFFFFFF,
     );

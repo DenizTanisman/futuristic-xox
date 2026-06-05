@@ -57,6 +57,7 @@
   "noSecondMove": "İkinci hamle yok — sıra geçiyor",
   "selectPawnFirst": "Önce bir taş seç",
   "resultWins": "{name} kazandı!",
+  "resultYouWin": "Sen kazandın!",
   "resultDraw": "Berabere",
   "target": "Hedef",
   "anyRotation": "her yön",

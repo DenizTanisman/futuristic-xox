@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Entry screen mode names are now fixed brand names** ("CLASSIC" / "FUTURISTIC") that no longer
+  change with the selected language (matching the Original/Bonanza/Morph submode names).
+- **Turkish header casing.** Shell page titles now use Turkish-aware upper-casing so the dotted İ
+  renders ("EĞİTİMLER", not "EĞITIMLER") — Dart's default `toUpperCase` and the Cinzel small-caps
+  glyph both dropped the dot.
+- **Turkish win message grammar.** When the human player wins, the banner now reads the 2nd-person
+  "Sen kazandın!" (via a dedicated `resultYouWin` string) instead of the 3rd-person "Sen kazandı!".
+- **Settings choice weight.** Language/theme option labels use medium weight so the Cyrillic
+  fallback ("Русский", absent from the UI font) no longer renders heavy/bold; selection stays clear
+  via colour, border, and the check icon.
+
 ### Added
 - **Sound system (SFX).** An `AudioController` (singleton) preloads six low-latency clips — menu
   navigation, pawn placement, pawn select (Futuristic), and win/lose/draw — one reused `AudioPlayer`
