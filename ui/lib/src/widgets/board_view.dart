@@ -194,8 +194,10 @@ class _BoardViewState extends State<BoardView> with TickerProviderStateMixin {
                               cellSize: cellSize,
                               gap: gap,
                               progress: _winLine.value,
-                              color: theme.accent, // silver (Classic) / gold (Futuristic)
-                              glow: theme.accentGlow,
+                              // Colour by the WINNER's side: Classic silver (X) / gold (O), Futuristic
+                              // gold (you) / bordeaux (opponent) — so an opponent win reads red.
+                              color: theme.ownerColor(s.outcome == Outcome.win1 ? 1 : 0),
+                              glow: theme.discGlow(s.outcome == Outcome.win1 ? 1 : 0),
                             ),
                           ),
                         ),
