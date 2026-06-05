@@ -39,6 +39,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeLight => 'Light';
 
   @override
+  String get settingsSfx => 'Sound Effects';
+
+  @override
+  String get settingsSfxVolume => 'Volume';
+
+  @override
   String get aboutTitle => 'About';
 
   @override

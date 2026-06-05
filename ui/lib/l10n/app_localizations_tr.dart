@@ -39,6 +39,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get themeLight => 'Açık';
 
   @override
+  String get settingsSfx => 'Ses Efektleri';
+
+  @override
+  String get settingsSfxVolume => 'Ses Düzeyi';
+
+  @override
   String get aboutTitle => 'Hakkında';
 
   @override

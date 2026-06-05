@@ -62,7 +62,10 @@ class AppPrefs {
   final Locale? locale;
   final ThemeMode themeMode;
   final Set<String> seenTutorials;
-  const AppPrefs(this.locale, this.themeMode, this.seenTutorials);
+  final bool sfxEnabled;
+  final double sfxVolume;
+  const AppPrefs(
+      this.locale, this.themeMode, this.seenTutorials, this.sfxEnabled, this.sfxVolume);
 
   static Future<AppPrefs> load(Iterable<Locale> supported) async {
     final prefs = await SharedPreferences.getInstance();
@@ -75,7 +78,9 @@ class AppPrefs {
     for (final m in const ['classic', 'original', 'bonanza', 'morph']) {
       if (prefs.getBool('${TutorialProgress._prefix}$m') ?? false) seen.add(m);
     }
-    return AppPrefs(locale, theme, seen);
+    final sfxEnabled = prefs.getBool('sfx_enabled') ?? true;
+    final sfxVolume = prefs.getDouble('sfx_volume') ?? 0.8;
+    return AppPrefs(locale, theme, seen, sfxEnabled, sfxVolume);
   }
 }
 

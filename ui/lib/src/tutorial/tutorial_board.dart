@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../audio/audio_controller.dart';
 import 'tutorial_painters.dart';
 import 'tutorial_step.dart';
 
@@ -95,6 +96,7 @@ class _TutorialBoardState extends State<TutorialBoard> with TickerProviderStateM
     if (_markAt(i) != null) return; // occupied → ignore (spec §3)
     final correct = widget.anyEmpty || i == widget.target;
     if (correct) {
+      AudioController.instance.play(SoundId.place);
       setState(() {
         _demoPlaced[i] = Mark.x;
         if (widget.winLine != null) _won = true;

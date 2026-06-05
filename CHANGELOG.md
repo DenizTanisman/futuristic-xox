@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Sound system (SFX).** An `AudioController` (singleton) preloads six low-latency clips — menu
+  navigation, pawn placement, pawn select (Futuristic), and win/lose/draw — one reused `AudioPlayer`
+  per `SoundId` (never one per tap), so distinct sounds overlap while same-id repeats are throttled
+  (~60 ms). Clips are synthesized from the spec's tone recipes (warm, understated; win ~0.6 s, the
+  rest < 0.4 s) as OGG under `assets/audio/`. Triggers: navigation + primary buttons (`menuNav`),
+  every placement including AI moves and tutorials (`place`), Futuristic hand selection (`select`),
+  and the game result (`win`/`lose`/`draw`, once). Settings gains an **SFX on/off toggle + volume
+  slider**, persisted (`sfx_enabled`, `sfx_volume`) and applied live; iOS uses an ambient audio
+  context so SFX respect the silent switch. Fully gated by the toggle; localized (tr/en/ru/es).
+
 - **Futuristic (Morph) mode interactive tutorial.** Completes the tutorial set (Classic, Original,
   Bonanza, Morph). A 12-step walkthrough on a **4×4 board** teaching Morph's shape-completion win:
   bring four pawns into an **I, L, or Z** — in any rotation, on the **axis or diagonal** frame, and

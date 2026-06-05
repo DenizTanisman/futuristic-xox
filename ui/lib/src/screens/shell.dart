@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../app/app_controllers.dart';
+import '../audio/audio_controller.dart';
 import '../theme/app_themes.dart';
 import '../tutorial/tutorial_screen.dart';
 
@@ -52,6 +53,7 @@ class AppDrawer extends StatelessWidget {
       leading: Icon(icon),
       title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
       onTap: () {
+        AudioController.instance.play(SoundId.menuNav);
         Navigator.of(context).pop(); // close drawer
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
       },
@@ -125,7 +127,60 @@ class SettingsPage extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 28),
+          _label(lux, l.settingsSfx),
+          _sfxSection(context, l, lux),
         ],
+      ),
+    );
+  }
+
+  /// SFX on/off + volume (spec §4). Reads/writes the [AudioController] singleton; both persist. A short
+  /// sample plays on enable / volume-release so the change is audible.
+  Widget _sfxSection(BuildContext context, AppLocalizations l, LuxTokens lux) {
+    final audio = AudioController.instance;
+    return AnimatedBuilder(
+      animation: audio,
+      builder: (context, _) => Container(
+        padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: lux.line),
+        ),
+        child: Column(
+          children: [
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              activeThumbColor: lux.accent,
+              title: Text(l.settingsSfx,
+                  style: TextStyle(color: lux.ink, fontWeight: FontWeight.w700, fontSize: 15)),
+              value: audio.enabled,
+              onChanged: (v) {
+                audio.setEnabled(v);
+                if (v) audio.play(SoundId.menuNav);
+              },
+            ),
+            Opacity(
+              opacity: audio.enabled ? 1 : 0.4,
+              child: Row(
+                children: [
+                  Icon(Icons.volume_up_outlined, color: lux.muted, size: 20),
+                  const SizedBox(width: 8),
+                  Text(l.settingsSfxVolume, style: TextStyle(color: lux.muted, fontSize: 13)),
+                  Expanded(
+                    child: Slider(
+                      activeColor: lux.accent,
+                      value: audio.volume.clamp(0.0, 1.0),
+                      onChanged: audio.enabled ? (v) => audio.setVolume(v) : null,
+                      onChangeEnd: audio.enabled ? (_) => audio.play(SoundId.select) : null,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../audio/audio_controller.dart';
 import '../game/game_api.dart';
 import '../game/player_controller.dart';
 import '../models/game_models.dart';
@@ -110,6 +111,7 @@ class GameController extends ChangeNotifier {
     } else {
       selectedColor = color;
       selectedValue = value;
+      AudioController.instance.play(SoundId.select); // Futuristic hand selection only
     }
     _clearMessage();
     notifyListeners();
@@ -169,6 +171,13 @@ class GameController extends ChangeNotifier {
     lastWasCapture = result.captured;
     snapshot = result.snapshot;
 
+    // Audio feedback for every applied move — player AND AI (spec §2). The result fanfare layers on
+    // top of the final placement.
+    AudioController.instance.play(SoundId.place);
+    if (result.snapshot.isOver) {
+      AudioController.instance.play(_resultSound(result.snapshot.outcome));
+    }
+
     if (result.snapshot.isOver) {
       _setMessage(_resultText(result.snapshot.outcome), isError: false);
     } else if (result.singleMoveFallback) {
@@ -188,6 +197,15 @@ class GameController extends ChangeNotifier {
     }
     return null;
   }
+
+  /// Result sound from the human's perspective: a human winner → win, an AI beating a human → lose,
+  /// a draw → draw. With two humans (offline multiplayer) any decisive result is a win for someone.
+  SoundId _resultSound(Outcome o) => switch (o) {
+        Outcome.win0 => players[0].isHuman ? SoundId.win : SoundId.lose,
+        Outcome.win1 => players[1].isHuman ? SoundId.win : SoundId.lose,
+        Outcome.draw => SoundId.draw,
+        Outcome.inProgress => SoundId.place, // unreachable (only called when over)
+      };
 
   /// Outcome message from the winning seat's perspective (uses player labels).
   String _resultText(Outcome o) => switch (o) {

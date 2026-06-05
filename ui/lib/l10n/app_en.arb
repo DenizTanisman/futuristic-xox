@@ -11,6 +11,8 @@
   "settingsTheme": "Theme",
   "themeDark": "Dark",
   "themeLight": "Light",
+  "settingsSfx": "Sound Effects",
+  "settingsSfxVolume": "Volume",
 
   "aboutTitle": "About",
   "aboutBody": "Futuristic XOX began as a simple question: what if the humble tic-tac-toe pawns had weight? Here they carry numbers and can capture one another, classic X/O play lives on as its own mode, and a few twists — randomized hands, shape-completion — keep every match fresh. Built with care for a smooth, premium feel. Have fun, and may the better tactician win.",

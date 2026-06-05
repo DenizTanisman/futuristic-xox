@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../audio/audio_controller.dart';
 import '../theme/game_theme.dart';
 import '../widgets/pawn_widget.dart';
 import 'tutorial_painters.dart';
@@ -239,12 +240,17 @@ class _FuturisticTutorialBoardState extends State<FuturisticTutorialBoard> with 
     }
   }
 
-  void _place(int i, int value, {int owner = 0}) =>
-      setState(() => _demoPlaced[i] = TutPawn(owner, value));
+  void _place(int i, int value, {int owner = 0}) {
+    AudioController.instance.play(SoundId.place); // tutorials get placement feedback too (spec §2)
+    setState(() => _demoPlaced[i] = TutPawn(owner, value));
+  }
 
   // Capture: the gold pawn lands on the opponent's cell (overwriting it). The bordeaux "leaves" via
   // the cell's AnimatedSwitcher scale-out and the gold pawn pops in with its gold ripple.
-  void _capture(int i, int value) => setState(() => _demoPlaced[i] = TutPawn(0, value));
+  void _capture(int i, int value) {
+    AudioController.instance.play(SoundId.place);
+    setState(() => _demoPlaced[i] = TutPawn(0, value));
+  }
 
   void _redirect() {
     widget.onResult?.call(FutTapResult.redirect);

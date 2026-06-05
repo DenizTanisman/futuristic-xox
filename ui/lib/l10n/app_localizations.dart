@@ -162,6 +162,18 @@ abstract class AppLocalizations {
   /// **'Light'**
   String get themeLight;
 
+  /// No description provided for @settingsSfx.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound Effects'**
+  String get settingsSfx;
+
+  /// No description provided for @settingsSfxVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get settingsSfxVolume;
+
   /// No description provided for @aboutTitle.
   ///
   /// In en, this message translates to:

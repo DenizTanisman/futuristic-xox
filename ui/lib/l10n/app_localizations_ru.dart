@@ -39,6 +39,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get themeLight => 'Светлая';
 
   @override
+  String get settingsSfx => 'Звуковые эффекты';
+
+  @override
+  String get settingsSfxVolume => 'Громкость';
+
+  @override
   String get aboutTitle => 'О приложении';
 
   @override

@@ -11,6 +11,8 @@
   "settingsTheme": "Tema",
   "themeDark": "Koyu",
   "themeLight": "Açık",
+  "settingsSfx": "Ses Efektleri",
+  "settingsSfxVolume": "Ses Düzeyi",
 
   "aboutTitle": "Hakkında",
   "aboutBody": "Futuristic XOX basit bir soruyla başladı: ya sıradan XOX taşlarının bir ağırlığı olsaydı? Burada taşlar sayı taşır ve birbirini ele geçirebilir; klasik X/O oyunu kendi modu olarak yaşar; rastgele eller ve şekil tamamlama gibi birkaç sürpriz her maçı taze tutar. Akıcı ve özenli bir his için tasarlandı. İyi eğlenceler — kazanan, daha iyi taktisyen olsun.",
