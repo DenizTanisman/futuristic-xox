@@ -106,6 +106,14 @@ class SfxController extends ChangeNotifier {
     } catch (_) {/* SFX must never disrupt the UI */}
   }
 
+  /// App backgrounded: stop any one-shot still playing so nothing leaks into the background.
+  void suspend() {
+    if (!_ready) return;
+    for (final player in _players.values) {
+      player.stop().catchError((_) {});
+    }
+  }
+
   Future<void> setEnabled(bool value) async {
     if (_enabled == value) return;
     _enabled = value;

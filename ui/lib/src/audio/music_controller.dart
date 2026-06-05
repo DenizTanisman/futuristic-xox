@@ -136,6 +136,38 @@ class MusicController extends ChangeNotifier {
     await prefs.setDouble(_volumeKey, value);
   }
 
+  bool _suspended = false;
+
+  /// App went to the background / screen off: pause both loops so nothing plays while away.
+  void suspend() {
+    if (!_ready || _suspended) return;
+    _suspended = true;
+    _resumeTimer?.cancel();
+    _fades['lobby']?.cancel();
+    _fades['ambient']?.cancel();
+    for (final e in {'lobby': _lobby, 'ambient': _ambient}.entries) {
+      if (_playing[e.key] == true) {
+        _playing[e.key] = false;
+        e.value?.pause().catchError((_) {});
+      }
+    }
+  }
+
+  /// App returned to the foreground: resume the loop the current scene calls for.
+  void resumeFromBackground() {
+    if (!_ready || !_suspended) return;
+    _suspended = false;
+    if (!_enabled) return;
+    if (_scene == _Scene.match) {
+      _ensurePlaying('ambient', _ambient!);
+      _fadeTo('ambient', _ambient!, _ambientTarget, 250);
+    } else {
+      _scene = _Scene.lobby;
+      _ensurePlaying('lobby', _lobby!);
+      _fadeTo('lobby', _lobby!, _lobbyTarget, 250);
+    }
+  }
+
   void _ensurePlaying(String key, AudioPlayer player) {
     if (_playing[key] == true) return;
     _playing[key] = true;

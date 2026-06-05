@@ -26,7 +26,7 @@ Future<void> main() async {
   ));
 }
 
-class FuturisticXoxApp extends StatelessWidget {
+class FuturisticXoxApp extends StatefulWidget {
   final LocaleController locale;
   final ThemeController theme;
   final TutorialProgress tutorialProgress;
@@ -36,6 +36,45 @@ class FuturisticXoxApp extends StatelessWidget {
     required this.theme,
     required this.tutorialProgress,
   });
+
+  @override
+  State<FuturisticXoxApp> createState() => _FuturisticXoxAppState();
+}
+
+class _FuturisticXoxAppState extends State<FuturisticXoxApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Don't keep audio running in the background / with the screen off (spec: pause when away, resume
+    // on return). `inactive` is transient (app switcher, notification shade) — ignore it to avoid
+    // stutter; act on paused/hidden/detached and resume on resumed.
+    switch (state) {
+      case AppLifecycleState.resumed:
+        MusicController.instance.resumeFromBackground();
+      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.detached:
+        MusicController.instance.suspend();
+        SfxController.instance.suspend();
+      case AppLifecycleState.inactive:
+        break;
+    }
+  }
+
+  LocaleController get locale => widget.locale;
+  ThemeController get theme => widget.theme;
+  TutorialProgress get tutorialProgress => widget.tutorialProgress;
 
   @override
   Widget build(BuildContext context) {
