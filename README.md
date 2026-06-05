@@ -6,6 +6,13 @@ with an online-ready server-authoritative engine for v2.
 
 > Priorities, in order: **correctness → speed/responsiveness → smooth 60fps graphics**.
 
+## Screenshots
+
+<!-- Captured during the on-device test pass; drop images into aidlc-docs/release/screenshots/ -->
+| Entry | Morph win line | Tutorial |
+|-------|----------------|----------|
+| _(coming soon)_ | _(coming soon)_ | _(coming soon)_ |
+
 ## Architecture
 
 Three strictly separated layers:
@@ -49,8 +56,12 @@ See [`CLAUDE.md`](CLAUDE.md) (the build spec) for the full design.
 | **U1 — Engine** (`engine/`) | rules, capture, win-check (lines + Morph shapes), modes, pure `apply` | ✅ complete, 41 tests |
 | **U2 — AI** (`ai/`) | easy / medium / hard (negamax + alpha-beta + transposition table + iterative deepening) | ✅ complete, 14 tests + self-play |
 | **Bridge** (`bridge/`) | `GameSession` facade, FFI-friendly views | ✅ complete, 6 tests |
-| **U3 — UI** (`ui/`) | screens, board, rails, animations on a swappable `GameApi` | ✅ code-complete (runs on the Dart mock backend) |
-| **Integration** | `flutter_rust_bridge` wiring + on-device play | ⏳ needs Flutter SDK install |
+| **U3 — UI** (`ui/`) | screens, board, rails, animations; 4-language i18n (tr/en/ru/es); dark/light themes; interactive tutorials for all four modes; sound effects; continuous win-line | ✅ complete, runs on the Dart mock backend (40 widget/logic tests) |
+| **Integration** | `flutter_rust_bridge` wiring + on-device play | ⏳ Dart mock backend live; native-Rust wiring + on-device test pass pending |
+
+> **Release status:** release engineering is underway on `release/v1.0.0` (MIT `LICENSE`, this README,
+> Android signing config, store metadata). The **v1.0.0** cut is held pending background **music** and
+> the on-device test pass.
 
 **Quality:** 61 Rust tests pass; `cargo clippy` clean; the AI's Hard difficulty scores 97–100% vs
 Easy and 95% vs Medium in self-play and never loses. Engine/AI use **zero** third-party crates and
@@ -87,4 +98,6 @@ review) live under [`aidlc-docs/`](aidlc-docs/). The changelog follows
 
 ## License
 
-MIT
+Released under the **MIT License** — see [`LICENSE`](LICENSE). SPDX-License-Identifier: `MIT`.
+Copyright © 2026 İsmail Deniz Tanışman. Use, modify, and distribute freely with attribution; provided
+"as is" without warranty.

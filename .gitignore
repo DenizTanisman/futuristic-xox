@@ -19,6 +19,18 @@ ui/*.iml
 # flutter_rust_bridge generated artifacts are kept under version control
 # except platform build outputs above.
 
+# Release signing material — NEVER commit (keystore + credentials live only on the release machine)
+ui/android/key.properties
+**/*.jks
+**/*.keystore
+**/upload-keystore.jks
+**/*.p12
+**/*.pepk
+# iOS signing material
+**/*.mobileprovision
+**/*.cer
+ui/ios/ExportOptions.plist
+
 # macOS
 .DS_Store
 

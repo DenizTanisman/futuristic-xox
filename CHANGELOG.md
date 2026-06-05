@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Release engineering (v1.0.0 prep).** MIT `LICENSE`; portfolio README (License section, screenshots
+  placeholders, status); Android release-signing config driven by a gitignored `android/key.properties`
+  (with a committed `.template`) that falls back to the debug key when absent; signing material excluded
+  via `.gitignore`; store metadata copy (Google Play / App Store, TR + EN) under
+  `aidlc-docs/release/`. The **[1.0.0]** cut is held until background music lands and the on-device test
+  pass is green.
+
 - **Continuous win-line overlay (all modes).** On every win the board draws a single, unbroken stroke
   through the winning cells in path order — straight for 3-in-a-row and Morph I, one bend for L, a
   zigzag for Z, including diagonal/mirrored shapes. The engine now exposes the winning group
