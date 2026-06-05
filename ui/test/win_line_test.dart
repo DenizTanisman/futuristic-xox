@@ -33,6 +33,18 @@ void main() {
     expectContinuous(orderWinPath([0, 5, 10, 13], 4), 4, [0, 5, 10, 13]);
   });
 
+  test('Morph axis mirrored-L [6,10,13,14] uses orthogonal steps, no diagonal shortcut', () {
+    // Column 6-10-14 then 14-13; must NOT cut 10->13 diagonally.
+    final path = orderWinPath([6, 10, 13, 14], 4);
+    expect(path, anyOf(equals([6, 10, 14, 13]), equals([13, 14, 10, 6])));
+    // Every step orthogonal (side neighbour), proving the diagonal shortcut isn't taken.
+    for (var i = 1; i < path.length; i++) {
+      final a = path[i - 1], b = path[i];
+      final d = (a ~/ 4 - b ~/ 4).abs() + (a % 4 - b % 4).abs();
+      expect(d, 1, reason: 'step $a->$b must be orthogonal');
+    }
+  });
+
   test('Morph diagonal Z [1,3,4,6] is continuous (zigzag through diagonal neighbours)', () {
     // Endpoints are 3 and 4; the only continuous order is 3-6-1-4 (or its reverse).
     final path = orderWinPath([1, 3, 4, 6], 4);

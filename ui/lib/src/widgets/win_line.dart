@@ -1,40 +1,52 @@
 import 'package:flutter/material.dart';
 
-/// Order the winning cells into a continuous path where each consecutive pair is adjacent (a side or
-/// diagonal neighbour), so the win line draws as one unbroken stroke (spec §2).
+/// Order the winning cells into a continuous path where each consecutive pair is adjacent, so the win
+/// line draws as one unbroken stroke (spec §2).
 ///
-/// 3-in-a-row groups are already collinear; Morph's I/L/Z come from `morph_winner` as an unordered set.
-/// Both are simple paths with exactly two degree-1 endpoints, so a short adjacency walk from an
-/// endpoint orders them uniformly — straight (I), one bend (L), or zigzag (Z), axis or diagonal frame.
+/// Crucially, a shape's cells connect by exactly ONE kind of step: an **axis-frame** I/L/Z (and a
+/// horizontal/vertical 3-in-a-row) is a polyomino connected by **orthogonal** steps only; a
+/// **diagonal-frame** shape (and a diagonal 3-in-a-row) is a staircase connected by **diagonal** steps
+/// only. Mixing the two would let the walk take a diagonal "shortcut" across an axis-aligned L
+/// (e.g. drawing 10→13 instead of 10→14→13). So we try the strict orthogonal connectivity first, then
+/// the strict diagonal one, and only then a permissive king-move fallback.
 List<int> orderWinPath(List<int> cells, int cols) {
   if (cells.length <= 2) return List.of(cells);
 
-  bool adjacent(int a, int b) {
-    if (a == b) return false;
-    final dr = (a ~/ cols - b ~/ cols).abs();
-    final dc = (a % cols - b % cols).abs();
-    return dr <= 1 && dc <= 1;
-  }
+  int dr(int a, int b) => (a ~/ cols - b ~/ cols).abs();
+  int dc(int a, int b) => (a % cols - b % cols).abs();
 
+  bool orthogonal(int a, int b) => a != b && dr(a, b) + dc(a, b) == 1;
+  bool diagonal(int a, int b) => a != b && dr(a, b) == 1 && dc(a, b) == 1;
+  bool king(int a, int b) => a != b && dr(a, b) <= 1 && dc(a, b) <= 1;
+
+  return _walkPath(cells, orthogonal) ??
+      _walkPath(cells, diagonal) ??
+      _walkPath(cells, king) ??
+      List.of(cells);
+}
+
+/// Walk the 4 (or 3) cells into a single simple path under [adjacent], or return null if they don't
+/// form one (a node with >2 neighbours, or a dead end before all cells are covered) — so the caller
+/// can fall back to a different connectivity.
+List<int>? _walkPath(List<int> cells, bool Function(int, int) adjacent) {
   final neighbours = {
     for (final c in cells) c: cells.where((o) => adjacent(c, o)).toList(),
   };
-  // Start at a degree-1 endpoint (a true path has exactly two); fall back to the first cell.
-  final start = cells.firstWhere((c) => neighbours[c]!.length == 1, orElse: () => cells.first);
+  // A simple path has no node with more than two neighbours.
+  if (neighbours.values.any((n) => n.length > 2)) return null;
+  // Start at a degree-1 endpoint (a path has exactly two); else this connectivity doesn't fit.
+  final start = cells.firstWhere((c) => neighbours[c]!.length == 1, orElse: () => -1);
+  if (start == -1) return null;
 
   final path = <int>[start];
   final visited = {start};
   var current = start;
   while (path.length < cells.length) {
     final next = neighbours[current]!.firstWhere((n) => !visited.contains(n), orElse: () => -1);
-    if (next == -1) break;
+    if (next == -1) return null; // dead end before covering all cells → not a single path here
     path.add(next);
     visited.add(next);
     current = next;
-  }
-  // Defensive: if the walk didn't cover everything (not expected for I/L/Z), append the rest.
-  for (final c in cells) {
-    if (!visited.contains(c)) path.add(c);
   }
   return path;
 }
