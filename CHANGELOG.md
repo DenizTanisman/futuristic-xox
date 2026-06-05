@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in sync with the win sound. Lose/draw show no line.
 
 ### Fixed
+- **Hand-rail selection — glow only, no lift, no duplicate.** Selecting a pawn from the hand rail no
+  longer lifts/translates it (which left a ghost copy under Impeller on mobile); selection is now shown
+  purely by a stronger gold halo on the single, fixed-position pawn — across the Original/Bonanza/Morph
+  tutorials and the in-game rail. The select sound and place-on-tap are unchanged.
 - **Entry screen mode names are now fixed brand names** ("CLASSIC" / "FUTURISTIC") that no longer
   change with the selected language (matching the Original/Bonanza/Morph submode names).
 - **Turkish header casing.** Shell page titles now use Turkish-aware upper-casing so the dotted İ

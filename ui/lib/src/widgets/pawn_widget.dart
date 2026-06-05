@@ -64,8 +64,8 @@ class PawnWidget extends StatelessWidget {
           ),
           BoxShadow(
             color: p.glow.withValues(alpha: selected ? 0.6 : 0.32),
-            blurRadius: selected ? 16 : 9,
-            spreadRadius: selected ? 1 : 0,
+            blurRadius: selected ? 18 : 9,
+            spreadRadius: selected ? 3 : 0,
           ),
         ],
       ),
