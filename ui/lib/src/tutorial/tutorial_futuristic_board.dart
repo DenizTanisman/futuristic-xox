@@ -533,9 +533,15 @@ class HandRail extends StatelessWidget {
             for (var i = 0; i < values.length; i++)
               GestureDetector(
                 onTap: () => onSelect(i),
-                child: AnimatedContainer(
+                // Lift the selected chip via padding (layout-based), not a transform: a transformed
+                // glow leaves a ghost trail under Impeller on mobile. Total height stays constant.
+                child: AnimatedPadding(
                   duration: const Duration(milliseconds: 160),
-                  transform: Matrix4.translationValues(0, selectedIndex == i ? -6 : 0, 0),
+                  curve: Curves.easeOut,
+                  padding: EdgeInsets.only(
+                    top: selectedIndex == i ? 0 : 6,
+                    bottom: selectedIndex == i ? 6 : 0,
+                  ),
                   child: PawnWidget(
                     owner: owner,
                     value: values[i],
