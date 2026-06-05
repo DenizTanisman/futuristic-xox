@@ -6,6 +6,7 @@ import '../models/game_models.dart';
 import '../theme/game_theme.dart';
 import 'classic_mark.dart';
 import 'pawn_widget.dart';
+import 'win_line.dart';
 
 /// The themed game board: a beveled metallic frame with a slowly sweeping rim shimmer, cells that
 /// scale in with a staggered reveal, and per-cell hover/press glow. Colours come from the active
@@ -40,17 +41,32 @@ class _BoardViewState extends State<BoardView> with TickerProviderStateMixin {
   late final AnimationController _shimmer;
   late final AnimationController _reveal;
 
+  /// Progressive reveal of the win line (spec §4) — starts when a win first appears.
+  late final AnimationController _winLine;
+
   @override
   void initState() {
     super.initState();
     _shimmer = AnimationController(vsync: this, duration: Motion.shimmer)..repeat();
     _reveal = AnimationController(vsync: this, duration: Motion.reveal)..forward();
+    _winLine = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+    if (widget.snapshot.winningCells.isNotEmpty) _winLine.value = 1; // already-won (e.g. rebuild)
+  }
+
+  @override
+  void didUpdateWidget(BoardView old) {
+    super.didUpdateWidget(old);
+    // Draw the line the moment a win appears (player or AI), once.
+    if (old.snapshot.winningCells.isEmpty && widget.snapshot.winningCells.isNotEmpty) {
+      _winLine.forward(from: 0);
+    }
   }
 
   @override
   void dispose() {
     _shimmer.dispose();
     _reveal.dispose();
+    _winLine.dispose();
     super.dispose();
   }
 
@@ -160,6 +176,33 @@ class _BoardViewState extends State<BoardView> with TickerProviderStateMixin {
                   },
                 ),
               ),
+              // Win-line overlay: one continuous polyline over the winning cells (spec §0–§5). Shares
+              // the cells' padded coordinate space; non-interactive.
+              if (s.winningCells.isNotEmpty)
+                Positioned.fill(
+                  child: Padding(
+                    padding: const EdgeInsets.all(pad),
+                    child: IgnorePointer(
+                      child: RepaintBoundary(
+                        child: AnimatedBuilder(
+                          animation: _winLine,
+                          builder: (context, _) => CustomPaint(
+                            size: Size(side - pad * 2, side - pad * 2),
+                            painter: WinLinePainter(
+                              path: orderWinPath(s.winningCells, s.cols),
+                              cols: s.cols,
+                              cellSize: cellSize,
+                              gap: gap,
+                              progress: _winLine.value,
+                              color: theme.accent, // silver (Classic) / gold (Futuristic)
+                              glow: theme.accentGlow,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         );

@@ -111,6 +111,10 @@ class Snapshot {
   /// Morph only: the chosen target shape (shown at start).
   final MorphShape? morphShape;
 
+  /// The cells of the winning group when [outcome] is a win (3-in-a-row, or the 4-cell Morph shape);
+  /// empty otherwise. Unordered — order into a path with `orderWinPath` for the win-line overlay.
+  final List<int> winningCells;
+
   const Snapshot({
     required this.rows,
     required this.cols,
@@ -122,6 +126,7 @@ class Snapshot {
     required this.outcome,
     this.bonanzaOwnCount,
     this.morphShape,
+    this.winningCells = const [],
   });
 
   int get cellCount => rows * cols;

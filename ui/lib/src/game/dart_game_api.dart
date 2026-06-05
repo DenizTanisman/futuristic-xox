@@ -198,17 +198,22 @@ class DartGameApi implements GameApi {
     }
   }
 
-  int? _winner(_State s) {
+  int? _winner(_State s) => _winningGroup(s)?.owner;
+
+  /// The winning group (owner + its cells) if any — used both for the outcome and the win-line overlay.
+  ({int owner, List<int> cells})? _winningGroup(_State s) {
     if (_mode == Mode4.morph) {
       for (final p in _placements) {
         final a = s.board[p[0]];
-        if (a != null && p.every((c) => s.board[c]?.owner == a.owner)) return a.owner;
+        if (a != null && p.every((c) => s.board[c]?.owner == a.owner)) {
+          return (owner: a.owner, cells: p);
+        }
       }
     } else {
       for (final l in _lines) {
         final a = s.board[l[0]];
         if (a != null && s.board[l[1]]?.owner == a.owner && s.board[l[2]]?.owner == a.owner) {
-          return a.owner;
+          return (owner: a.owner, cells: l);
         }
       }
     }
@@ -246,6 +251,7 @@ class DartGameApi implements GameApi {
       outcome: _outcome(s),
       bonanzaOwnCount: _bonanzaOwnCount,
       morphShape: _morphShape,
+      winningCells: _winningGroup(s)?.cells ?? const [],
     );
   }
 

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Continuous win-line overlay (all modes).** On every win the board draws a single, unbroken stroke
+  through the winning cells in path order — straight for 3-in-a-row and Morph I, one bend for L, a
+  zigzag for Z, including diagonal/mirrored shapes. The engine now exposes the winning group
+  (`Snapshot.winningCells`); an `orderWinPath` adjacency walk orders Morph's `morph_winner` set into a
+  continuous path (3-in-a-row keeps its natural order). A `WinLinePainter` strokes one `Path` with
+  round caps/joins + a soft glow, revealed progressively start→end via `PathMetric` (~0.9 s), aligned
+  to the live cell centers at both board sizes, coloured by side (silver Classic / gold Futuristic),
+  in sync with the win sound. Lose/draw show no line.
+
 ### Fixed
 - **Entry screen mode names are now fixed brand names** ("CLASSIC" / "FUTURISTIC") that no longer
   change with the selected language (matching the Original/Bonanza/Morph submode names).
