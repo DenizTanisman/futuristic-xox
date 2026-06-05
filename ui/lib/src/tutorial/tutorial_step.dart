@@ -377,11 +377,12 @@ List<TutorialStep> originalTutorialSteps() => [
         body: (l) => l.tutOrigDemoeatBody,
         hint: (l) => l.tutHintEat,
       ),
-      // 8 — win rule (static board with a line)
+      // 8 — win rule (static board with a line). Three DISTINCT values (1..6 are one-each in Original)
+      // to teach "the line matters, not the values" without an impossible 2/2/2 row.
       TutorialStep(
         kind: TutKind.info,
         futuristic: true,
-        fcells: [g(2), g(2), g(2), null, null, null, null, null, null],
+        fcells: [g(2), g(3), g(5), null, null, null, null, null, null],
         winLine: [0, 1, 2],
         title: (l) => l.tutOrigWinruleTitle,
         body: (l) => l.tutOrigWinruleBody,
@@ -401,12 +402,14 @@ List<TutorialStep> originalTutorialSteps() => [
         body: (l) => l.tutOrigDemowinBody,
         hint: (l) => l.tutHintWinPlace,
       ),
-      // 10 — win by capturing (eat B5 at 4, diagonal [0,4,8])
+      // 10 — win by capturing (eat B5 at center 4, main diagonal [0,4,8]). Rule-legal: each value is
+      // one-each, so the board uses 2/3/4 (gold) + 5/3 (bordeaux) and the hand is [5,6] — placing 5 on
+      // the 5 is illegal (equal), 6 captures and closes the diagonal (2,6,4).
       TutorialStep(
         kind: TutKind.demo,
         futuristic: true,
-        fcells: [g(6), null, g(1), null, b(5), null, null, g(2), g(4)],
-        hand: [3, 4, 5, 6],
+        fcells: [g(2), null, null, null, b(5), null, b(3), null, g(4)],
+        hand: [5, 6],
         target: 4,
         highlight: 4,
         winLine: [0, 4, 8],
@@ -622,7 +625,7 @@ List<TutorialStep> morphTutorialSteps() => [
         gridCols: 4,
         gridRows: 4,
         fcells: _morphBoard({4: 2, 5: 3}),
-        hand: [4, 5, 6, 1],
+        hand: [1, 4, 5, 6],
         targets: [6, 7],
         winShape: [4, 5, 6, 7],
         shapeName: 'I',

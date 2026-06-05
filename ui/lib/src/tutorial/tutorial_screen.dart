@@ -364,6 +364,29 @@ class _TutorialScreenState extends State<TutorialScreen> {
 
   Widget _bigMedallions(TutorialStep step) {
     final meds = step.bigMedallions!;
+    // Content-stable key (step + index + owner/value) so a value change retires the old layer — never
+    // key by a closure/title or transient state (would leak a stale digit or reset animations).
+    PawnWidget med(int i, double size) => PawnWidget(
+          key: ValueKey('bigmed-${c.stepIndex}-$i-${meds[i].owner}-${meds[i].value}'),
+          owner: meds[i].owner,
+          value: meds[i].value,
+          showValue: true,
+          size: size,
+          animateIn: false,
+        );
+
+    // "Two of each" (4 medallions) → a 2×2 block so they never overflow a narrow screen.
+    if (meds.length == 4 && !step.gtrSeparator) {
+      Widget row(int a, int b) => Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(padding: const EdgeInsets.all(8), child: med(a, 82)),
+              Padding(padding: const EdgeInsets.all(8), child: med(b, 82)),
+            ],
+          );
+      return Column(mainAxisSize: MainAxisSize.min, children: [row(0, 1), const SizedBox(height: 8), row(2, 3)]);
+    }
+
     final children = <Widget>[];
     for (var i = 0; i < meds.length; i++) {
       if (i > 0 && step.gtrSeparator) {
@@ -372,17 +395,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
           child: Text('>', style: t.display(40, color: t.accent)),
         ));
       }
-      children.add(Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: PawnWidget(
-          key: ValueKey('bigmed-${step.title}-${meds[i].owner}-${meds[i].value}-$i'),
-          owner: meds[i].owner,
-          value: meds[i].value,
-          showValue: true,
-          size: 96,
-          animateIn: false,
-        ),
-      ));
+      children.add(Padding(padding: const EdgeInsets.symmetric(horizontal: 10), child: med(i, 96)));
     }
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: children);
   }

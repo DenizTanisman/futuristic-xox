@@ -534,8 +534,9 @@ class HandRail extends StatelessWidget {
               GestureDetector(
                 onTap: () => onSelect(i),
                 // Selection is a glow only — no lift/translate/clone (that caused a ghost copy on
-                // mobile). One widget, fixed position; PawnWidget(selected:) lights its halo.
+                // mobile). One widget; a content-stable key retires the old tile's layer on any change.
                 child: PawnWidget(
+                  key: ValueKey('handrail-$owner-$i-${values[i]}'),
                   owner: owner,
                   value: values[i],
                   showValue: true,

@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Tutorial ghost-medallion hardening.** Medallions (big showcase + hand-rail chips) now use
+  content-stable widget keys (step + index + owner/value) so a value/content change retires the old
+  layer instead of leaving a faint stale digit behind; step transitions already fade-through (old fully
+  out before new in). Keys never encode transient state, so selection/place animations are unaffected.
+
+### Changed
+- **Tutorial content corrections.** Original "How you win" now shows three distinct values (2/3/5)
+  instead of an impossible 2/2/2 row. Original "Capture and win" rebuilt to a rule-legal main-diagonal
+  win (board 2 / 5*center / 3* / 4, hand [5,6]; place 6 on the centre 5 to capture and win — 5 is an
+  illegal-equal distractor). Morph "That's why you move twice" shows the "two of each" set as a 2×2
+  block (no horizontal overflow). Morph "Two pawns this time" hand rail is sorted ascending (1,4,5,6).
+
+### Fixed
 - **Bonanza deal is structured and sorted within each colour.** Each colour pool is split by the random
   `k` (remainder to the opponent) and then sorted **ascending within its colour group** — gold among
   gold, bordeaux among bordeaux, never interleaved as one mixed list — composed colour-0 group then
