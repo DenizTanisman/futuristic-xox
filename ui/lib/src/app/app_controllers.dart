@@ -64,8 +64,10 @@ class AppPrefs {
   final Set<String> seenTutorials;
   final bool sfxEnabled;
   final double sfxVolume;
-  const AppPrefs(
-      this.locale, this.themeMode, this.seenTutorials, this.sfxEnabled, this.sfxVolume);
+  final bool musicEnabled;
+  final double musicVolume;
+  const AppPrefs(this.locale, this.themeMode, this.seenTutorials, this.sfxEnabled, this.sfxVolume,
+      this.musicEnabled, this.musicVolume);
 
   static Future<AppPrefs> load(Iterable<Locale> supported) async {
     final prefs = await SharedPreferences.getInstance();
@@ -80,7 +82,9 @@ class AppPrefs {
     }
     final sfxEnabled = prefs.getBool('sfx_enabled') ?? true;
     final sfxVolume = prefs.getDouble('sfx_volume') ?? 0.8;
-    return AppPrefs(locale, theme, seen, sfxEnabled, sfxVolume);
+    final musicEnabled = prefs.getBool('music_enabled') ?? true;
+    final musicVolume = prefs.getDouble('music_volume') ?? 0.6;
+    return AppPrefs(locale, theme, seen, sfxEnabled, sfxVolume, musicEnabled, musicVolume);
   }
 }
 

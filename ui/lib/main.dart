@@ -3,7 +3,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'l10n/app_localizations.dart';
 import 'src/app/app_controllers.dart';
-import 'src/audio/audio_controller.dart';
+import 'src/audio/music_controller.dart';
+import 'src/audio/sfx_controller.dart';
 import 'src/screens/menu_screens.dart';
 import 'src/theme/app_themes.dart';
 
@@ -12,8 +13,12 @@ const List<Locale> kSupportedLocales = [Locale('tr'), Locale('en'), Locale('ru')
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await AppPrefs.load(kSupportedLocales);
-  // Preload SFX in the background — don't block the first frame on audio decoding.
-  AudioController.instance.init(enabled: prefs.sfxEnabled, volume: prefs.sfxVolume);
+  // Preload audio in the background — don't block the first frame. The lobby music loop starts once
+  // both layers are ready (we're in the menus at launch).
+  SfxController.instance.init(enabled: prefs.sfxEnabled, volume: prefs.sfxVolume);
+  MusicController.instance
+      .init(enabled: prefs.musicEnabled, volume: prefs.musicVolume)
+      .then((_) => MusicController.instance.enterLobby());
   runApp(FuturisticXoxApp(
     locale: LocaleController(prefs.locale),
     theme: ThemeController(prefs.themeMode),

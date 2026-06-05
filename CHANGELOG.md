@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Full audio wiring + music state machine.** Imported Deniz's recorded WAVs (renamed to ASCII assets
+  under `assets/audio/`). Split the menu sound into **forward / back / tap** and added a **matchStart**
+  cue. Two-layer audio: a `SfxController` (pooled one-shots, ~60 ms throttle) and a `MusicController`
+  with two gapless loops (`ReleaseMode.loop`) driving the state machine — `lobby_music` loops across the
+  menus (never restarted on navigation) → on match start it fades out while a quiet `match_ambient`
+  loop fills the silence under the SFX → on match end the ambient stops and the exclusive win/lose/draw
+  SFX plays → after the result the lobby loop resumes. Triggers wired: menu forward/back/tap, place
+  (player **and** AI, incl. tutorials), select (Futuristic only), matchStart, win/lose/draw. Settings
+  gains **independent SFX and Music** toggles + volumes (persisted: `sfx_*`, `music_*`); i18n in
+  tr/en/ru/es ("Effects Volume" / "Music" / "Music Volume"). Cross-fades on music transitions; iOS
+  silent switch respected. (Replaces the earlier synthesized placeholder SFX.)
+
 - **Release engineering (v1.0.0 prep).** MIT `LICENSE`; portfolio README (License section, screenshots
   placeholders, status); Android release-signing config driven by a gitignored `android/key.properties`
   (with a committed `.template`) that falls back to the debug key when absent; signing material excluded

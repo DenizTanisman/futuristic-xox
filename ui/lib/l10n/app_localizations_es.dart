@@ -42,7 +42,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsSfx => 'Efectos de sonido';
 
   @override
-  String get settingsSfxVolume => 'Volumen';
+  String get settingsSfxVolume => 'Volumen de efectos';
+
+  @override
+  String get settingsMusic => 'Música';
+
+  @override
+  String get settingsMusicVolume => 'Volumen de música';
 
   @override
   String get aboutTitle => 'Acerca de';

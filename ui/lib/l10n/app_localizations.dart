@@ -171,8 +171,20 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSfxVolume.
   ///
   /// In en, this message translates to:
-  /// **'Volume'**
+  /// **'Effects Volume'**
   String get settingsSfxVolume;
+
+  /// No description provided for @settingsMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get settingsMusic;
+
+  /// No description provided for @settingsMusicVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Music Volume'**
+  String get settingsMusicVolume;
 
   /// No description provided for @aboutTitle.
   ///

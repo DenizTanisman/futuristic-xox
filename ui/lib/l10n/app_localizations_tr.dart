@@ -42,7 +42,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsSfx => 'Ses Efektleri';
 
   @override
-  String get settingsSfxVolume => 'Ses Düzeyi';
+  String get settingsSfxVolume => 'Efekt Düzeyi';
+
+  @override
+  String get settingsMusic => 'Müzik';
+
+  @override
+  String get settingsMusicVolume => 'Müzik Düzeyi';
 
   @override
   String get aboutTitle => 'Hakkında';

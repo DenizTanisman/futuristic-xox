@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../audio/music_controller.dart';
+import '../audio/sfx_controller.dart';
 import '../controllers/game_controller.dart';
 import '../game/dart_game_api.dart';
 import '../game/player_controller.dart';
@@ -80,6 +82,9 @@ class _GameScreenState extends State<GameScreen> {
     } else {
       _showIntro = false;
     }
+    // A match begins: the start cue (SFX) + the music transition (fade lobby out, quiet ambient in).
+    SfxController.instance.play(SoundId.matchStart);
+    MusicController.instance.startMatch();
     return c;
   }
 
@@ -94,6 +99,8 @@ class _GameScreenState extends State<GameScreen> {
   void dispose() {
     _introTimer?.cancel();
     controller?.dispose();
+    // Leaving the match (back to the menus) → resume the lobby music loop.
+    MusicController.instance.enterLobby();
     super.dispose();
   }
 
@@ -123,6 +130,13 @@ class _GameScreenState extends State<GameScreen> {
               style: theme.display(18, color: theme.ink),
             ),
             iconTheme: IconThemeData(color: theme.muted),
+            leading: IconButton(
+              icon: const BackButtonIcon(),
+              onPressed: () {
+                SfxController.instance.play(SoundId.menuBack);
+                Navigator.of(context).maybePop();
+              },
+            ),
             actions: [
               IconButton(icon: const Icon(Icons.refresh), tooltip: l.restart, onPressed: _playAgain),
             ],
@@ -215,7 +229,10 @@ class _GameScreenState extends State<GameScreen> {
                           menuLabel: l.menuButton,
                           playAgainLabel: l.playAgain,
                           onPlayAgain: _playAgain,
-                          onMenu: () => Navigator.of(context).popUntil((r) => r.isFirst),
+                          onMenu: () {
+                            SfxController.instance.play(SoundId.menuBack);
+                            Navigator.of(context).popUntil((r) => r.isFirst);
+                          },
                         ),
                       ),
                   ],

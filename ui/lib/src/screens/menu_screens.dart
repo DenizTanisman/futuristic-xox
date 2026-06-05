@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../app/app_controllers.dart';
-import '../audio/audio_controller.dart';
+import '../audio/sfx_controller.dart';
 import '../models/game_models.dart';
 import '../theme/game_theme.dart';
 import '../tutorial/tutorial_screen.dart';
@@ -118,7 +118,7 @@ class _EntryScreenState extends State<EntryScreen> with TickerProviderStateMixin
                       icon: const Icon(Icons.menu, color: Color(0xFFF4ECD8)),
                       tooltip: l.menuLabel,
                       onPressed: () {
-                        AudioController.instance.play(SoundId.menuNav);
+                        SfxController.instance.play(SoundId.menuForward);
                         Scaffold.of(ctx).openDrawer();
                       },
                     ),
@@ -418,7 +418,7 @@ class _FuturisticMotif extends StatelessWidget {
 }
 
 void _go(BuildContext context, Widget screen) {
-  AudioController.instance.play(SoundId.menuNav); // navigation feedback (spec §2)
+  SfxController.instance.play(SoundId.menuForward); // navigating into a deeper screen
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
 }
 
@@ -434,7 +434,7 @@ Widget? tutorialScreenFor(Mode4 mode, VoidCallback onExit) => switch (mode) {
 /// that tutorial first (then the difficulty/setup screen); afterwards go straight to setup. Gated by a
 /// persisted per-mode "seen" flag (spec: tutorials only on first entry per mode).
 void _enterMode(BuildContext context, Mode4 mode) {
-  AudioController.instance.play(SoundId.menuNav); // mode selection is a primary navigation action
+  SfxController.instance.play(SoundId.menuForward); // mode selection navigates deeper
   final progress = AppScope.of(context).tutorialProgress;
   if (!progress.seen(mode.name)) {
     final nav = Navigator.of(context);
@@ -538,7 +538,7 @@ class _ModeShell extends StatelessWidget {
                     child: IconButton(
                       icon: Icon(Icons.chevron_left, color: theme.muted),
                       onPressed: () {
-                        AudioController.instance.play(SoundId.menuNav);
+                        SfxController.instance.play(SoundId.menuBack);
                         Navigator.of(context).maybePop();
                       },
                     ),
@@ -798,7 +798,10 @@ class _SegCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        SfxController.instance.play(SoundId.menuTap); // committed option selection
+        onTap();
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12),

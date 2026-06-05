@@ -1,32 +1,49 @@
-// AudioController unit tests. Run with `flutter test`.
+// Audio controller unit tests. Run with `flutter test`.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:futuristic_xox/src/audio/audio_controller.dart';
+import 'package:futuristic_xox/src/audio/music_controller.dart';
+import 'package:futuristic_xox/src/audio/sfx_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('play is a safe no-op before init (no audio backend in tests)', () {
+  test('SFX play is a safe no-op before init (no audio backend in tests)', () {
     // Never throws even though no clips are loaded — SFX must never disrupt the app.
-    expect(() => AudioController.instance.play(SoundId.place), returnsNormally);
-    expect(() => AudioController.instance.play(SoundId.win), returnsNormally);
+    expect(() => SfxController.instance.play(SoundId.place), returnsNormally);
+    expect(() => SfxController.instance.play(SoundId.matchStart), returnsNormally);
+    expect(() => SfxController.instance.play(SoundId.menuForward), returnsNormally);
   });
 
-  test('setEnabled / setVolume update getters and persist', () async {
+  test('Music transitions are safe no-ops before init', () {
+    expect(() => MusicController.instance.enterLobby(), returnsNormally);
+    expect(() => MusicController.instance.startMatch(), returnsNormally);
+    expect(() => MusicController.instance.endMatch(), returnsNormally);
+  });
+
+  test('SFX setEnabled / setVolume update getters and persist', () async {
     SharedPreferences.setMockInitialValues({});
-    final audio = AudioController.instance;
-
-    await audio.setEnabled(false);
-    expect(audio.enabled, isFalse);
-    await audio.setVolume(0.3);
-    expect(audio.volume, 0.3);
-
+    final sfx = SfxController.instance;
+    await sfx.setEnabled(false);
+    expect(sfx.enabled, isFalse);
+    await sfx.setVolume(0.3);
+    expect(sfx.volume, 0.3);
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getBool('sfx_enabled'), isFalse);
     expect(prefs.getDouble('sfx_volume'), 0.3);
+    await sfx.setEnabled(true);
+  });
 
-    // Restore enabled for any later tests sharing the singleton.
-    await audio.setEnabled(true);
+  test('Music setEnabled / setVolume update getters and persist', () async {
+    SharedPreferences.setMockInitialValues({});
+    final music = MusicController.instance;
+    await music.setEnabled(false);
+    expect(music.enabled, isFalse);
+    await music.setVolume(0.25);
+    expect(music.volume, 0.25);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getBool('music_enabled'), isFalse);
+    expect(prefs.getDouble('music_volume'), 0.25);
+    await music.setEnabled(true);
   });
 }

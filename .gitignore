@@ -31,6 +31,9 @@ ui/android/key.properties
 **/*.cer
 ui/ios/ExportOptions.plist
 
+# Audio source drop (raw, non-ASCII names) — the app uses the renamed ASCII copies in ui/assets/audio/
+sounds/
+
 # macOS
 .DS_Store
 

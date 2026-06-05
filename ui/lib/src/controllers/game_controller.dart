@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-import '../audio/audio_controller.dart';
+import '../audio/music_controller.dart';
+import '../audio/sfx_controller.dart';
 import '../game/game_api.dart';
 import '../game/player_controller.dart';
 import '../models/game_models.dart';
@@ -120,7 +121,7 @@ class GameController extends ChangeNotifier {
     } else {
       selectedColor = color;
       selectedValue = value;
-      AudioController.instance.play(SoundId.select); // Futuristic hand selection only
+      SfxController.instance.play(SoundId.select); // Futuristic hand selection only
     }
     _clearMessage();
     notifyListeners();
@@ -181,10 +182,11 @@ class GameController extends ChangeNotifier {
     snapshot = result.snapshot;
 
     // Audio feedback for every applied move — player AND AI (spec §2). The result fanfare layers on
-    // top of the final placement.
-    AudioController.instance.play(SoundId.place);
+    // top of the final placement; the music layer stops the ambient and resumes the lobby loop.
+    SfxController.instance.play(SoundId.place);
     if (result.snapshot.isOver) {
-      AudioController.instance.play(_resultSound(result.snapshot.outcome));
+      SfxController.instance.play(_resultSound(result.snapshot.outcome));
+      MusicController.instance.endMatch();
     }
 
     if (result.snapshot.isOver) {

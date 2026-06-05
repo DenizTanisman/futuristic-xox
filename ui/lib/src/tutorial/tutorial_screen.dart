@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../audio/audio_controller.dart';
+import '../audio/sfx_controller.dart';
 import '../theme/game_theme.dart';
 import '../widgets/pawn_widget.dart';
 import 'tutorial_board.dart';
@@ -89,7 +89,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
   void _onClassicResult(bool correct) {
     final l = AppLocalizations.of(context)!;
     if (correct) {
-      if (c.current.winLine != null) AudioController.instance.play(SoundId.win);
+      if (c.current.winLine != null) SfxController.instance.play(SoundId.win);
       _fb(l.tutHintGreat, _green);
       _scheduleAdvance();
     } else {
@@ -113,21 +113,21 @@ class _TutorialScreenState extends State<TutorialScreen> {
         _scheduleAdvance();
       case FutTapResult.placedWin:
       case FutTapResult.capturedWin:
-        AudioController.instance.play(SoundId.win);
+        SfxController.instance.play(SoundId.win);
         _fb(l.tutHintWin, _green);
         _scheduleAdvance();
       case FutTapResult.placeEmpty:
         _fb(l.tutBonHintRedirectEmpty, t.danger);
       case FutTapResult.lost:
         // Forced loss: the opponent completes a line (bordeaux). Still advance — the lesson landed.
-        AudioController.instance.play(SoundId.lose);
+        SfxController.instance.play(SoundId.lose);
         _fb(l.tutBonHintOppWin, t.discGlow(1));
         _scheduleAdvance();
       case FutTapResult.shapeProgress:
         // Morph two-pawns-per-turn: first target filled, one more to go.
         _fb(l.tutMorphHintOneMore, t.accent);
       case FutTapResult.shapeWin:
-        AudioController.instance.play(SoundId.win);
+        SfxController.instance.play(SoundId.win);
         _fb(l.tutMorphHintWin(c.current.shapeName ?? ''), _green);
         _scheduleAdvance();
     }
@@ -219,7 +219,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
               values: step.hand!,
               selectedIndex: _selectedHand,
               onSelect: (i) {
-                AudioController.instance.play(SoundId.select); // Futuristic hand selection
+                SfxController.instance.play(SoundId.select); // Futuristic hand selection
                 setState(() => _selectedHand = i);
               },
               label: step.railLabel?.call(l) ?? l.tutRailLabel,
@@ -484,7 +484,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               onPressed: () {
-                AudioController.instance.play(SoundId.menuNav);
+                SfxController.instance.play(SoundId.menuTap);
                 c.isLast ? widget.onExit() : c.next();
               },
               child: Text(buttonText, style: t.display(16, color: Colors.black)),

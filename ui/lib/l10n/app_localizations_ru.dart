@@ -42,7 +42,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get settingsSfx => 'Звуковые эффекты';
 
   @override
-  String get settingsSfxVolume => 'Громкость';
+  String get settingsSfxVolume => 'Громкость эффектов';
+
+  @override
+  String get settingsMusic => 'Музыка';
+
+  @override
+  String get settingsMusicVolume => 'Громкость музыки';
 
   @override
   String get aboutTitle => 'О приложении';

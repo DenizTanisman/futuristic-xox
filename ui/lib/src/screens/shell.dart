@@ -4,7 +4,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../app/app_controllers.dart';
-import '../audio/audio_controller.dart';
+import '../audio/music_controller.dart';
+import '../audio/sfx_controller.dart';
 import '../theme/app_themes.dart';
 import '../tutorial/tutorial_screen.dart';
 
@@ -63,7 +64,7 @@ class AppDrawer extends StatelessWidget {
       leading: Icon(icon),
       title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
       onTap: () {
-        AudioController.instance.play(SoundId.menuNav);
+        SfxController.instance.play(SoundId.menuForward);
         Navigator.of(context).pop(); // close drawer
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
       },
@@ -141,57 +142,102 @@ class SettingsPage extends StatelessWidget {
           const SizedBox(height: 28),
           _label(lux, l.settingsSfx),
           _sfxSection(context, l, lux),
+          const SizedBox(height: 28),
+          _label(lux, l.settingsMusic),
+          _musicSection(context, l, lux),
         ],
       ),
     );
   }
 
-  /// SFX on/off + volume (spec §4). Reads/writes the [AudioController] singleton; both persist. A short
-  /// sample plays on enable / volume-release so the change is audible.
+  /// SFX on/off + volume (spec §4). Independent of music. A short sample plays on enable / volume-release.
   Widget _sfxSection(BuildContext context, AppLocalizations l, LuxTokens lux) {
-    final audio = AudioController.instance;
+    final sfx = SfxController.instance;
     return AnimatedBuilder(
-      animation: audio,
-      builder: (context, _) => Container(
-        padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: lux.line),
-        ),
-        child: Column(
-          children: [
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              activeThumbColor: lux.accent,
-              title: Text(l.settingsSfx,
-                  style: TextStyle(color: lux.ink, fontWeight: FontWeight.w700, fontSize: 15)),
-              value: audio.enabled,
-              onChanged: (v) {
-                audio.setEnabled(v);
-                if (v) audio.play(SoundId.menuNav);
-              },
-            ),
-            Opacity(
-              opacity: audio.enabled ? 1 : 0.4,
-              child: Row(
-                children: [
-                  Icon(Icons.volume_up_outlined, color: lux.muted, size: 20),
-                  const SizedBox(width: 8),
-                  Text(l.settingsSfxVolume, style: TextStyle(color: lux.muted, fontSize: 13)),
-                  Expanded(
-                    child: Slider(
-                      activeColor: lux.accent,
-                      value: audio.volume.clamp(0.0, 1.0),
-                      onChanged: audio.enabled ? (v) => audio.setVolume(v) : null,
-                      onChangeEnd: audio.enabled ? (_) => audio.play(SoundId.select) : null,
-                    ),
+      animation: sfx,
+      builder: (context, _) => _audioCard(
+        context,
+        lux,
+        title: l.settingsSfx,
+        volumeLabel: l.settingsSfxVolume,
+        enabled: sfx.enabled,
+        volume: sfx.volume,
+        onToggle: (v) {
+          sfx.setEnabled(v);
+          if (v) sfx.play(SoundId.menuTap);
+        },
+        onVolume: (v) => sfx.setVolume(v),
+        onVolumeEnd: () => sfx.play(SoundId.select),
+      ),
+    );
+  }
+
+  /// Music on/off + volume (spec §4). Independent of SFX — toggling it silences/resumes the loops.
+  Widget _musicSection(BuildContext context, AppLocalizations l, LuxTokens lux) {
+    final music = MusicController.instance;
+    return AnimatedBuilder(
+      animation: music,
+      builder: (context, _) => _audioCard(
+        context,
+        lux,
+        title: l.settingsMusic,
+        volumeLabel: l.settingsMusicVolume,
+        enabled: music.enabled,
+        volume: music.volume,
+        onToggle: music.setEnabled,
+        onVolume: (v) => music.setVolume(v),
+        onVolumeEnd: null,
+      ),
+    );
+  }
+
+  Widget _audioCard(
+    BuildContext context,
+    LuxTokens lux, {
+    required String title,
+    required String volumeLabel,
+    required bool enabled,
+    required double volume,
+    required ValueChanged<bool> onToggle,
+    required ValueChanged<double> onVolume,
+    VoidCallback? onVolumeEnd,
+  }) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: lux.line),
+      ),
+      child: Column(
+        children: [
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            activeThumbColor: lux.accent,
+            title: Text(title,
+                style: TextStyle(color: lux.ink, fontWeight: FontWeight.w700, fontSize: 15)),
+            value: enabled,
+            onChanged: onToggle,
+          ),
+          Opacity(
+            opacity: enabled ? 1 : 0.4,
+            child: Row(
+              children: [
+                Icon(Icons.volume_up_outlined, color: lux.muted, size: 20),
+                const SizedBox(width: 8),
+                Text(volumeLabel, style: TextStyle(color: lux.muted, fontSize: 13)),
+                Expanded(
+                  child: Slider(
+                    activeColor: lux.accent,
+                    value: volume.clamp(0.0, 1.0),
+                    onChanged: enabled ? onVolume : null,
+                    onChangeEnd: enabled && onVolumeEnd != null ? (_) => onVolumeEnd() : null,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -207,7 +253,10 @@ class SettingsPage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: GestureDetector(
-        onTap: onTap,
+        onTap: () {
+          SfxController.instance.play(SoundId.menuTap); // committed language/theme selection
+          onTap();
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
