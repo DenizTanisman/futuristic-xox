@@ -7,7 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-06-05
+
+Polish & bug-fix release: removes the medallion "ghost digit", cleans up pawn selection, structures the
+Bonanza deal, fixes hand-rail overlap, and corrects four tutorial example boards.
+
 ### Fixed
+- **Medallion ghost digit removed.** The pawn number had a text drop-shadow that Impeller (Android's
+  renderer) mis-rasterized at erratic offsets, producing a faint duplicate digit around the value. The
+  shadow is gone; the number is a clean outline + gradient-fill (opposite brightness of the disc), so
+  it stays legible with no ghost.
 - **Pawn selection is a clean glow halo only (ghost-digit fix).** Confirmed the value never had a
   selection-conditional emphasis layer — the digit already rendered identically selected/unselected —
   so the "semi-opaque ghost digit" on selected tiles came from the fixed-size selection glow washing
