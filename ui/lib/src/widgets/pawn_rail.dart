@@ -74,12 +74,38 @@ class PawnRail extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: hand.isEmpty
                   ? Text('—', style: theme.label(14, color: theme.muted))
-                  : Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        for (var i = 0; i < hand.length; i++) _token(hand[i], i, tokenSize),
-                      ],
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Single clean row, never overlapping/stacking: shrink tiles to fit the rail
+                        // width; if a very large hand still won't fit at the min size, scroll instead.
+                        const spacing = 6.0;
+                        const maxSize = tokenSize;
+                        const minSize = 22.0;
+                        final n = hand.length;
+                        final avail = constraints.maxWidth.isFinite
+                            ? constraints.maxWidth
+                            : maxSize * n + spacing * (n - 1);
+                        final raw = (avail - spacing * (n - 1)) / n;
+                        final size = raw.clamp(minSize, maxSize);
+                        final row = Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (var i = 0; i < n; i++)
+                              Padding(
+                                padding: EdgeInsets.only(right: i == n - 1 ? 0 : spacing),
+                                child: _token(hand[i], i, size),
+                              ),
+                          ],
+                        );
+                        final needed = size * n + spacing * (n - 1);
+                        if (needed <= avail + 0.5) {
+                          return Align(alignment: Alignment.centerLeft, child: row);
+                        }
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: row,
+                        );
+                      },
                     ),
             ),
           ),

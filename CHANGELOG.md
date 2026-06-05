@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Bonanza deal is structured and sorted within each colour.** Each colour pool is split by the random
+  `k` (remainder to the opponent) and then sorted **ascending within its colour group** — gold among
+  gold, bordeaux among bordeaux, never interleaved as one mixed list — composed colour-0 group then
+  colour-1 group, left→right, in both hands. Integrity verified: every pool tile lands in exactly one
+  hand (no duplicates/none dropped).
+- **Hand rail no longer overlaps/stacks tiles.** The shared rail now lays tiles out in a single clean
+  row, shrinking them to fit the rail width (with a horizontal-scroll fallback for very large hands)
+  instead of wrapping onto a second row — numbers stay readable across Classic/Original/Bonanza/Morph.
+
 ## [1.0.0] - 2026-06-05
 
 First public release. Offline tic-tac-toe reimagined — Classic plus three Futuristic modes (Original,

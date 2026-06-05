@@ -244,4 +244,38 @@ void main() {
       expect(s.outcome, Outcome.draw);
     });
   });
+
+  group('bonanza deal', () {
+    // Each colour group within a hand must be ascending (never sorted across colours), and every pool
+    // tile must land in exactly one hand (no duplicates / none dropped).
+    void checkSortedWithinColour(List<HandPawnView> hand) {
+      for (final colour in [0, 1]) {
+        final values = [for (final h in hand) if (h.color == colour) h.value];
+        final sorted = [...values]..sort();
+        expect(values, sorted, reason: 'colour $colour group must be ascending: $values');
+      }
+    }
+
+    for (final grid in [3, 4]) {
+      test('hands are sorted within each colour and the pools are fully partitioned (${grid}x$grid)',
+          () {
+        for (var seed = 0; seed < 25; seed++) {
+          final s = DartGameApi().newGame(mode: Mode4.bonanza, rows: grid, cols: grid, seed: seed);
+          checkSortedWithinColour(s.hand0);
+          checkSortedWithinColour(s.hand1);
+
+          // Integrity: per colour, the two hands together are exactly the pool {1..pawnsPerPlayer}.
+          final n = s.hand0.length; // pawnsPerPlayer (both hands equal size)
+          expect(s.hand1.length, n);
+          for (final colour in [0, 1]) {
+            final all = [
+              for (final h in [...s.hand0, ...s.hand1]) if (h.color == colour) h.value
+            ]..sort();
+            expect(all, [for (var v = 1; v <= n; v++) v],
+                reason: 'colour $colour pool must be partitioned exactly once (seed $seed)');
+          }
+        }
+      });
+    }
+  });
 }

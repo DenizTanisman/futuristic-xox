@@ -126,16 +126,23 @@ class DartGameApi implements GameApi {
     final rng = Random(seed);
     final k = rng.nextInt(n + 1);
     _bonanzaOwnCount = k;
-    final pool0 = List<int>.generate(n, (i) => i + 1)..shuffle(rng);
-    final pool1 = List<int>.generate(n, (i) => i + 1)..shuffle(rng);
+    final pool0 = List<int>.generate(n, (i) => i + 1)..shuffle(rng); // own colour (0)
+    final pool1 = List<int>.generate(n, (i) => i + 1)..shuffle(rng); // opponent colour (1)
+
+    // Random per-colour split, remainder to the other side; then sort ASCENDING WITHIN EACH COLOUR
+    // (never across the whole hand — Bonanza has two tile types). Compose colour-0 group, then colour-1.
+    final p0Gold = pool0.take(k).toList()..sort();
+    final p1Gold = pool0.skip(k).toList()..sort();
+    final p0Bord = pool1.take(n - k).toList()..sort();
+    final p1Bord = pool1.skip(n - k).toList()..sort();
 
     final h0 = <_HandPawn>[
-      ...pool0.take(k).map((v) => _HandPawn(0, v)),
-      ...pool1.take(n - k).map((v) => _HandPawn(1, v)),
+      ...p0Gold.map((v) => _HandPawn(0, v)),
+      ...p0Bord.map((v) => _HandPawn(1, v)),
     ];
     final h1 = <_HandPawn>[
-      ...pool0.skip(k).map((v) => _HandPawn(0, v)),
-      ...pool1.skip(n - k).map((v) => _HandPawn(1, v)),
+      ...p1Gold.map((v) => _HandPawn(0, v)),
+      ...p1Bord.map((v) => _HandPawn(1, v)),
     ];
     return [h0, h1];
   }
