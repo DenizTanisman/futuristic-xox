@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-06-05
+
+First public release. Offline tic-tac-toe reimagined — Classic plus three Futuristic modes (Original,
+Bonanza, Morph) with valued capturing pawns, a native-grade Rust engine + AI (running today on the
+pure-Dart parity backend), four-language UI (tr/en/ru/es), light/dark themes, interactive tutorials
+for every mode, a continuous win-line, and a full recorded audio pass (SFX + music).
+
 ### Added
 - **Full audio wiring + music state machine.** Imported Deniz's recorded WAVs (renamed to ASCII assets
   under `assets/audio/`). Split the menu sound into **forward / back / tap** and added a **matchStart**
