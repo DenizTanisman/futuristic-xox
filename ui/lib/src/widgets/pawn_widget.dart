@@ -169,14 +169,12 @@ class _MetalNumber extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
+          // Outline pass (legibility) — a foreground stroke, NOT a shadow, so it renders crisply with
+          // no offset under Impeller. Drawn under the gradient-fill pass at the same position.
           Text(label, style: base.copyWith(foreground: strokePaint)),
-          Text(
-            label,
-            style: base.copyWith(
-              foreground: Paint()..shader = fillShader,
-              shadows: const [Shadow(color: Color(0x99000000), blurRadius: 2, offset: Offset(0, 1))],
-            ),
-          ),
+          // Fill pass — metallic gradient, opposite brightness of the disc. No drop shadow: Impeller
+          // mis-rasterizes text Shadows (offset/erratic), which is the "ghost digit" seen on tiles.
+          Text(label, style: base.copyWith(foreground: Paint()..shader = fillShader)),
         ],
       ),
     );
