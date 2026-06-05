@@ -219,13 +219,15 @@ class SettingsPage extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                // Medium (not bold) weight: selection is already shown by colour + border + check, and
-                // the Cyrillic fallback ("Русский", no glyph in the UI font) renders heavy at w700.
+                // The UI font (Rajdhani) has no Cyrillic, so "Русский" fell back to a heavy system
+                // font. Use Noto Sans as a Cyrillic-capable fallback (Latin still renders in Rajdhani)
+                // at medium weight; selection stays clear via colour + border + check.
                 child: Text(label,
                     style: TextStyle(
                         color: selected ? lux.accent : lux.ink,
                         fontWeight: FontWeight.w500,
-                        fontSize: 15)),
+                        fontSize: 15,
+                        fontFamilyFallback: [GoogleFonts.notoSans().fontFamily!])),
               ),
               if (selected) Icon(Icons.check, color: lux.accent, size: 20),
             ],
