@@ -55,6 +55,10 @@ class PawnWidget extends StatelessWidget {
           colors: p.ring,
           stops: GameTheme.ringStops,
         ),
+        // Selection = a clean glow halo + ring only. The value (the _MetalNumber below) is NOT touched
+        // by `selected` — it renders identically selected or not (spec: "glow halo only"). The glow is
+        // scaled to the medallion size so small tiles (Morph 5×5) don't get an oversized wash that
+        // reads as a semi-opaque ghost over the digit.
         border: selected ? Border.all(color: theme.accentGlow, width: 2.5) : null,
         boxShadow: [
           BoxShadow(
@@ -63,9 +67,9 @@ class PawnWidget extends StatelessWidget {
             offset: Offset(0, size * 0.06),
           ),
           BoxShadow(
-            color: p.glow.withValues(alpha: selected ? 0.6 : 0.32),
-            blurRadius: selected ? 18 : 9,
-            spreadRadius: selected ? 3 : 0,
+            color: p.glow.withValues(alpha: selected ? 0.55 : 0.30),
+            blurRadius: selected ? size * 0.34 : size * 0.16,
+            spreadRadius: selected ? size * 0.05 : 0,
           ),
         ],
       ),
@@ -105,7 +109,10 @@ class PawnWidget extends StatelessWidget {
       ),
     );
 
-    if (!animateIn) return medallion;
+    // Isolate the medallion as its own layer so a selection change (glow on/off) can never leave a
+    // stale semi-opaque raster behind under Impeller — the prime suspect for the "ghost digit" on
+    // selected tiles. The value layer is untouched by selection, so only the halo re-rasterizes.
+    if (!animateIn) return RepaintBoundary(child: medallion);
 
     final popIn = TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),

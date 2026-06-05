@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Pawn selection is a clean glow halo only (ghost-digit fix).** Confirmed the value never had a
+  selection-conditional emphasis layer — the digit already rendered identically selected/unselected —
+  so the "semi-opaque ghost digit" on selected tiles came from the fixed-size selection glow washing
+  small medallions and leaving Impeller raster residue. The glow is now scaled to the medallion size
+  (no oversized wash on Morph 5×5) and each medallion is isolated in a `RepaintBoundary` so a
+  selection change re-rasterizes only the halo, never leaving a stale layer. Value paint is untouched.
 - **Tutorial ghost-medallion hardening.** Medallions (big showcase + hand-rail chips) now use
   content-stable widget keys (step + index + owner/value) so a value/content change retires the old
   layer instead of leaving a faint stale digit behind; step transitions already fade-through (old fully
