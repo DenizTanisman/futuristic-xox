@@ -6,12 +6,17 @@ with an online-ready server-authoritative engine for v2.
 
 > Priorities, in order: **correctness → speed/responsiveness → smooth 60fps graphics**.
 
-## Screenshots
+## Download & play
 
-<!-- Captured during the on-device test pass; drop images into aidlc-docs/release/screenshots/ -->
-| Entry | Morph win line | Tutorial |
-|-------|----------------|----------|
-| _(coming soon)_ | _(coming soon)_ | _(coming soon)_ |
+**[▶ Download the latest Android APK](https://github.com/DenizTanisman/futuristic-xox/releases/latest)**
+— open it on your phone, allow *Install from unknown sources* if asked, and it installs permanently
+(no computer needed). Fully offline.
+
+- **Android:** ready now (signed for direct sideload).
+- **iOS:** the code is cross-platform and ready, but there is no published iOS build yet (an iOS build
+  requires a Mac + the Apple Developer Program → TestFlight / App Store).
+
+<!-- Screenshots: drop entry / Morph win-line / tutorial images into aidlc-docs/release/screenshots/ and link them here. -->
 
 ## Architecture
 
@@ -56,16 +61,18 @@ See [`CLAUDE.md`](CLAUDE.md) (the build spec) for the full design.
 | **U1 — Engine** (`engine/`) | rules, capture, win-check (lines + Morph shapes), modes, pure `apply` | ✅ complete, 41 tests |
 | **U2 — AI** (`ai/`) | easy / medium / hard (negamax + alpha-beta + transposition table + iterative deepening) | ✅ complete, 14 tests + self-play |
 | **Bridge** (`bridge/`) | `GameSession` facade, FFI-friendly views | ✅ complete, 6 tests |
-| **U3 — UI** (`ui/`) | screens, board, rails, animations; 4-language i18n (tr/en/ru/es); dark/light themes; interactive tutorials for all four modes; sound effects; continuous win-line | ✅ complete, runs on the Dart mock backend (40 widget/logic tests) |
-| **Integration** | `flutter_rust_bridge` wiring + on-device play | ⏳ Dart mock backend live; native-Rust wiring + on-device test pass pending |
+| **U3 — UI** (`ui/`) | screens, board, rails, animations; 4-language i18n (tr/en/ru/es); dark/light themes; interactive tutorials for all four modes; recorded SFX + two-layer music; continuous win-line | ✅ complete, 44 widget/logic tests |
+| **Integration** | on-device play (Android) + `flutter_rust_bridge` wiring | ✅ ships & runs on Android (on the Dart parity backend); ⏳ native-Rust wiring still to come |
 
-> **Release status:** release engineering is underway on `release/v1.0.0` (MIT `LICENSE`, this README,
-> Android signing config, store metadata). The **v1.0.0** cut is held pending background **music** and
-> the on-device test pass.
+> **Release:** **v1.0.1 is public** — Android APK on the [Releases page](https://github.com/DenizTanisman/futuristic-xox/releases/latest),
+> MIT licensed. The app ships today on a pure-Dart parity backend that mirrors the Rust engine's rules
+> and AI; wiring the native Rust path through `flutter_rust_bridge` is the next step. iOS build pending
+> (needs a Mac + Apple Developer Program).
 
-**Quality:** 61 Rust tests pass; `cargo clippy` clean; the AI's Hard difficulty scores 97–100% vs
-Easy and 95% vs Medium in self-play and never loses. Engine/AI use **zero** third-party crates and
-contain **no `unsafe`** (see [`aidlc-docs/design-artifacts/security-review.md`](aidlc-docs/design-artifacts/security-review.md)).
+**Quality:** 61 Rust tests + 44 Flutter tests pass; `cargo clippy` and `flutter analyze` clean; the
+AI's Hard difficulty scores 95–100% vs Easy/Medium in self-play and never loses. Engine/AI use
+**zero** third-party crates and contain **no `unsafe`** (see
+[`aidlc-docs/design-artifacts/security-review.md`](aidlc-docs/design-artifacts/security-review.md)).
 
 ## Build & test
 
@@ -82,11 +89,15 @@ cargo build --release             # optimized native build
 ```sh
 cd ui
 flutter pub get
-flutter test     # Dart rule-parity tests for the mock backend
-flutter run      # launch on a device/emulator (plays on the Dart mock engine)
+flutter test                  # 44 widget/logic + rule-parity tests
+flutter run                   # launch on a connected device/emulator
+flutter build apk --release   # standalone APK → build/app/outputs/flutter-apk/app-release.apk
 ```
 
-See [`ui/README.md`](ui/README.md) for backend details and the native-Rust wiring steps.
+The released APK is signed with a debug key for direct sideloading; a Google Play build (real upload
+keystore, scaffolded via `ui/android/key.properties`) is a later step. See
+[`ui/README.md`](ui/README.md) for backend details and the native-Rust wiring steps, and
+[`PROJECT-OVERVIEW.md`](PROJECT-OVERVIEW.md) for a full algorithm-level walkthrough.
 
 ## Project methodology
 
