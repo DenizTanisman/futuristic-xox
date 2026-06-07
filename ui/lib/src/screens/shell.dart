@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../dev/selfplay_harness/selfplay_setup_screen.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../app/app_controllers.dart';
@@ -53,6 +56,10 @@ class AppDrawer extends StatelessWidget {
             _item(context, Icons.school_outlined, l.navTutorials, const TutorialsPage()),
             _item(context, Icons.info_outline, l.navAbout, const AboutPage()),
             _item(context, Icons.bug_report_outlined, l.navIssue, const IssuePage()),
+            // Dev-only: never present in release builds (work order §3.2). Not localized on purpose.
+            if (kDebugMode)
+              _item(context, Icons.science_outlined, 'Self-Play (dev)',
+                  const SelfPlaySetupScreen()),
           ],
         ),
       ),

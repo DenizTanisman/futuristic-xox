@@ -16,6 +16,10 @@ import 'geometry.dart';
 const int _kWin = 1000;
 const int _kInf = 1 << 29;
 
+/// A "budget" so large the wall clock never reaches it → the time box is effectively off. Used by the
+/// dev self-play harness ([DartGameApi.selfPlayStep]) for deterministic, depth-only search.
+const int _kNoTimeBox = 1 << 50;
+
 /// Max pawn value across all modes is 11 (spec §3.2); slot 0 covers Classic symbols, +1 headroom.
 const int _kValueSlots = 13;
 
@@ -399,6 +403,17 @@ class DartGameApi implements GameApi {
     return _commit(mv);
   }
 
+  /// Dev/test only (self-play harness): commit one deterministic best move — the adversarial `first`
+  /// option with the **time box off** and an explicit [maxDepth] cap — so recorded games are
+  /// reproducible across runs/machines. Real play ([aiMove]) keeps its 450 ms time box untouched.
+  /// Returns the resulting [MoveResult], or null at a terminal position (no move to make).
+  MoveResult? selfPlayStep(int maxDepth) {
+    if (_outcome(_s) != Outcome.inProgress || _legalMoves(_s).isEmpty) return null;
+    final mv = _adversarialSearch(budgetMsOverride: _kNoTimeBox, maxDepthOverride: maxDepth)?.first;
+    if (mv == null) return null;
+    return _commit(mv);
+  }
+
   // ---- AI: adversarial top-3 search + per-side difficulty tiers ----
   // Mirrors the Rust crate (ai/src/adversarial.rs + ai/src/lib.rs SelectionPolicy / play_move), which
   // is the source of truth. The interior negamax + transposition table + time box are unchanged; only
@@ -466,7 +481,7 @@ class DartGameApi implements GameApi {
   /// alpha-beta at the root (bound held at the 3rd-best) keeps pruning while giving honest 2nd/3rd
   /// scores. An immediate win is forced into `first` so the strongest tiers convert it even at the
   /// shallow depth a phone reaches in the time box.
-  _Choice? _adversarialSearch() {
+  _Choice? _adversarialSearch({int? budgetMsOverride, int? maxDepthOverride}) {
     final all = _legalMoves(_s);
     if (all.isEmpty) return null;
 
@@ -481,8 +496,10 @@ class DartGameApi implements GameApi {
 
     _tt.clear();
     final sw = Stopwatch()..start();
-    const budgetMs = 450;
-    final maxDepth = _mode == Mode4.morph ? 6 : (_rows == 3 ? 9 : 8);
+    // Defaults = real play (time-boxed). The dev self-play harness overrides with the time box off
+    // (huge budget the wall clock never reaches) + a depth cap → deterministic, reproducible records.
+    final budgetMs = budgetMsOverride ?? 450;
+    final maxDepth = maxDepthOverride ?? (_mode == Mode4.morph ? 6 : (_rows == 3 ? 9 : 8));
 
     // Seed with the static ordering so a result exists even if depth 1 times out mid-way.
     var ranked = <(_Move, int)>[for (final m in _ordered(candidates, _s).take(3)) (m, 0)];
