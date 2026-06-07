@@ -9,7 +9,7 @@
 //! State lives in Rust (the `GameSession` is the opaque object held across the bridge), so the heavy
 //! AI search runs natively off the Flutter UI isolate (spec §2 — the key to 60fps fluidity).
 
-use ai::{choose_move, Difficulty, SearchLimits};
+use ai::{choose_move, choose_move_medium, Difficulty, MediumState, SearchLimits};
 use engine::{
     build, is_move_legal, GameConfig, GameResult, GameState, Mode, ModeKind, Move,
 };
@@ -99,6 +99,8 @@ pub struct GameSession {
     mode: Box<dyn Mode>,
     state: GameState,
     valued: bool,
+    /// Per-game memory for Medium's anti-streak Easy/Hard flip (spec §7.3, refined).
+    medium: MediumState,
 }
 
 impl GameSession {
@@ -110,6 +112,7 @@ impl GameSession {
             mode,
             state,
             valued: !matches!(kind, Mode4::Classic),
+            medium: MediumState::default(),
         }
     }
 
@@ -160,7 +163,15 @@ impl GameSession {
     /// Have the AI move for the side to move. Returns `applied: false` if the game is already over.
     pub fn ai_move(&mut self, difficulty: Difficulty, time_ms: u64, max_depth: i32, seed: u64) -> MoveResult {
         let limits = SearchLimits { time_ms, max_depth };
-        match choose_move(&*self.mode, &self.state, difficulty, limits, seed) {
+        // Medium keeps per-game memory here so it can't run the same engine 3 moves in a row;
+        // Easy/Hard are stateless (spec §7.3, refined).
+        let chosen = match difficulty {
+            Difficulty::Medium => {
+                choose_move_medium(&*self.mode, &self.state, limits, seed, &mut self.medium)
+            }
+            _ => choose_move(&*self.mode, &self.state, difficulty, limits, seed),
+        };
+        match chosen {
             Some(mv) => self.commit(mv),
             None => MoveResult {
                 applied: false,

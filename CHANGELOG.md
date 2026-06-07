@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Hard AI is actually hard on device.** The shipping Flutter app runs the pure-Dart backend
+  (`DartGameApi`) — the native Rust engine is not yet wired in — and that Dart search had no
+  transposition table, so on phones it reached far shallower depth than the native engine within its
+  ~450 ms time box and collapsed to greedy play: it missed winning moves and even handed the opponent
+  immediate wins (a one-move-from-losing threat is only worth `-30` in the heuristic, so a shallow
+  search trades it away). Two fixes: (1) a **transposition table + TT-ordered search** ported from
+  `ai/src/hash.rs`/`hard.rs`, so the same time box explores many more nodes and deeper lines; and
+  (2) two cheap **tactical guards** that run before the search and are depth-independent — take any
+  immediate win, and never play a move that hands the opponent an immediate winning reply (line modes;
+  Morph's two-move turns lean on the deepened search). Search depth caps bumped accordingly. Note:
+  Morph's full strength on large grids still depends on wiring the native Rust AI (planned).
+
+### Changed
+- **Medium AI is now anti-streak.** The per-move Easy/Hard coin (spec §7.3) stays random but can no
+  longer run the *same* engine three moves in a row: after the same engine is chosen twice running,
+  the next move is forced to the other one. This fixes the "Medium sometimes feels like pure Easy or
+  pure Hard" complaint while keeping its mixed character. Implemented as `ai::MediumState` (per-game
+  memory) + `ai::choose_move_medium`, wired through the bridge `GameSession`, and mirrored in the Dart
+  web-preview API. Stateless `choose_move(.., Medium, ..)` is kept as the memory-free self-play
+  fallback.
+
+### Added
+- **Hard-algorithm flowchart** (`aidlc-docs/design-artifacts/hard-algorithm-flowchart.html`): a
+  standalone, annotated diagram of the negamax + alpha-beta + TT + iterative-deepening search with a
+  complexity panel — the 1:1 visual counterpart of `ai/src/hard.rs`.
+
 ## [1.0.1] - 2026-06-05
 
 Polish & bug-fix release: removes the medallion "ghost digit", cleans up pawn selection, structures the

@@ -243,6 +243,35 @@ void main() {
       }
       expect(s.outcome, Outcome.draw);
     });
+
+    test('hard takes an immediate win when one is on the board (offense)', () async {
+      // P0 (the AI seat here) holds the top row 0,1 with cell 2 open and pawns to finish.
+      final api = DartGameApi();
+      api.newGame(mode: Mode4.original, rows: 3, cols: 3, seed: 0);
+      api.humanMove(color: 0, value: 1, cell: 0);
+      api.humanMove(color: 1, value: 1, cell: 3);
+      api.humanMove(color: 0, value: 2, cell: 1);
+      api.humanMove(color: 1, value: 2, cell: 4);
+      // P0 to move; Hard must complete the row at cell 2 and win outright.
+      final r = await api.aiMove(Difficulty.hard);
+      expect(r.snapshot.outcome, Outcome.win0);
+    });
+
+    test('hard blocks the opponent\'s immediate winning threat (defense)', () async {
+      // P0 (human) threatens to complete the top row at cell 2; P1 (the AI seat) has no win of its
+      // own and must block — never hand over the game (the core "Hard isn't hard" report).
+      final api = DartGameApi();
+      api.newGame(mode: Mode4.original, rows: 3, cols: 3, seed: 0);
+      api.humanMove(color: 0, value: 1, cell: 0);
+      api.humanMove(color: 1, value: 1, cell: 4);
+      api.humanMove(color: 0, value: 2, cell: 1); // P0 now threatens cell 2
+      final r = await api.aiMove(Difficulty.hard); // P1 to move
+      expect(r.snapshot.outcome, Outcome.inProgress, reason: 'AI must not lose outright');
+      // The threat must be neutralized however the AI chose to do it (occupy cell 2 with an
+      // uncapturable pawn, or capture one of P0's threat pawns) — P0 has no immediate win left.
+      expect(api.completingCells(), isEmpty,
+          reason: 'AI must leave P0 with no one-move win');
+    });
   });
 
   group('bonanza deal', () {

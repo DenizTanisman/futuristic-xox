@@ -16,6 +16,20 @@ import 'geometry.dart';
 const int _kWin = 1000;
 const int _kInf = 1 << 29;
 
+/// Max pawn value across all modes is 11 (spec §3.2); slot 0 covers Classic symbols, +1 headroom.
+const int _kValueSlots = 13;
+
+/// A transposition-table entry (mirrors `ai/src/hash.rs` + `hard.rs`): the search value for a
+/// position, how deep it was proven to, and an alpha-beta bound flag (0 = exact, 1 = lower, 2 = upper).
+/// `best` is the move that produced it, replayed first next time for sharper pruning.
+class _TtEntry {
+  final int depth;
+  final int value;
+  final int flag;
+  final _Move? best;
+  const _TtEntry(this.depth, this.value, this.flag, this.best);
+}
+
 class _Pawn {
   int owner;
   int value;
@@ -65,6 +79,20 @@ class DartGameApi implements GameApi {
   MorphShape? _morphShape;
   late Random _rng;
 
+  // Medium's anti-streak memory (mirrors ai::MediumState): never run the same engine 3 moves in a
+  // row. `_mediumLastHard` = last pick (true=Hard, false=Easy, null=none yet); `_mediumRun` = how
+  // many moves in a row that engine has been used.
+  bool? _mediumLastHard;
+  int _mediumRun = 0;
+
+  // Transposition table + Zobrist keys for the Hard search (mirrors the Rust TT, ai/src/hash.rs).
+  // The Dart backend was previously TT-less, so it explored far fewer nodes per time-box than the
+  // native engine and collapsed to shallow, greedy play on phones — the "Hard isn't hard" report.
+  final Map<int, _TtEntry> _tt = {};
+  late List<int> _zBoard; // flattened [cell*2+owner]*_kValueSlots + value random keys
+  late List<int> _zTurn; // [2]
+  late List<int> _zMoves; // [0,1,2] moves-left-in-turn
+
   @override
   Snapshot newGame({required Mode4 mode, required int rows, required int cols, int? seed}) {
     _mode = mode;
@@ -82,6 +110,11 @@ class DartGameApi implements GameApi {
       _morphShape = null;
       _placements = const [];
     }
+
+    _mediumLastHard = null;
+    _mediumRun = 0;
+
+    _initZobrist(rows * cols);
 
     _s = _initialState(mode, rows, cols, s);
     return snapshot();
@@ -339,26 +372,57 @@ class DartGameApi implements GameApi {
     return _commit(_chooseMove(difficulty, moves));
   }
 
+  // Medium's anti-streak coin (mirrors ai::MediumState::pick_hard): random Easy/Hard, but forced to
+  // the other engine once the same one has run twice in a row — so never 3 in a row.
+  bool _mediumPickHard() {
+    final useHard = _mediumRun >= 2 ? !(_mediumLastHard ?? false) : _rng.nextBool();
+    if (_mediumLastHard == useHard) {
+      _mediumRun++;
+    } else {
+      _mediumLastHard = useHard;
+      _mediumRun = 1;
+    }
+    return useHard;
+  }
+
   // ---- AI: real negamax + alpha-beta (mirrors ai/src/hard.rs) ----
 
   _Move _chooseMove(Difficulty difficulty, List<_Move> moves) {
     if (difficulty == Difficulty.easy) return moves[_rng.nextInt(moves.length)];
-    if (difficulty == Difficulty.medium && _rng.nextBool()) {
+    if (difficulty == Difficulty.medium && !_mediumPickHard()) {
       return moves[_rng.nextInt(moves.length)];
     }
-    // Hard (and half of Medium): iterative-deepening negamax with a time box.
+
+    // Hard (and half of Medium). Two cheap tactical guards run *before* the time-boxed search so the
+    // result never depends on reaching the critical depth on a slow device (the core "Hard isn't
+    // hard" cause): at shallow depth an opponent's one-move-from-winning threat is only worth `-30`
+    // in the heuristic, so the search would happily trade it away and hand over the game.
+
+    // Guard 1 — take an immediate win if one exists (a single placement that completes my line/shape).
+    final winning = _winningMove(_s);
+    if (winning != null) return winning;
+
+    // Guard 2 — drop any move that hands the opponent an immediate winning reply, unless every move
+    // does (then nothing is safe and we fall through). Cheap for line modes; skipped for Morph, whose
+    // two-move turns make the brute-force check too expensive — Morph leans on the deepened search.
+    final candidates = _safeCandidates(moves);
+    if (candidates.length == 1) return candidates.first;
+
+    // Iterative-deepening negamax + transposition table, time-boxed (mirrors ai/src/hard.rs).
+    _tt.clear();
     final sw = Stopwatch()..start();
     const budgetMs = 450;
-    final maxDepth = _mode == Mode4.morph ? 5 : (_rows == 3 ? 9 : 7);
+    final maxDepth = _mode == Mode4.morph ? 6 : (_rows == 3 ? 9 : 8);
 
-    var best = _ordered(moves, _s).first;
+    var best = _ordered(candidates, _s).first;
     for (var depth = 1; depth <= maxDepth; depth++) {
       var alpha = -_kInf;
       const beta = _kInf;
       _Move? localBest;
       var bestScore = -_kInf;
       var aborted = false;
-      for (final m in _ordered(moves, _s)) {
+      // Search the previous depth's best first — the TT then sharpens ordering deeper down.
+      for (final m in _orderedWithTt(candidates, _s, best)) {
         final child = _s.copy();
         _apply(child, m);
         final samePlayer = child.turn == _s.turn;
@@ -382,6 +446,36 @@ class DartGameApi implements GameApi {
     return best;
   }
 
+  /// A single placement that completes the side-to-move's line/shape *right now* (immediate win),
+  /// or null. Early-exits on the first win, so it is cheap even when none exists.
+  _Move? _winningMove(_State s) {
+    final me = s.turn;
+    for (final m in _legalMoves(s)) {
+      final child = s.copy();
+      _apply(child, m);
+      if (_winner(child) == me) return m;
+    }
+    return null;
+  }
+
+  /// Moves that do **not** let the opponent win on their immediate reply. Line modes only (one move
+  /// per turn, so the reply is a single placement — O(b²), cheap). Morph's two-move turns would make
+  /// this O(b³); there we return every move and rely on the time-boxed search instead. Falls back to
+  /// all moves when nothing is safe (a lost position — still has to move).
+  List<_Move> _safeCandidates(List<_Move> moves) {
+    if (_mode == Mode4.morph) return moves;
+    final me = _s.turn;
+    final safe = <_Move>[];
+    for (final m in moves) {
+      final child = _s.copy();
+      _apply(child, m);
+      // After a line-mode move the turn always flips; if the opponent then has a one-move win, skip.
+      if (child.turn != me && _winningMove(child) != null) continue;
+      safe.add(m);
+    }
+    return safe.isEmpty ? moves : safe;
+  }
+
   int _negamax(_State s, int depth, int alpha, int beta, Stopwatch sw, int budgetMs) {
     final w = _winner(s);
     if (w != null) {
@@ -391,18 +485,46 @@ class DartGameApi implements GameApi {
     if (!_hasLegalMove(s)) return 0; // draw
     if (depth == 0 || sw.elapsedMilliseconds > budgetMs) return _heuristic(s);
 
+    final key = _hash(s);
+    final alphaOrig = alpha;
+    _Move? ttMove;
+    final entry = _tt[key];
+    if (entry != null) {
+      ttMove = entry.best;
+      if (entry.depth >= depth) {
+        if (entry.flag == 0) return entry.value; // exact
+        if (entry.flag == 1 && entry.value > alpha) alpha = entry.value; // lower bound
+        if (entry.flag == 2 && entry.value < beta) beta = entry.value; // upper bound
+        if (alpha >= beta) return entry.value;
+      }
+    }
+
     var best = -_kInf;
-    for (final m in _ordered(_legalMoves(s), s)) {
+    _Move? bestMove;
+    var timedOut = false;
+    for (final m in _orderedWithTt(_legalMoves(s), s, ttMove)) {
       final child = s.copy();
       _apply(child, m);
       final samePlayer = child.turn == s.turn;
       final score = samePlayer
           ? _negamax(child, depth - 1, alpha, beta, sw, budgetMs)
           : -_negamax(child, depth - 1, -beta, -alpha, sw, budgetMs);
-      if (score > best) best = score;
+      if (score > best) {
+        best = score;
+        bestMove = m;
+      }
       if (best > alpha) alpha = best;
       if (alpha >= beta) break; // cutoff
-      if (sw.elapsedMilliseconds > budgetMs) break;
+      if (sw.elapsedMilliseconds > budgetMs) {
+        timedOut = true;
+        break;
+      }
+    }
+
+    // Don't pollute the TT with a value from a search the clock cut short.
+    if (!timedOut) {
+      final flag = best <= alphaOrig ? 2 : (best >= beta ? 1 : 0);
+      _tt[key] = _TtEntry(depth, best, flag, bestMove);
     }
     return best;
   }
@@ -417,6 +539,54 @@ class DartGameApi implements GameApi {
       return _centerDistance(a.cell) - _centerDistance(b.cell);
     });
     return list;
+  }
+
+  /// Static ordering, but with the transposition table's remembered best move hoisted to the front —
+  /// the single most effective ordering improvement for alpha-beta pruning (spec §7.7.2/§7.7.3).
+  List<_Move> _orderedWithTt(List<_Move> moves, _State s, _Move? ttMove) {
+    final list = _ordered(moves, s);
+    if (ttMove != null) {
+      final i = list.indexWhere(
+          (m) => m.cell == ttMove.cell && m.color == ttMove.color && m.value == ttMove.value);
+      if (i > 0) list.insert(0, list.removeAt(i));
+    }
+    return list;
+  }
+
+  // ---- transposition-table hashing (mirrors ai/src/hash.rs) ----
+
+  void _initZobrist(int cells) {
+    // Fixed seed → stable keys, like the native Zobrist. Native Dart ints are 64-bit.
+    final r = Random(0x5345);
+    int rnd64() => (r.nextInt(1 << 32) << 32) ^ r.nextInt(1 << 32);
+    _zBoard = List<int>.generate(cells * 2 * _kValueSlots, (_) => rnd64());
+    _zTurn = [rnd64(), rnd64()];
+    _zMoves = [rnd64(), rnd64(), rnd64()];
+  }
+
+  /// A 64-bit key for the full state: board (Zobrist XOR), turn, moves-left, and both hands. Hands are
+  /// multisets so a plain XOR would cancel duplicates — fold an order-independent, count-sensitive
+  /// mixer per colour+value instead.
+  int _hash(_State s) {
+    var h = 0;
+    for (var c = 0; c < s.board.length; c++) {
+      final p = s.board[c];
+      if (p != null) {
+        final v = p.value > 12 ? 12 : p.value;
+        h ^= _zBoard[(c * 2 + p.owner) * _kValueSlots + v];
+      }
+    }
+    h ^= _zTurn[s.turn & 1];
+    h ^= _zMoves[s.movesLeft > 2 ? 2 : s.movesLeft];
+    for (var pl = 0; pl < 2; pl++) {
+      final keys = s.hands[pl].map((e) => e.color * 100 + e.value).toList()..sort();
+      var acc = 0xcbf29ce484222325 ^ (pl * 0x9E3779B9);
+      for (final k in keys) {
+        acc = (acc ^ (k + 1)) * 0x100000001b3;
+      }
+      h ^= acc;
+    }
+    return h;
   }
 
   int _captureGain(_State s, _Move m) {

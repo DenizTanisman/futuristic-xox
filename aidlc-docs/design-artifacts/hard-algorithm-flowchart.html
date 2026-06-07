@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Futuristic XOX — Hard AI Algoritma Akışı</title>
+<style>
+  :root{
+    --bg:#0f1014; --panel:#171922; --ink:#e7e9f0; --muted:#9aa0b5;
+    --bordo:#7b1733; --gold:#b8902b; --line:#2c3040;
+    --start:#1e5631; --decision:#3a2c5a; --proc:#1f2a44; --cut:#5a1f2c;
+    --tt:#143d4a; --term:#4a3a14;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5}
+  header{padding:28px 32px 8px;border-bottom:1px solid var(--line)}
+  h1{margin:0 0 4px;font-size:22px;letter-spacing:.3px}
+  h1 .x{color:var(--bordo)} h1 .o{color:var(--gold)}
+  header .sub{color:var(--muted);font-size:13px}
+  .wrap{max-width:1180px;margin:0 auto;padding:24px 32px 80px}
+  .grid{display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+  .flow{display:flex;flex-direction:column;align-items:center;gap:0}
+  .node{width:100%;max-width:560px;border-radius:12px;padding:12px 16px;
+    border:1px solid var(--line);background:var(--panel);position:relative}
+  .node .t{font-weight:700;font-size:14px;margin-bottom:3px}
+  .node .d{font-size:12.5px;color:var(--muted)}
+  .node code{background:#0c0d12;color:#cdd3ea;padding:1px 5px;border-radius:5px;font-size:12px}
+  .start{background:var(--start);border-color:#2c7a45}
+  .decision{background:var(--decision);border-color:#5a4a80}
+  .proc{background:var(--proc);border-color:#34508a}
+  .cut{background:var(--cut);border-color:#8a3346}
+  .ttbox{background:var(--tt);border-color:#1f6478}
+  .term{background:var(--term);border-color:#7a6320}
+  .arrow{width:2px;height:22px;background:var(--line)}
+  .arrow.lbl{position:relative}
+  .arrow.lbl::after{content:attr(data-l);position:absolute;left:8px;top:50%;
+    transform:translateY(-50%);font-size:11px;color:var(--muted);white-space:nowrap}
+  .loopnote{font-size:11.5px;color:var(--muted);font-style:italic;margin:2px 0}
+
+  .branch{display:flex;gap:14px;width:100%;max-width:560px;justify-content:space-between}
+  .branch .col{flex:1;display:flex;flex-direction:column;align-items:center}
+  .branch .node{max-width:100%}
+  .tag{display:inline-block;font-size:10.5px;color:var(--muted);
+    border:1px solid var(--line);border-radius:20px;padding:1px 9px;margin-bottom:6px}
+
+  aside .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;margin-bottom:18px}
+  aside h3{margin:0 0 10px;font-size:14px}
+  aside table{width:100%;border-collapse:collapse;font-size:12px}
+  aside td{padding:5px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+  aside td:first-child{color:var(--muted);white-space:nowrap;padding-right:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px;margin:3px 10px 3px 0}
+  .sw{width:13px;height:13px;border-radius:3px;display:inline-block;border:1px solid #0006}
+  .big{font-size:13px}
+  code.k{background:#0c0d12;color:#cdd3ea;padding:1px 5px;border-radius:5px;font-size:12px}
+  .foot{color:var(--muted);font-size:12px;margin-top:24px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Futuristic <span class="x">X</span>O<span class="o">X</span> — Hard AI Akış Şeması</h1>
+  <div class="sub">negamax + alpha-beta + transpozisyon tablosu + iteratif derinleşme (spec §7.4 / §7.7) · kaynak: <code>ai/src/hard.rs</code></div>
+</header>
+
+<div class="wrap">
+  <div class="legend" style="margin-bottom:18px">
+    <span><i class="sw" style="background:var(--start)"></i>Giriş / çıkış</span>
+    <span><i class="sw" style="background:var(--decision)"></i>Karar (dallanma)</span>
+    <span><i class="sw" style="background:var(--proc)"></i>İşlem</span>
+    <span><i class="sw" style="background:var(--tt)"></i>Transpozisyon tablosu</span>
+    <span><i class="sw" style="background:var(--cut)"></i>Budama / kesme</span>
+    <span><i class="sw" style="background:var(--term)"></i>Terminal skor</span>
+  </div>
+
+  <div class="grid">
+    <!-- ============ FLOW COLUMN ============ -->
+    <div class="flow">
+
+      <div class="node start">
+        <div class="t">hard_move(mode, state, limits)</div>
+        <div class="d">Hamle istenir. limits = { time_ms: 500, max_depth: 64 }</div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node decision">
+        <div class="t">Kök hamleler (ordered_moves)</div>
+        <div class="d">0 hamle → <code>None</code> · tek hamle → onu döndür (arama yok) · aksi halde devam</div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node proc">
+        <div class="t">Deadline kur + Searcher oluştur</div>
+        <div class="d"><code>deadline = now + time_ms</code> · boş TT (HashMap) · Zobrist anahtarları</div>
+      </div>
+      <div class="arrow lbl" data-l="best_move = ilk hamle"></div>
+
+      <!-- ITERATIVE DEEPENING -->
+      <div class="node decision" style="border-width:2px">
+        <div class="t">⟳ İTERATİF DERİNLEŞME — for depth = 1 .. max_depth</div>
+        <div class="d">Her tur tüm ağacı <i>depth</i> derinliğine kadar baştan arar; bir önceki derinliğin en iyi hamlesi sıralamaya ipucu verir.</div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node proc">
+        <div class="t">search_root(state, depth, best_move)</div>
+        <div class="d">α=−∞, β=+∞. Kök hamleleri sıralı gez; her biri için <code>negamax</code> çağır. En iyi <code>(hamle, skor)</code> döner.</div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="branch">
+        <div class="col">
+          <span class="tag">süre doldu?</span>
+          <div class="node cut">
+            <div class="t">timed_out = true</div>
+            <div class="d">Bu yarım derinliği <b>at</b>, döngüyü kır. En son tamamlanan derinliğin hamlesi kalır.</div>
+          </div>
+        </div>
+        <div class="col">
+          <span class="tag">tamamlandı</span>
+          <div class="node proc">
+            <div class="t">best_move ← mv</div>
+            <div class="d">Skor kazanç/kayıp kanıtladıysa (<code>|score| ≥ WIN−maxDepth</code>) erken çık.</div>
+          </div>
+        </div>
+      </div>
+      <div class="arrow lbl" data-l="değilse depth++ ile tekrar"></div>
+      <div class="loopnote">↑ döngü başına döner — derinlik bir artar</div>
+      <div class="arrow"></div>
+      <div class="node start">
+        <div class="t">return best_move</div>
+        <div class="d">Süre bütçesi içinde tam aranabilen en derin seviyenin en iyi hamlesi.</div>
+      </div>
+
+      <!-- spacer -->
+      <div style="height:34px"></div>
+      <div class="node" style="background:#10131c;border-style:dashed;max-width:560px">
+        <div class="t" style="color:var(--gold)">negamax(s, depth, α, β) — özyinelemeli çekirdek</div>
+        <div class="d">Aşağıdaki blok, yukarıdaki her <code>negamax</code> çağrısının içidir.</div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node decision">
+        <div class="t">1 · Süre kontrolü</div>
+        <div class="d">Her 1024 düğümde bir saat bak (<code>nodes &amp; 0x3FF</code>). Doldu → 0 döndür, dallanmayı bırak.</div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="branch">
+        <div class="col">
+          <span class="tag">terminal mi?</span>
+          <div class="node term">
+            <div class="t">2 · terminal_score</div>
+            <div class="d">Kazanç → <code>WIN−depth</code> (erken kazan) · kayıp → <code>depth−WIN</code> (geç kaybet) · beraberlik → 0</div>
+          </div>
+        </div>
+        <div class="col">
+          <span class="tag">depth == 0 mı?</span>
+          <div class="node term">
+            <div class="t">3 · heuristic(s)</div>
+            <div class="d">Statik tahmin: <code>30·tehdit + 1·ekonomi + 5·merkez</code> (ben − rakip)</div>
+          </div>
+        </div>
+      </div>
+      <div class="arrow lbl" data-l="ikisi de değilse ↓"></div>
+
+      <div class="node ttbox">
+        <div class="t">4 · TT PROBE (Zobrist)</div>
+        <div class="d">Bu pozisyon daha önce ≥ bu derinlikte arandıysa: <b>Exact</b>→değeri döndür · <b>Lower</b>→α yükselt · <b>Upper</b>→β düşür · α≥β → döndür. Kayıtlı en iyi hamle = sıralama ipucu.</div>
+      </div>
+      <div class="arrow lbl" data-l="best = −∞ · for m in order(s, tt_move)"></div>
+
+      <div class="node proc">
+        <div class="t">5 · child = apply(s, m)</div>
+        <div class="d">Saf fonksiyon: yeni state üretir, girdiyi bozmaz. Yakalama varsa rakip taş silinir; Morph'ta <code>moves_left_in_turn</code> azalır.</div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="branch">
+        <div class="col">
+          <span class="tag">child.turn == s.turn (Morph 1. hamle)</span>
+          <div class="node proc">
+            <div class="t">6a · Aynı oyuncu</div>
+            <div class="d"><b>Negasyon YOK</b> — hâlâ aynı taraf maksimize ediyor.<br><code>score = negamax(child, depth−1, α, β)</code></div>
+          </div>
+        </div>
+        <div class="col">
+          <span class="tag">sıra değişti</span>
+          <div class="node proc">
+            <div class="t">6b · Sıra rakibe geçti</div>
+            <div class="d"><b>Negasyon VAR</b> — rakibin en iyisi benim en kötüm.<br><code>score = −negamax(child, depth−1, −β, −α)</code></div>
+          </div>
+        </div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node proc">
+        <div class="t">7 · best / α güncelle</div>
+        <div class="d"><code>best = max(best, score)</code> · <code>α = max(α, best)</code> · en iyi hamleyi sakla</div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node cut">
+        <div class="t">8 · ALPHA-BETA KESME</div>
+        <div class="d"><code>if α ≥ β { break }</code> — rakip bu dalı zaten elemeli; kalan kardeş hamleleri aramaya gerek yok. Asıl hız buradan gelir.</div>
+      </div>
+      <div class="arrow lbl" data-l="döngü biterse ↓"></div>
+
+      <div class="node ttbox">
+        <div class="t">9 · TT STORE</div>
+        <div class="d">Süre dolmadıysa pozisyonu kaydet: best ≤ α₀ → <b>Upper</b>, best ≥ β → <b>Lower</b>, aksi → <b>Exact</b>. (Saatle kesilen arama TT'yi <b>kirletmez</b>.)</div>
+      </div>
+      <div class="arrow"></div>
+      <div class="node start">
+        <div class="t">return best</div>
+      </div>
+    </div>
+
+    <!-- ============ SIDE PANEL ============ -->
+    <aside>
+      <div class="card">
+        <h3>§7.7 Hangi optimizasyon nerede</h3>
+        <table>
+          <tr><td>Alpha-beta</td><td>Adım 8 — dal budama, b → √b</td></tr>
+          <tr><td>Move ordering</td><td>Adım 4/5 — TT hamlesi + yakalama-önce (MVV-LVA), merkez</td></tr>
+          <tr><td>Transpozisyon</td><td>Adım 4 &amp; 9 — Zobrist anahtarlı önbellek</td></tr>
+          <tr><td>İteratif derinleşme</td><td>Kök döngü — zaman kutusu + sıralama ipucu</td></tr>
+          <tr><td>Derinlik limiti + heuristik</td><td>Adım 3 — büyük state'lerde kesme</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Karmaşıklık</h3>
+        <table>
+          <tr><td>Saf negamax</td><td>O(b<sup>d</sup>) · b=dallanma, d=derinlik</td></tr>
+          <tr><td>+ alpha-beta (iyi sıralama)</td><td>O(b<sup>d/2</sup>) = O(√b<sup>d</sup>)</td></tr>
+          <tr><td>+ TT</td><td>tekrar eden pozisyonları teklemez → pratikte daha da düşük</td></tr>
+          <tr><td>Bellek</td><td>O(d) yığın + O(ziyaret edilen pozisyon) TT</td></tr>
+          <tr><td>Morph (2 hamle/tur)</td><td>tur başına dallanma ≈ b² → 5×5'te zaman kutusu şart</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Skor uçları</h3>
+        <table>
+          <tr><td><code class="k">WIN</code></td><td>1000</td></tr>
+          <tr><td><code class="k">INF</code></td><td>i32::MAX</td></tr>
+          <tr><td>kazanç</td><td>WIN − depth (erken kazanı yeğle)</td></tr>
+          <tr><td>kayıp</td><td>depth − WIN (geç kaybetmeyi yeğle)</td></tr>
+          <tr><td>beraberlik</td><td>0</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Zaman bütçesi (§7.8)</h3>
+        <table>
+          <tr><td>hedef</td><td>300–500 ms / hamle</td></tr>
+          <tr><td>tavan</td><td>~1 s</td></tr>
+          <tr><td>saat kontrolü</td><td>her 1024 düğümde 1</td></tr>
+        </table>
+      </div>
+    </aside>
+  </div>
+
+  <div class="foot">
+    Üretildi: Futuristic XOX · design-artifacts. Bu şema <code>ai/src/hard.rs</code>'in birebir karşılığıdır; Dart web-önizleme aynısı <code>ui/lib/src/game/dart_game_api.dart</code> içindedir.
+  </div>
+</div>
+</body>
+</html>
