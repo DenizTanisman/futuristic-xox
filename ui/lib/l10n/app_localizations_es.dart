@@ -129,6 +129,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get difficultyHard => 'Difícil';
 
   @override
+  String get difficultyImpossible => 'Imposible';
+
+  @override
   String get startButton => 'Jugar';
 
   @override

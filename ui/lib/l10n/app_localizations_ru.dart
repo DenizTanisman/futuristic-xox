@@ -129,6 +129,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get difficultyHard => 'Сложный';
 
   @override
+  String get difficultyImpossible => 'Невозможно';
+
+  @override
   String get startButton => 'Старт';
 
   @override

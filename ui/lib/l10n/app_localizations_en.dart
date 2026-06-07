@@ -128,6 +128,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get difficultyHard => 'Hard';
 
   @override
+  String get difficultyImpossible => 'Impossible';
+
+  @override
   String get startButton => 'Start';
 
   @override

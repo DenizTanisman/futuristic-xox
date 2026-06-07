@@ -28,9 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`SelectionPolicy` (`AlwaysBest` / `Top3Uniform` / `MidMix` / `LowMix`) and `play_move`**, a
   stateless per-turn selector driven by a seedable die, with roll-first efficiency (weaker tiers skip
   the search entirely when the die selects the legacy random move `rastgele()` = `easy_move`).
-- **Per-side difficulty tiers:** Futuristic (Easy/Medium/Hard/Impossible), Classic (Easy/Medium/Hard),
-  via separate `FuturisticDifficulty` / `ClassicDifficulty` enums + `to_policy()` — making
-  `Classic + Impossible` unrepresentable rather than a runtime guard.
+- **Per-side difficulty tiers:** Futuristic (Easy/Medium/Hard/Impossible — four), Classic
+  (Easy/Medium/Hard — three). In Rust via separate `FuturisticDifficulty` / `ClassicDifficulty` enums
+  + `to_policy()` (making `Classic + Impossible` unrepresentable); in the Dart backend via a
+  mode-aware `(mode, difficulty) → SelectionPolicy` mapping. The setup screen now offers the extra
+  **Impossible** tier on the Futuristic side (localized in en/tr/es/ru).
 - **Hard-algorithm flowchart** (`aidlc-docs/design-artifacts/hard-algorithm-flowchart.html`): a
   standalone, annotated diagram of the negamax + alpha-beta + TT + iterative-deepening search.
 
@@ -38,15 +40,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Hard search refactored into the adversarial search** (`hard.rs` → `adversarial.rs`); the interior
   negamax, TT, time box, and iterative deepening are unchanged — only the root now collects an honest
   top-3. Weaker tiers may skip the search when the die selects `rastgele()`.
-- **Dart shipping backend Medium stays anti-streak.** The phone app runs `DartGameApi`; its Medium
-  keeps the per-move Easy/Hard coin that cannot run the same engine three moves in a row (mirrors the
-  pre-refactor Rust behaviour). The Rust AI crate itself has moved to the tier model below.
+- **Difficulty meaning shifted.** On the Futuristic side, the always-best engine is now the new
+  **Impossible** tier; **Hard** is `Top3Uniform` (strong but varied), **Medium** `MidMix`, **Easy**
+  `LowMix`. On Classic, **Hard** stays always-best, **Medium** is `Top3Uniform`, **Easy** `LowMix`.
+- **Dart backend (the shipping phone app) mirrors the tier model.** `DartGameApi` now runs the same
+  adversarial top-3 search + selection policies; its earlier Medium anti-streak coin is removed
+  (replaced by the tiers). The Rust crate remains the source of truth.
 
 ### Removed
-- **`MediumState` / `choose_move_medium` / the old `Difficulty` coin** (Easy/Hard anti-streak) from the
-  **Rust AI crate** — superseded by `SelectionPolicy` + `play_move`. No anti-streak guard on the new
-  selectors (by design — the mixes provide enough variety). The Dart mock backend's Medium mirror is
-  unaffected (it is what currently ships).
+- **`MediumState` / `choose_move_medium` / the old `Difficulty` coin** (Easy/Hard anti-streak) —
+  superseded by `SelectionPolicy` + `play_move` in Rust and the mirrored tiers in Dart. No anti-streak
+  guard anywhere now (by design — the mixes provide enough variety).
 
 ## [1.0.1] - 2026-06-05
 

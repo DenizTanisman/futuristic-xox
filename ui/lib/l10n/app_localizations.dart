@@ -336,6 +336,12 @@ abstract class AppLocalizations {
   /// **'Hard'**
   String get difficultyHard;
 
+  /// No description provided for @difficultyImpossible.
+  ///
+  /// In en, this message translates to:
+  /// **'Impossible'**
+  String get difficultyImpossible;
+
   /// No description provided for @startButton.
   ///
   /// In en, this message translates to:

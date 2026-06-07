@@ -30,6 +30,31 @@ class _TtEntry {
   const _TtEntry(this.depth, this.value, this.flag, this.best);
 }
 
+/// Which move the per-turn selector plays (mirrors `ai::SelectionPolicy`). `rastgele()` = a uniformly
+/// random legal move. The per-side difficulty tiers map onto these four (see `_policyFor`).
+enum SelectionPolicy {
+  /// Always the strongest move (`first`).
+  alwaysBest,
+
+  /// Uniformly one of the top-3: 0 = first, 1 = second, 2 = third.
+  top3Uniform,
+
+  /// Mid mix: 0 = second, 1 = third, 2 = `rastgele()`.
+  midMix,
+
+  /// Low mix: 0 = third, 1 = `rastgele()`.
+  lowMix,
+}
+
+/// The top-3 ranked moves, strongest first (mirrors `ai::AdversarialChoice`). Always fully populated;
+/// slots repeat the weakest available move when fewer than three distinct moves exist.
+class _Choice {
+  final _Move first;
+  final _Move second;
+  final _Move third;
+  const _Choice(this.first, this.second, this.third);
+}
+
 class _Pawn {
   int owner;
   int value;
@@ -79,13 +104,7 @@ class DartGameApi implements GameApi {
   MorphShape? _morphShape;
   late Random _rng;
 
-  // Medium's anti-streak memory (mirrors ai::MediumState): never run the same engine 3 moves in a
-  // row. `_mediumLastHard` = last pick (true=Hard, false=Easy, null=none yet); `_mediumRun` = how
-  // many moves in a row that engine has been used.
-  bool? _mediumLastHard;
-  int _mediumRun = 0;
-
-  // Transposition table + Zobrist keys for the Hard search (mirrors the Rust TT, ai/src/hash.rs).
+  // Transposition table + Zobrist keys for the search (mirrors the Rust TT, ai/src/hash.rs).
   // The Dart backend was previously TT-less, so it explored far fewer nodes per time-box than the
   // native engine and collapsed to shallow, greedy play on phones — the "Hard isn't hard" report.
   final Map<int, _TtEntry> _tt = {};
@@ -110,9 +129,6 @@ class DartGameApi implements GameApi {
       _morphShape = null;
       _placements = const [];
     }
-
-    _mediumLastHard = null;
-    _mediumRun = 0;
 
     _initZobrist(rows * cols);
 
@@ -359,8 +375,7 @@ class DartGameApi implements GameApi {
   @override
   Future<MoveResult> aiMove(Difficulty difficulty) async {
     await Future<void>.delayed(const Duration(milliseconds: 220));
-    final moves = _legalMoves(_s);
-    if (moves.isEmpty) {
+    if (_legalMoves(_s).isEmpty) {
       return MoveResult(
         applied: false,
         captured: false,
@@ -369,81 +384,150 @@ class DartGameApi implements GameApi {
         snapshot: snapshot(),
       );
     }
-    return _commit(_chooseMove(difficulty, moves));
+    // Per-turn varying seed from the game RNG → deterministic per game, varied across turns.
+    final seed = _rng.nextInt(1 << 32);
+    final mv = _playMove(_policyFor(_mode, difficulty), seed);
+    if (mv == null) {
+      return MoveResult(
+        applied: false,
+        captured: false,
+        singleMoveFallback: false,
+        illegalReason: null,
+        snapshot: snapshot(),
+      );
+    }
+    return _commit(mv);
   }
 
-  // Medium's anti-streak coin (mirrors ai::MediumState::pick_hard): random Easy/Hard, but forced to
-  // the other engine once the same one has run twice in a row — so never 3 in a row.
-  bool _mediumPickHard() {
-    final useHard = _mediumRun >= 2 ? !(_mediumLastHard ?? false) : _rng.nextBool();
-    if (_mediumLastHard == useHard) {
-      _mediumRun++;
-    } else {
-      _mediumLastHard = useHard;
-      _mediumRun = 1;
+  // ---- AI: adversarial top-3 search + per-side difficulty tiers ----
+  // Mirrors the Rust crate (ai/src/adversarial.rs + ai/src/lib.rs SelectionPolicy / play_move), which
+  // is the source of truth. The interior negamax + transposition table + time box are unchanged; only
+  // the root collects an honest top-3, and a stateless selection layer picks which option to play.
+
+  /// Per-side tier → policy. The Futuristic (valued) side has four tiers; Classic three. `Classic +
+  /// impossible` can't be selected in the UI, but is folded to always-best defensively.
+  SelectionPolicy _policyFor(Mode4 mode, Difficulty d) {
+    if (mode == Mode4.classic) {
+      switch (d) {
+        case Difficulty.easy:
+          return SelectionPolicy.lowMix;
+        case Difficulty.medium:
+          return SelectionPolicy.top3Uniform;
+        case Difficulty.hard:
+        case Difficulty.impossible:
+          return SelectionPolicy.alwaysBest;
+      }
     }
-    return useHard;
+    switch (d) {
+      case Difficulty.easy:
+        return SelectionPolicy.lowMix;
+      case Difficulty.medium:
+        return SelectionPolicy.midMix;
+      case Difficulty.hard:
+        return SelectionPolicy.top3Uniform;
+      case Difficulty.impossible:
+        return SelectionPolicy.alwaysBest;
+    }
   }
 
-  // ---- AI: real negamax + alpha-beta (mirrors ai/src/hard.rs) ----
-
-  _Move _chooseMove(Difficulty difficulty, List<_Move> moves) {
-    if (difficulty == Difficulty.easy) return moves[_rng.nextInt(moves.length)];
-    if (difficulty == Difficulty.medium && !_mediumPickHard()) {
-      return moves[_rng.nextInt(moves.length)];
+  /// Choose the move to play this turn under `policy`, driven by a seedable die. **Roll-first:** weaker
+  /// tiers that land on `rastgele()` skip the (expensive) search entirely. Stateless — no anti-streak
+  /// (the mixes provide enough variety). Returns null only at a terminal position.
+  _Move? _playMove(SelectionPolicy policy, int seed) {
+    final rng = Random(seed);
+    switch (policy) {
+      case SelectionPolicy.alwaysBest:
+        return _adversarialSearch()?.first;
+      case SelectionPolicy.top3Uniform:
+        final pick = rng.nextInt(3);
+        final c = _adversarialSearch();
+        if (c == null) return null;
+        return pick == 0 ? c.first : (pick == 1 ? c.second : c.third);
+      case SelectionPolicy.midMix:
+        final pick = rng.nextInt(3);
+        if (pick == 2) return _rastgele(rng); // skip the search
+        final c = _adversarialSearch();
+        if (c == null) return null;
+        return pick == 0 ? c.second : c.third;
+      case SelectionPolicy.lowMix:
+        final pick = rng.nextInt(2);
+        if (pick == 1) return _rastgele(rng); // skip the search
+        return _adversarialSearch()?.third;
     }
+  }
 
-    // Hard (and half of Medium). Two cheap tactical guards run *before* the time-boxed search so the
-    // result never depends on reaching the critical depth on a slow device (the core "Hard isn't
-    // hard" cause): at shallow depth an opponent's one-move-from-winning threat is only worth `-30`
-    // in the heuristic, so the search would happily trade it away and hand over the game.
+  /// `rastgele()` — a uniformly random legal move (the legacy Easy primitive). Caller guarantees ≥1.
+  _Move _rastgele(Random rng) {
+    final moves = _legalMoves(_s);
+    return moves[rng.nextInt(moves.length)];
+  }
 
-    // Guard 1 — take an immediate win if one exists (a single placement that completes my line/shape).
+  /// The top-3 ranked moves (`first ≥ second ≥ third`), or null at a terminal position. Top-k
+  /// alpha-beta at the root (bound held at the 3rd-best) keeps pruning while giving honest 2nd/3rd
+  /// scores. An immediate win is forced into `first` so the strongest tiers convert it even at the
+  /// shallow depth a phone reaches in the time box.
+  _Choice? _adversarialSearch() {
+    final all = _legalMoves(_s);
+    if (all.isEmpty) return null;
+
     final winning = _winningMove(_s);
-    if (winning != null) return winning;
+    // Restrict the ranked pool to moves that don't hand the opponent an immediate win (line modes;
+    // Morph returns all). Keeps even the weaker 2nd/3rd picks from blundering into a one-move loss.
+    final candidates = _safeCandidates(all);
+    if (candidates.length == 1 && winning == null) {
+      final m = candidates.first;
+      return _Choice(m, m, m);
+    }
 
-    // Guard 2 — drop any move that hands the opponent an immediate winning reply, unless every move
-    // does (then nothing is safe and we fall through). Cheap for line modes; skipped for Morph, whose
-    // two-move turns make the brute-force check too expensive — Morph leans on the deepened search.
-    final candidates = _safeCandidates(moves);
-    if (candidates.length == 1) return candidates.first;
-
-    // Iterative-deepening negamax + transposition table, time-boxed (mirrors ai/src/hard.rs).
     _tt.clear();
     final sw = Stopwatch()..start();
     const budgetMs = 450;
     final maxDepth = _mode == Mode4.morph ? 6 : (_rows == 3 ? 9 : 8);
 
-    var best = _ordered(candidates, _s).first;
+    // Seed with the static ordering so a result exists even if depth 1 times out mid-way.
+    var ranked = <(_Move, int)>[for (final m in _ordered(candidates, _s).take(3)) (m, 0)];
+    _Move? prevFirst = ranked.first.$1;
     for (var depth = 1; depth <= maxDepth; depth++) {
-      var alpha = -_kInf;
-      const beta = _kInf;
-      _Move? localBest;
-      var bestScore = -_kInf;
-      var aborted = false;
-      // Search the previous depth's best first — the TT then sharpens ordering deeper down.
-      for (final m in _orderedWithTt(candidates, _s, best)) {
-        final child = _s.copy();
-        _apply(child, m);
-        final samePlayer = child.turn == _s.turn;
-        final score = samePlayer
-            ? _negamax(child, depth - 1, alpha, beta, sw, budgetMs)
-            : -_negamax(child, depth - 1, -beta, -alpha, sw, budgetMs);
-        if (sw.elapsedMilliseconds > budgetMs) {
-          aborted = true;
-          break;
-        }
-        if (score > bestScore) {
-          bestScore = score;
-          localBest = m;
-        }
-        if (bestScore > alpha) alpha = bestScore;
+      final top = _searchRootTop3(candidates, depth, prevFirst, sw, budgetMs);
+      if (sw.elapsedMilliseconds > budgetMs) break; // discard partial depth
+      if (top.isNotEmpty) {
+        ranked = top;
+        prevFirst = ranked.first.$1;
       }
-      if (localBest != null && !aborted) best = localBest;
-      if (aborted) break;
-      if (bestScore.abs() >= _kWin - maxDepth) break; // forced result proven
+      if (ranked.first.$2.abs() >= _kWin - maxDepth) break; // forced result proven
     }
-    return best;
+
+    var first = ranked[0].$1;
+    final second = ranked.length > 1 ? ranked[1].$1 : first;
+    final third = ranked.length > 2 ? ranked[2].$1 : second;
+    if (winning != null) first = winning; // strongest play always converts an immediate win
+    return _Choice(first, second, third);
+  }
+
+  /// One depth of the top-k (k = 3) root search. Bound held at the current 3rd-best (`-inf` until the
+  /// top-3 is full), `beta = inf`: moves below 3rd fail low and are dropped, moves that break in are
+  /// scored exactly. Returns the ranked `(move, score)` list, strongest first.
+  List<(_Move, int)> _searchRootTop3(
+      List<_Move> candidates, int depth, _Move? prevFirst, Stopwatch sw, int budgetMs) {
+    const beta = _kInf;
+    final top = <(_Move, int)>[];
+    for (final m in _orderedWithTt(candidates, _s, prevFirst)) {
+      final alpha = top.length >= 3 ? top[2].$2 : -_kInf;
+      final child = _s.copy();
+      _apply(child, m);
+      final samePlayer = child.turn == _s.turn;
+      final score = samePlayer
+          ? _negamax(child, depth - 1, alpha, beta, sw, budgetMs)
+          : -_negamax(child, depth - 1, -beta, -alpha, sw, budgetMs);
+      if (sw.elapsedMilliseconds > budgetMs) break;
+      if (top.length < 3 || score > top[2].$2) {
+        var pos = top.indexWhere((e) => e.$2 < score);
+        if (pos < 0) pos = top.length;
+        top.insert(pos, (m, score));
+        if (top.length > 3) top.removeLast();
+      }
+    }
+    return top;
   }
 
   /// A single placement that completes the side-to-move's line/shape *right now* (immediate win),

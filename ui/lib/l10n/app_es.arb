@@ -44,6 +44,7 @@
   "difficultyEasy": "Fácil",
   "difficultyMedium": "Media",
   "difficultyHard": "Difícil",
+  "difficultyImpossible": "Imposible",
   "startButton": "Jugar",
   "offlineMpTitle": "Multijugador local",
   "offlineMpOn": "Dos jugadores · mismo dispositivo",

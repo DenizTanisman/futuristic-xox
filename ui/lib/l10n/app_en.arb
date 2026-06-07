@@ -44,6 +44,7 @@
   "difficultyEasy": "Easy",
   "difficultyMedium": "Medium",
   "difficultyHard": "Hard",
+  "difficultyImpossible": "Impossible",
   "startButton": "Start",
   "offlineMpTitle": "Offline Multiplayer",
   "offlineMpOn": "Two players · same device",

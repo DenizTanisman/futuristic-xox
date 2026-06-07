@@ -44,6 +44,7 @@
   "difficultyEasy": "Kolay",
   "difficultyMedium": "Orta",
   "difficultyHard": "Zor",
+  "difficultyImpossible": "İmkansız",
   "startButton": "Başla",
   "offlineMpTitle": "Çevrimdışı Çok Oyunculu",
   "offlineMpOn": "İki oyuncu · aynı cihaz",

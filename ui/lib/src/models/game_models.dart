@@ -22,15 +22,22 @@ extension Mode4X on Mode4 {
 
   /// Allowed grid sizes (as side length) for this mode (spec §8).
   List<int> get grids => this == Mode4.morph ? const [4, 5] : const [3, 4];
+
+  /// Difficulty tiers offered for this side: the Futuristic (valued) modes add a fourth, `impossible`
+  /// (always-best play); Classic stays at three. The `(mode, difficulty) → SelectionPolicy` mapping
+  /// lives in the backend (`DartGameApi`), so `Classic + impossible` is never selectable here.
+  List<Difficulty> get difficulties =>
+      valued ? Difficulty.values : const [Difficulty.easy, Difficulty.medium, Difficulty.hard];
 }
 
-enum Difficulty { easy, medium, hard }
+enum Difficulty { easy, medium, hard, impossible }
 
 extension DifficultyX on Difficulty {
   String get label => switch (this) {
         Difficulty.easy => 'Easy',
         Difficulty.medium => 'Medium',
         Difficulty.hard => 'Hard',
+        Difficulty.impossible => 'Impossible',
       };
 }
 

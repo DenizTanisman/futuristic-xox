@@ -463,6 +463,7 @@ String _difficultyName(AppLocalizations l, Difficulty d) => switch (d) {
       Difficulty.easy => l.difficultyEasy,
       Difficulty.medium => l.difficultyMedium,
       Difficulty.hard => l.difficultyHard,
+      Difficulty.impossible => l.difficultyImpossible,
     };
 
 /// Themed shell shared by the submode picker and the setup screen: background gradient + a centered
@@ -704,7 +705,7 @@ class _SetupScreenState extends State<_SetupScreen> {
                     children: [
                       _sectionLabel(t, l.difficultyLabel),
                       _Segmented<Difficulty>(
-                        values: Difficulty.values,
+                        values: widget.mode.difficulties,
                         selected: difficulty,
                         label: (d) => _difficultyName(l, d),
                         onSelect: (d) => setState(() => difficulty = d),
