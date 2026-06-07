@@ -3,7 +3,7 @@
 // per-file dead-code warnings.
 #![allow(dead_code)]
 
-use ai::{choose_move, Difficulty, SearchLimits};
+use ai::{play_move, SearchLimits, SelectionPolicy};
 use engine::{build, is_move_legal, GameConfig, GameResult, GameState, Pawn};
 
 /// Build a custom state (mirrors the engine test helper).
@@ -39,12 +39,12 @@ pub fn perfect(max_depth: i32) -> SearchLimits {
     SearchLimits { time_ms: 0, max_depth }
 }
 
-/// Play a full game between two difficulties, asserting every move is legal. Returns the result.
+/// Play a full game between two selection policies, asserting every move is legal. Returns the result.
 pub fn play_game(
     config: GameConfig,
     seed: u64,
-    d0: Difficulty,
-    d1: Difficulty,
+    p0: SelectionPolicy,
+    p1: SelectionPolicy,
     limits: SearchLimits,
 ) -> GameResult {
     let (mode, mut s) = build(config, seed);
@@ -55,8 +55,8 @@ pub fn play_game(
         if let Some(r) = mode.is_terminal(&s) {
             return r;
         }
-        let diff = if s.turn == 0 { d0 } else { d1 };
-        let mv = choose_move(&*mode, &s, diff, limits, seed.wrapping_add(ply as u64))
+        let policy = if s.turn == 0 { p0 } else { p1 };
+        let mv = play_move(&*mode, &s, policy, limits, seed.wrapping_add(ply as u64))
             .expect("non-terminal state must yield a move");
         assert!(
             is_move_legal(&s, &mv, valued),

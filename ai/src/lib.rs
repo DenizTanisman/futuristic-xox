@@ -2,155 +2,227 @@
 //!
 //! Builds against the engine's frozen [`engine::Mode`] trait only (spec §7.1, §11).
 //!
-//! - **Easy** (spec §7.2): random with a capture/placement bias.
-//! - **Medium** (spec §7.3): per move, randomly run Easy or Hard — but never the *same* engine three
-//!   moves in a row. See [`MediumState`].
-//! - **Hard** (spec §7.4, §7.7): negamax + alpha-beta + transposition table + iterative deepening
-//!   with a time box.
+//! The core is an **adversarial search** ([`adversarial_search`]) that returns the **top-3 ranked
+//! moves** ([`AdversarialChoice`]: `first ≥ second ≥ third`), reusing negamax + alpha-beta + a
+//! transposition table + iterative deepening with a time box (spec §7.4, §7.7). On top of it,
+//! per-turn **difficulty tiers** pick which option — or the legacy random move `rastgele()`
+//! ([`easy::easy_move`]) — to actually play, via a [`SelectionPolicy`] and the stateless
+//! [`play_move`] selector.
 //!
-//! The public entry point is [`choose_move`], the merge contract for Unit 3 (spec §11):
-//! `choose_move(state, difficulty, time_budget) -> Move`.
+//! Per-side label enums map onto the four policies: the Futuristic side (valued modes) offers four
+//! tiers ([`FuturisticDifficulty`]), Classic offers three ([`ClassicDifficulty`]). Using separate
+//! enums makes the invalid `Classic + Impossible` combination unrepresentable.
 
+mod adversarial;
 mod easy;
-mod hard;
 mod hash;
 
-pub use hard::SearchLimits;
+pub use adversarial::{adversarial_search, AdversarialChoice, SearchLimits};
 
 use engine::{GameState, Mode, Move, Rng};
 
-/// Difficulty selection (spec §8 UI flow).
+/// Which move the per-turn selector plays. The single engine-facing knob; per-side label enums
+/// ([`FuturisticDifficulty`] / [`ClassicDifficulty`]) collapse onto these four via `to_policy()`.
+///
+/// `rastgele()` denotes the legacy random move generator ([`easy::easy_move`]).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Difficulty {
+pub enum SelectionPolicy {
+    /// Always play `first` (Birinci) — the strongest move.
+    AlwaysBest,
+    /// Uniformly one of the top-3: `below(3)` → 0 = first, 1 = second, 2 = third.
+    Top3Uniform,
+    /// Mid mix: `below(3)` → 0 = second, 1 = third, 2 = `rastgele()`.
+    MidMix,
+    /// Low mix: `below(2)` → 0 = third, 1 = `rastgele()`.
+    LowMix,
+}
+
+/// Difficulty tiers for the Futuristic side (Original / Bonanza / Morph — valued modes). Four tiers.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FuturisticDifficulty {
+    Easy,
+    Medium,
+    Hard,
+    Impossible,
+}
+
+/// Difficulty tiers for Classic. Three tiers — there is no `Impossible` here, so `Classic + Impossible`
+/// is unrepresentable by construction (no runtime guard needed).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ClassicDifficulty {
     Easy,
     Medium,
     Hard,
 }
 
-/// Per-game memory for Medium so its Easy/Hard coin can't run away into a long one-sided streak
-/// (the bug report: "Medium sometimes feels like pure Easy or pure Hard"). The flip stays random,
-/// but is **anti-streak**: after the same engine has been used twice in a row, the next move is
-/// forced to the other one — so it can never run the same engine three moves in a row.
-///
-/// Lives in the stateful caller (the bridge `GameSession` / Dart game API), one per game, because
-/// the decision needs memory across moves that a stateless `choose_move` call cannot hold.
-#[derive(Debug, Clone, Copy, Default)]
-pub struct MediumState {
-    /// The last engine chosen: `Some(true)` = Hard, `Some(false)` = Easy, `None` = no move yet.
-    last_hard: Option<bool>,
-    /// How many moves in a row that same engine has now been used.
-    run: u8,
-}
-
-impl MediumState {
-    /// Decide whether Medium uses Hard for this move. Random coin from `seed` (even/0 → Hard, odd →
-    /// Easy, matching the original spec §7.3 flip), except when the last engine already ran twice in
-    /// a row — then it is forced to the opposite engine. Updates the streak counter.
-    pub fn pick_hard(&mut self, seed: u64) -> bool {
-        let use_hard = if self.run >= 2 {
-            // Anti-streak: force the other engine. `last_hard` is always Some once run >= 2.
-            !self.last_hard.unwrap_or(false)
-        } else {
-            // Free coin flip (even/0 → Hard, odd → Easy), same convention as before.
-            Rng::new(seed).next_u64() % 2 == 0
-        };
-        if self.last_hard == Some(use_hard) {
-            self.run += 1;
-        } else {
-            self.last_hard = Some(use_hard);
-            self.run = 1;
+impl FuturisticDifficulty {
+    /// Map a Futuristic tier to its selection policy (the §3.2 contract).
+    pub fn to_policy(self) -> SelectionPolicy {
+        match self {
+            FuturisticDifficulty::Impossible => SelectionPolicy::AlwaysBest,
+            FuturisticDifficulty::Hard => SelectionPolicy::Top3Uniform,
+            FuturisticDifficulty::Medium => SelectionPolicy::MidMix,
+            FuturisticDifficulty::Easy => SelectionPolicy::LowMix,
         }
-        use_hard
     }
 }
 
-/// Choose a move for the side to move.
+impl ClassicDifficulty {
+    /// Map a Classic tier to its selection policy (the §3.2 contract).
+    pub fn to_policy(self) -> SelectionPolicy {
+        match self {
+            ClassicDifficulty::Hard => SelectionPolicy::AlwaysBest,
+            ClassicDifficulty::Medium => SelectionPolicy::Top3Uniform,
+            ClassicDifficulty::Easy => SelectionPolicy::LowMix,
+        }
+    }
+}
+
+/// Choose and return the move to play this turn for the side to move.
 ///
 /// - `mode` / `state`: the current game (engine merge contract).
-/// - `difficulty`: which engine to use.
-/// - `limits`: time box + depth cap for the Hard search (spec §7.8). Ignored by Easy.
-/// - `seed`: drives Easy/Medium randomness and Medium's per-turn Easy/Hard coin flip; pass a varying
-///   seed per turn for variety, or a fixed seed for reproducible tests.
+/// - `policy`: which tier behaviour to apply ([`SelectionPolicy`]).
+/// - `limits`: time box + depth cap for the adversarial search (spec §7.8). Unused on a pure
+///   `rastgele()` roll.
+/// - `seed`: drives the per-turn selection die **and** the `rastgele()` fallback. Pass a varying seed
+///   per turn for variety, or a fixed seed for reproducible games/tests.
 ///
-/// Returns `None` only when there are no legal moves (i.e. a terminal state).
-pub fn choose_move(
+/// **Roll-first efficiency:** the die is rolled before any search, so weaker tiers that land on
+/// `rastgele()` skip the (expensive) search entirely. The selection RNG is independent of the search,
+/// which is itself deterministic — so identical `(state, policy, seed)` always yields the same move.
+///
+/// **Stateless — no anti-streak** (owner decision): the mixes provide enough variety on their own.
+///
+/// Returns `None` only at a terminal position (no legal moves).
+pub fn play_move(
     mode: &dyn Mode,
     state: &GameState,
-    difficulty: Difficulty,
+    policy: SelectionPolicy,
     limits: SearchLimits,
     seed: u64,
 ) -> Option<Move> {
-    match difficulty {
-        Difficulty::Easy => {
-            let mut rng = Rng::new(seed);
-            easy::easy_move(mode, state, &mut rng)
+    let mut rng = Rng::new(seed);
+    match policy {
+        SelectionPolicy::AlwaysBest => adversarial_search(mode, state, limits).map(|c| c.first),
+        SelectionPolicy::Top3Uniform => {
+            let pick = rng.below(3);
+            adversarial_search(mode, state, limits).map(|c| match pick {
+                0 => c.first,
+                1 => c.second,
+                _ => c.third,
+            })
         }
-        Difficulty::Medium => {
-            // Stateless coin (odd → Easy, even → Hard, spec §7.3). The stateful, anti-streak Medium
-            // used in real games lives in the caller via [`MediumState`] + [`choose_move_medium`];
-            // this branch keeps a memory-free fallback for self-play/tests.
-            let mut rng = Rng::new(seed);
-            if rng.next_u64() % 2 == 1 {
-                easy::easy_move(mode, state, &mut rng)
-            } else {
-                hard::hard_move(mode, state, limits)
-            }
-        }
-        Difficulty::Hard => hard::hard_move(mode, state, limits),
-    }
-}
-
-/// Medium with memory: picks Easy or Hard via [`MediumState::pick_hard`] (anti-streak), then runs
-/// that engine. Use this — not `choose_move(.., Medium, ..)` — wherever a single game is played, so
-/// Medium can never feel like pure Easy or pure Hard for a long stretch (spec §7.3, refined).
-pub fn choose_move_medium(
-    mode: &dyn Mode,
-    state: &GameState,
-    limits: SearchLimits,
-    seed: u64,
-    medium: &mut MediumState,
-) -> Option<Move> {
-    if medium.pick_hard(seed) {
-        hard::hard_move(mode, state, limits)
-    } else {
-        let mut rng = Rng::new(seed);
-        easy::easy_move(mode, state, &mut rng)
+        SelectionPolicy::MidMix => match rng.below(3) {
+            2 => easy::easy_move(mode, state, &mut rng), // rastgele() — skip the search
+            pick => adversarial_search(mode, state, limits)
+                .map(|c| if pick == 0 { c.second } else { c.third }),
+        },
+        SelectionPolicy::LowMix => match rng.below(2) {
+            1 => easy::easy_move(mode, state, &mut rng), // rastgele() — skip the search
+            _ => adversarial_search(mode, state, limits).map(|c| c.third),
+        },
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::MediumState;
+    use super::*;
+    use engine::{build, GameConfig, GameState, Mode, ModeKind};
 
-    /// Whatever the seed stream produces, Medium must never pick the same engine three moves running.
+    fn original_3x3() -> (Box<dyn Mode>, GameState) {
+        build(GameConfig { kind: ModeKind::Original, rows: 3, cols: 3 }, 0)
+    }
+
+    fn limits() -> SearchLimits {
+        // Shallow depth keeps the seed-sweep selection tests fast; they exercise the *selection*
+        // branches, not search strength (that is covered by the adversarial-search tests + self-play).
+        SearchLimits { time_ms: 0, max_depth: 3 }
+    }
+
     #[test]
-    fn medium_never_runs_same_engine_three_in_a_row() {
-        let mut m = MediumState::default();
-        let mut last_two = [false; 2];
-        // Worst case: a seed stream that always wants the same engine when free to choose.
-        for i in 0..500u64 {
-            // Alternate constant-ish seeds to probe both even and odd streams.
-            let seed = if i % 2 == 0 { 2 } else { 1 };
-            let pick = m.pick_hard(seed);
-            if i >= 2 {
-                assert!(
-                    !(pick == last_two[0] && pick == last_two[1]),
-                    "three identical picks in a row at move {i}",
-                );
-            }
-            last_two = [last_two[1], pick];
+    fn policy_mapping_is_per_side() {
+        assert_eq!(FuturisticDifficulty::Impossible.to_policy(), SelectionPolicy::AlwaysBest);
+        assert_eq!(FuturisticDifficulty::Hard.to_policy(), SelectionPolicy::Top3Uniform);
+        assert_eq!(FuturisticDifficulty::Medium.to_policy(), SelectionPolicy::MidMix);
+        assert_eq!(FuturisticDifficulty::Easy.to_policy(), SelectionPolicy::LowMix);
+        assert_eq!(ClassicDifficulty::Hard.to_policy(), SelectionPolicy::AlwaysBest);
+        assert_eq!(ClassicDifficulty::Medium.to_policy(), SelectionPolicy::Top3Uniform);
+        assert_eq!(ClassicDifficulty::Easy.to_policy(), SelectionPolicy::LowMix);
+        // `Classic + Impossible` does not compile — ClassicDifficulty has no Impossible variant.
+    }
+
+    #[test]
+    fn always_best_returns_first() {
+        let (mode, state) = original_3x3();
+        let want = adversarial_search(&*mode, &state, limits()).unwrap().first;
+        for seed in 0..20u64 {
+            let got = play_move(&*mode, &state, SelectionPolicy::AlwaysBest, limits(), seed);
+            assert_eq!(got, Some(want), "AlwaysBest must always play first");
         }
     }
 
-    /// A forced switch resets the run to 1, so two-then-switch-then-two is allowed (just not three).
     #[test]
-    fn medium_allows_pairs_but_forces_switch_after_two() {
-        let mut m = MediumState::default();
-        // Constant even seed → coin always wants Hard; the rule must inject Easy on the 3rd.
-        let a = m.pick_hard(2);
-        let b = m.pick_hard(2);
-        let c = m.pick_hard(2);
-        assert_eq!(a, b, "first two free picks match the coin");
-        assert_ne!(b, c, "third pick is forced to the other engine");
+    fn play_move_is_deterministic() {
+        let (mode, state) = original_3x3();
+        for policy in [
+            SelectionPolicy::AlwaysBest,
+            SelectionPolicy::Top3Uniform,
+            SelectionPolicy::MidMix,
+            SelectionPolicy::LowMix,
+        ] {
+            for seed in 0..10u64 {
+                let a = play_move(&*mode, &state, policy, limits(), seed);
+                let b = play_move(&*mode, &state, policy, limits(), seed);
+                assert_eq!(a, b, "identical (state, policy, seed) → identical move");
+            }
+        }
+    }
+
+    #[test]
+    fn selection_branches_cover_their_ranges() {
+        let (mode, state) = original_3x3();
+        let c = adversarial_search(&*mode, &state, limits()).unwrap();
+        let r = |seed| {
+            let mut rng = Rng::new(seed);
+            easy::easy_move(&*mode, &state, &mut rng).unwrap()
+        };
+
+        // Top3Uniform must reach {first, second, third} across seeds.
+        let mut seen_top3 = std::collections::HashSet::new();
+        // MidMix must reach {second, third, R}; LowMix must reach {third, R}.
+        let mut seen_mid = std::collections::HashSet::new();
+        let mut seen_low = std::collections::HashSet::new();
+        for seed in 0..150u64 {
+            seen_top3
+                .insert(play_move(&*mode, &state, SelectionPolicy::Top3Uniform, limits(), seed));
+            seen_mid.insert(play_move(&*mode, &state, SelectionPolicy::MidMix, limits(), seed));
+            seen_low.insert(play_move(&*mode, &state, SelectionPolicy::LowMix, limits(), seed));
+        }
+        assert!(seen_top3.contains(&Some(c.first)));
+        assert!(seen_top3.contains(&Some(c.second)));
+        assert!(seen_top3.contains(&Some(c.third)));
+        assert!(seen_mid.contains(&Some(c.second)));
+        assert!(seen_mid.contains(&Some(c.third)));
+        assert!(seen_low.contains(&Some(c.third)));
+        // The R branch reaches at least one rastgele() move under some seed (sanity: 0 is one).
+        let any_r = (0..150u64).any(|seed| {
+            play_move(&*mode, &state, SelectionPolicy::LowMix, limits(), seed) == Some(r(seed))
+        });
+        assert!(any_r, "LowMix must sometimes play rastgele()");
+    }
+
+    #[test]
+    fn rastgele_path_matches_easy_move_with_post_roll_rng() {
+        // Find a LowMix seed whose die selects the R branch (below(2) == 1), then assert play_move
+        // returns exactly easy_move driven by the *same* RNG after that one draw (search was skipped).
+        let (mode, state) = original_3x3();
+        let seed = (0..1000u64)
+            .find(|&s| Rng::new(s).below(2) == 1)
+            .expect("some seed lands on the R branch");
+        let mut rng = Rng::new(seed);
+        assert_eq!(rng.below(2), 1);
+        let expected = easy::easy_move(&*mode, &state, &mut rng);
+        let got = play_move(&*mode, &state, SelectionPolicy::LowMix, limits(), seed);
+        assert_eq!(got, expected, "R path must equal easy_move on the post-roll RNG");
     }
 }

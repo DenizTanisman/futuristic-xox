@@ -2,7 +2,7 @@
 //! tic-tac-toe perfectly (spec §7.4).
 
 mod common;
-use ai::{choose_move, Difficulty};
+use ai::{play_move, SelectionPolicy};
 use common::{p, perfect, play_game, state, E};
 use engine::{GameConfig, GameResult, LineMode, Mode, ModeKind};
 
@@ -15,7 +15,7 @@ fn hard_takes_immediate_win_classic() {
     let mode = LineMode::new(3, 3, false);
     let s = state(3, 3, board, vec![0, 0, 0], vec![0, 0], 0, 1);
 
-    let mv = choose_move(&mode, &s, Difficulty::Hard, perfect(9), 1).unwrap();
+    let mv = play_move(&mode, &s, SelectionPolicy::AlwaysBest, perfect(9), 1).unwrap();
     assert_eq!(mv.cell, 2, "Hard must take the winning move");
 }
 
@@ -30,7 +30,7 @@ fn hard_blocks_immediate_loss_classic() {
     let mode = LineMode::new(3, 3, false);
     let s = state(3, 3, board, vec![0, 0, 0], vec![0, 0, 0], 0, 1);
 
-    let mv = choose_move(&mode, &s, Difficulty::Hard, perfect(9), 1).unwrap();
+    let mv = play_move(&mode, &s, SelectionPolicy::AlwaysBest, perfect(9), 1).unwrap();
     assert_eq!(mv.cell, 5, "Hard must block the opponent's winning move");
 }
 
@@ -45,7 +45,7 @@ fn hard_takes_capture_win_original() {
     let mode = LineMode::new(3, 3, true);
     let s = state(3, 3, board, vec![5], vec![1], 0, 1);
 
-    let mv = choose_move(&mode, &s, Difficulty::Hard, perfect(12), 1).unwrap();
+    let mv = play_move(&mode, &s, SelectionPolicy::AlwaysBest, perfect(12), 1).unwrap();
     assert_eq!(mv.cell, 2);
     assert_eq!(mv.value, Some(5));
 }
@@ -54,7 +54,7 @@ fn hard_takes_capture_win_original() {
 fn hard_vs_hard_classic_3x3_is_a_draw() {
     // Perfect tic-tac-toe play by both sides always draws — the canonical correctness check.
     let config = GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3 };
-    let result = play_game(config, 0, Difficulty::Hard, Difficulty::Hard, perfect(9));
+    let result = play_game(config, 0, SelectionPolicy::AlwaysBest, SelectionPolicy::AlwaysBest, perfect(9));
     assert_eq!(result, GameResult::Draw);
 }
 
@@ -64,10 +64,10 @@ fn hard_never_loses_classic_3x3_against_easy() {
     let config = GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3 };
     for seed in 0..15u64 {
         // Hard is player 0.
-        let r = play_game(config, seed, Difficulty::Hard, Difficulty::Easy, perfect(9));
+        let r = play_game(config, seed, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, perfect(9));
         assert_ne!(r, GameResult::Win(1), "Hard (P0) lost to Easy at seed {seed}");
         // Hard is player 1.
-        let r = play_game(config, seed, Difficulty::Easy, Difficulty::Hard, perfect(9));
+        let r = play_game(config, seed, SelectionPolicy::LowMix, SelectionPolicy::AlwaysBest, perfect(9));
         assert_ne!(r, GameResult::Win(0), "Hard (P1) lost to Easy at seed {seed}");
     }
 }
@@ -80,7 +80,7 @@ fn hard_prefers_faster_win() {
     board[1] = p(0, 0);
     let mode = LineMode::new(3, 3, false);
     let s = state(3, 3, board, vec![0, 0, 0], vec![0, 0], 0, 1);
-    let mv = choose_move(&mode, &s, Difficulty::Hard, perfect(9), 7).unwrap();
+    let mv = play_move(&mode, &s, SelectionPolicy::AlwaysBest, perfect(9), 7).unwrap();
     // Completing now (cell 2) is the only immediate win.
     assert_eq!(mv.cell, 2);
     // Sanity: applying it is indeed terminal.

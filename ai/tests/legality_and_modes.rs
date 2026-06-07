@@ -2,7 +2,7 @@
 //! mode/grid combinations.
 
 mod common;
-use ai::Difficulty;
+use ai::SelectionPolicy;
 use common::{perfect, play_game};
 use engine::{GameConfig, ModeKind};
 
@@ -21,7 +21,7 @@ const CONFIGS: [GameConfig; 8] = [
 fn easy_only_legal_and_terminates() {
     for config in CONFIGS {
         for seed in 0..10u64 {
-            let _ = play_game(config, seed, Difficulty::Easy, Difficulty::Easy, perfect(1));
+            let _ = play_game(config, seed, SelectionPolicy::LowMix, SelectionPolicy::LowMix, perfect(1));
         }
     }
 }
@@ -36,7 +36,7 @@ fn medium_only_legal_and_terminates() {
             ModeKind::Morph => 2,
             _ => 3,
         };
-        let _ = play_game(config, 3, Difficulty::Medium, Difficulty::Medium, perfect(depth));
+        let _ = play_game(config, 3, SelectionPolicy::MidMix, SelectionPolicy::MidMix, perfect(depth));
     }
 }
 
@@ -51,14 +51,14 @@ fn hard_only_legal_and_terminates_small_boards() {
     ];
     for config in small {
         let depth = if matches!(config.kind, ModeKind::Morph) { 3 } else { 5 };
-        let _ = play_game(config, 1, Difficulty::Hard, Difficulty::Hard, perfect(depth));
+        let _ = play_game(config, 1, SelectionPolicy::AlwaysBest, SelectionPolicy::AlwaysBest, perfect(depth));
     }
 }
 
 #[test]
 fn hard_respects_time_box_on_large_morph() {
     // 5×5 Morph: with a real time box the search must return a legal move quickly (spec §7.8, §13.3).
-    use ai::{choose_move, SearchLimits};
+    use ai::{play_move, SearchLimits};
     use engine::{build, is_move_legal};
     use std::time::Instant;
 
@@ -67,7 +67,7 @@ fn hard_respects_time_box_on_large_morph() {
     let limits = SearchLimits { time_ms: 500, max_depth: 64 };
 
     let start = Instant::now();
-    let mv = choose_move(&*mode, &s, Difficulty::Hard, limits, 0).unwrap();
+    let mv = play_move(&*mode, &s, SelectionPolicy::AlwaysBest, limits, 0).unwrap();
     let elapsed = start.elapsed();
 
     assert!(is_move_legal(&s, &mv, true));

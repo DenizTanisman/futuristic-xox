@@ -5,10 +5,10 @@
 //!
 //! Run: `cargo run --release --example selfplay`
 
-use ai::{choose_move, Difficulty, SearchLimits};
+use ai::{play_move, SearchLimits, SelectionPolicy};
 use engine::{build, GameConfig, GameResult, ModeKind};
 
-fn play(config: GameConfig, seed: u64, d0: Difficulty, d1: Difficulty, limits: SearchLimits) -> GameResult {
+fn play(config: GameConfig, seed: u64, d0: SelectionPolicy, d1: SelectionPolicy, limits: SearchLimits) -> GameResult {
     let (mode, mut s) = build(config, seed);
     let max_plies = s.cell_count() * 4 + 20;
     for ply in 0..max_plies {
@@ -16,14 +16,14 @@ fn play(config: GameConfig, seed: u64, d0: Difficulty, d1: Difficulty, limits: S
             return r;
         }
         let diff = if s.turn == 0 { d0 } else { d1 };
-        let mv = choose_move(&*mode, &s, diff, limits, seed.wrapping_mul(1009).wrapping_add(ply as u64))
+        let mv = play_move(&*mode, &s, diff, limits, seed.wrapping_mul(1009).wrapping_add(ply as u64))
             .expect("non-terminal must yield a move");
         s = mode.apply(&s, &mv);
     }
     GameResult::Draw
 }
 
-fn matchup(name: &str, config: GameConfig, hard_is: Difficulty, foe: Difficulty, games: u64, limits: SearchLimits) {
+fn matchup(name: &str, config: GameConfig, hard_is: SelectionPolicy, foe: SelectionPolicy, games: u64, limits: SearchLimits) {
     let (mut hw, mut d, mut hl) = (0u32, 0u32, 0u32);
     for seed in 0..games {
         // Alternate who moves first to remove first-move bias.
@@ -53,12 +53,12 @@ fn main() {
 
     println!("== Heuristic validation: Hard should dominate Easy, beat Medium ==\n");
 
-    matchup("Classic 3x3", GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3 }, Difficulty::Hard, Difficulty::Easy, 30, small);
-    matchup("Original 3x3", GameConfig { kind: ModeKind::Original, rows: 3, cols: 3 }, Difficulty::Hard, Difficulty::Easy, 30, small);
-    matchup("Original 4x4", GameConfig { kind: ModeKind::Original, rows: 4, cols: 4 }, Difficulty::Hard, Difficulty::Easy, 16, line4);
-    matchup("Bonanza 3x3", GameConfig { kind: ModeKind::Bonanza, rows: 3, cols: 3 }, Difficulty::Hard, Difficulty::Easy, 30, small);
-    matchup("Morph 4x4", GameConfig { kind: ModeKind::Morph, rows: 4, cols: 4 }, Difficulty::Hard, Difficulty::Easy, 16, morph);
+    matchup("Classic 3x3", GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 30, small);
+    matchup("Original 3x3", GameConfig { kind: ModeKind::Original, rows: 3, cols: 3 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 30, small);
+    matchup("Original 4x4", GameConfig { kind: ModeKind::Original, rows: 4, cols: 4 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 16, line4);
+    matchup("Bonanza 3x3", GameConfig { kind: ModeKind::Bonanza, rows: 3, cols: 3 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 30, small);
+    matchup("Morph 4x4", GameConfig { kind: ModeKind::Morph, rows: 4, cols: 4 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 16, morph);
 
     println!();
-    matchup("Original 3x3", GameConfig { kind: ModeKind::Original, rows: 3, cols: 3 }, Difficulty::Hard, Difficulty::Medium, 30, small);
+    matchup("Original 3x3", GameConfig { kind: ModeKind::Original, rows: 3, cols: 3 }, SelectionPolicy::AlwaysBest, SelectionPolicy::Top3Uniform, 30, small);
 }

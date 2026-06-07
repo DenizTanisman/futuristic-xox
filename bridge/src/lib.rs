@@ -9,12 +9,14 @@
 //! State lives in Rust (the `GameSession` is the opaque object held across the bridge), so the heavy
 //! AI search runs natively off the Flutter UI isolate (spec §2 — the key to 60fps fluidity).
 
-use ai::{choose_move, choose_move_medium, Difficulty, MediumState, SearchLimits};
+use ai::{play_move, SearchLimits, SelectionPolicy};
 use engine::{
     build, is_move_legal, GameConfig, GameResult, GameState, Mode, ModeKind, Move,
 };
 
-pub use ai::Difficulty as AiDifficulty;
+// Per-side difficulty tiers + their policy mapping (the §3.2 boundary contract for the UI). Re-exported
+// so the UI selects a tier and maps it to a `SelectionPolicy` before calling [`GameSession::ai_move`].
+pub use ai::{ClassicDifficulty, FuturisticDifficulty, SelectionPolicy as AiSelectionPolicy};
 
 /// Selectable mode for the UI (mirrors [`engine::ModeKind`] for a stable FFI surface).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -99,8 +101,6 @@ pub struct GameSession {
     mode: Box<dyn Mode>,
     state: GameState,
     valued: bool,
-    /// Per-game memory for Medium's anti-streak Easy/Hard flip (spec §7.3, refined).
-    medium: MediumState,
 }
 
 impl GameSession {
@@ -112,7 +112,6 @@ impl GameSession {
             mode,
             state,
             valued: !matches!(kind, Mode4::Classic),
-            medium: MediumState::default(),
         }
     }
 
@@ -161,17 +160,13 @@ impl GameSession {
     }
 
     /// Have the AI move for the side to move. Returns `applied: false` if the game is already over.
-    pub fn ai_move(&mut self, difficulty: Difficulty, time_ms: u64, max_depth: i32, seed: u64) -> MoveResult {
+    ///
+    /// The UI maps its per-side tier (`FuturisticDifficulty` / `ClassicDifficulty`) to a
+    /// [`SelectionPolicy`] via `to_policy()` and passes it here. `play_move` is stateless; pass a
+    /// per-turn varying `seed` for variety (or a fixed seed for reproducible games).
+    pub fn ai_move(&mut self, policy: SelectionPolicy, time_ms: u64, max_depth: i32, seed: u64) -> MoveResult {
         let limits = SearchLimits { time_ms, max_depth };
-        // Medium keeps per-game memory here so it can't run the same engine 3 moves in a row;
-        // Easy/Hard are stateless (spec §7.3, refined).
-        let chosen = match difficulty {
-            Difficulty::Medium => {
-                choose_move_medium(&*self.mode, &self.state, limits, seed, &mut self.medium)
-            }
-            _ => choose_move(&*self.mode, &self.state, difficulty, limits, seed),
-        };
-        match chosen {
+        match play_move(&*self.mode, &self.state, policy, limits, seed) {
             Some(mv) => self.commit(mv),
             None => MoveResult {
                 applied: false,
@@ -299,7 +294,7 @@ mod tests {
             if g.outcome() != Outcome::InProgress {
                 break;
             }
-            let r = g.ai_move(Difficulty::Hard, 0, limits_depth, 1);
+            let r = g.ai_move(SelectionPolicy::AlwaysBest, 0, limits_depth, 1);
             assert!(r.applied);
         }
         assert_ne!(g.outcome(), Outcome::InProgress);

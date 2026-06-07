@@ -20,19 +20,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Morph's two-move turns lean on the deepened search). Search depth caps bumped accordingly. Note:
   Morph's full strength on large grids still depends on wiring the native Rust AI (planned).
 
-### Changed
-- **Medium AI is now anti-streak.** The per-move Easy/Hard coin (spec §7.3) stays random but can no
-  longer run the *same* engine three moves in a row: after the same engine is chosen twice running,
-  the next move is forced to the other one. This fixes the "Medium sometimes feels like pure Easy or
-  pure Hard" complaint while keeping its mixed character. Implemented as `ai::MediumState` (per-game
-  memory) + `ai::choose_move_medium`, wired through the bridge `GameSession`, and mirrored in the Dart
-  web-preview API. Stateless `choose_move(.., Medium, ..)` is kept as the memory-free self-play
-  fallback.
-
 ### Added
+- **Adversarial search returning the top-3 ranked moves** (`first ≥ second ≥ third`), always
+  populated; `None` only at terminal positions. Built via a top-k alpha-beta bound at the root
+  (`alpha` held at the 3rd-best), so 2nd/3rd scores are honest while pruning is preserved
+  (`ai/src/adversarial.rs`; ADR in `aidlc-docs/design-artifacts/topk-root-search-adr.md`).
+- **`SelectionPolicy` (`AlwaysBest` / `Top3Uniform` / `MidMix` / `LowMix`) and `play_move`**, a
+  stateless per-turn selector driven by a seedable die, with roll-first efficiency (weaker tiers skip
+  the search entirely when the die selects the legacy random move `rastgele()` = `easy_move`).
+- **Per-side difficulty tiers:** Futuristic (Easy/Medium/Hard/Impossible), Classic (Easy/Medium/Hard),
+  via separate `FuturisticDifficulty` / `ClassicDifficulty` enums + `to_policy()` — making
+  `Classic + Impossible` unrepresentable rather than a runtime guard.
 - **Hard-algorithm flowchart** (`aidlc-docs/design-artifacts/hard-algorithm-flowchart.html`): a
-  standalone, annotated diagram of the negamax + alpha-beta + TT + iterative-deepening search with a
-  complexity panel — the 1:1 visual counterpart of `ai/src/hard.rs`.
+  standalone, annotated diagram of the negamax + alpha-beta + TT + iterative-deepening search.
+
+### Changed
+- **Hard search refactored into the adversarial search** (`hard.rs` → `adversarial.rs`); the interior
+  negamax, TT, time box, and iterative deepening are unchanged — only the root now collects an honest
+  top-3. Weaker tiers may skip the search when the die selects `rastgele()`.
+- **Dart shipping backend Medium stays anti-streak.** The phone app runs `DartGameApi`; its Medium
+  keeps the per-move Easy/Hard coin that cannot run the same engine three moves in a row (mirrors the
+  pre-refactor Rust behaviour). The Rust AI crate itself has moved to the tier model below.
+
+### Removed
+- **`MediumState` / `choose_move_medium` / the old `Difficulty` coin** (Easy/Hard anti-streak) from the
+  **Rust AI crate** — superseded by `SelectionPolicy` + `play_move`. No anti-streak guard on the new
+  selectors (by design — the mixes provide enough variety). The Dart mock backend's Medium mirror is
+  unaffected (it is what currently ships).
 
 ## [1.0.1] - 2026-06-05
 
