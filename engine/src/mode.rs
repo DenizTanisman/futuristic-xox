@@ -23,6 +23,9 @@ pub struct GameConfig {
     pub kind: ModeKind,
     pub rows: usize,
     pub cols: usize,
+    /// Cells in a row to win for line modes (3 default; Classic 4×4 "long" = 4). Ignored by Morph,
+    /// and forced to 3 for Original/Bonanza.
+    pub win_len: usize,
 }
 
 /// The frozen engine interface (spec §7.1). Object-safe: the AI consumes it as `&dyn Mode`.
@@ -56,17 +59,18 @@ pub fn build(config: GameConfig, seed: u64) -> (Box<dyn Mode>, GameState) {
     use crate::modes::{line::LineMode, morph::MorphMode};
     match config.kind {
         ModeKind::Classic => {
-            let mode = LineMode::new(config.rows, config.cols, false);
+            // Classic honors the configured win length (3 = "short" / 4 = "long" on 4×4).
+            let mode = LineMode::new(config.rows, config.cols, false, config.win_len);
             let state = crate::setup::classic_state(config.rows, config.cols);
             (Box::new(mode), state)
         }
         ModeKind::Original => {
-            let mode = LineMode::new(config.rows, config.cols, true);
+            let mode = LineMode::new(config.rows, config.cols, true, 3); // always 3-in-a-row
             let state = crate::setup::original_state(config.rows, config.cols);
             (Box::new(mode), state)
         }
         ModeKind::Bonanza => {
-            let mode = LineMode::new(config.rows, config.cols, true);
+            let mode = LineMode::new(config.rows, config.cols, true, 3); // always 3-in-a-row
             let state = crate::setup::bonanza_state(config.rows, config.cols, seed);
             (Box::new(mode), state)
         }

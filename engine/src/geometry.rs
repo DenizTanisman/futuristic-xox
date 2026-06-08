@@ -29,6 +29,32 @@ pub fn line_triples(rows: usize, cols: usize) -> Vec<[usize; 3]> {
     out
 }
 
+/// All length-`win_len` winning segments for a `rows×cols` grid: horizontal, vertical, and both
+/// diagonals. Generalizes [`line_triples`] (which is `win_len = 3`) so Classic 4×4 can win on either
+/// 3-in-a-row ("short") or 4-in-a-row ("long"). Only fully in-bounds windows are emitted.
+pub fn line_segments(rows: usize, cols: usize, win_len: usize) -> Vec<Vec<usize>> {
+    let idx = |r: usize, c: usize| r * cols + c;
+    let mut out = Vec::new();
+    const DIRS: [(isize, isize); 4] = [(0, 1), (1, 0), (1, 1), (1, -1)];
+    let step = win_len as isize - 1;
+    for r in 0..rows as isize {
+        for c in 0..cols as isize {
+            for (dr, dc) in DIRS {
+                let (re, ce) = (r + step * dr, c + step * dc);
+                if re < 0 || re >= rows as isize || ce < 0 || ce >= cols as isize {
+                    continue; // window runs off the board
+                }
+                out.push(
+                    (0..win_len)
+                        .map(|i| idx((r + i as isize * dr) as usize, (c + i as isize * dc) as usize))
+                        .collect(),
+                );
+            }
+        }
+    }
+    out
+}
+
 /// A shape as a set of relative `(row, col)` offsets (spec §5).
 type Shape = Vec<(i32, i32)>;
 
@@ -155,6 +181,24 @@ mod tests {
         // Horizontals: 4 rows × 2 windows = 8; verticals: 8;
         // each diagonal direction: 2×2 starting positions × 2 dirs = 8. Total 24.
         assert_eq!(line_triples(4, 4).len(), 24);
+    }
+
+    #[test]
+    fn line_segments_matches_triples_at_3() {
+        // win_len 3 reproduces line_triples (3×3 → 8, 4×4 → 24).
+        assert_eq!(line_segments(3, 3, 3).len(), 8);
+        assert_eq!(line_segments(4, 4, 3).len(), 24);
+    }
+
+    #[test]
+    fn line_segments_4x4_long_count() {
+        // 4-in-a-row on 4×4: 4 rows + 4 cols + 2 diagonals = 10 full-length lines.
+        let lines = line_segments(4, 4, 4);
+        assert_eq!(lines.len(), 10);
+        assert!(lines.iter().all(|l| l.len() == 4));
+        assert!(lines.contains(&vec![0, 1, 2, 3])); // top row
+        assert!(lines.contains(&vec![0, 5, 10, 15])); // main diagonal
+        assert!(lines.contains(&vec![3, 6, 9, 12])); // anti-diagonal
     }
 
     #[test]

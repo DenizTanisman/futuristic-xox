@@ -7,14 +7,14 @@ use common::{perfect, play_game};
 use engine::{GameConfig, ModeKind};
 
 const CONFIGS: [GameConfig; 8] = [
-    GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3 },
-    GameConfig { kind: ModeKind::Classic, rows: 4, cols: 4 },
-    GameConfig { kind: ModeKind::Original, rows: 3, cols: 3 },
-    GameConfig { kind: ModeKind::Original, rows: 4, cols: 4 },
-    GameConfig { kind: ModeKind::Bonanza, rows: 3, cols: 3 },
-    GameConfig { kind: ModeKind::Bonanza, rows: 4, cols: 4 },
-    GameConfig { kind: ModeKind::Morph, rows: 4, cols: 4 },
-    GameConfig { kind: ModeKind::Morph, rows: 5, cols: 5 },
+    GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3, win_len: 3 },
+    GameConfig { kind: ModeKind::Classic, rows: 4, cols: 4, win_len: 3 },
+    GameConfig { kind: ModeKind::Original, rows: 3, cols: 3, win_len: 3 },
+    GameConfig { kind: ModeKind::Original, rows: 4, cols: 4, win_len: 3 },
+    GameConfig { kind: ModeKind::Bonanza, rows: 3, cols: 3, win_len: 3 },
+    GameConfig { kind: ModeKind::Bonanza, rows: 4, cols: 4, win_len: 3 },
+    GameConfig { kind: ModeKind::Morph, rows: 4, cols: 4, win_len: 3 },
+    GameConfig { kind: ModeKind::Morph, rows: 5, cols: 5, win_len: 3 },
 ];
 
 #[test]
@@ -44,10 +44,10 @@ fn medium_only_legal_and_terminates() {
 fn hard_only_legal_and_terminates_small_boards() {
     // Depth-limited (no time box) so it's deterministic; depth chosen to stay quick.
     let small = [
-        GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3 },
-        GameConfig { kind: ModeKind::Original, rows: 3, cols: 3 },
-        GameConfig { kind: ModeKind::Bonanza, rows: 3, cols: 3 },
-        GameConfig { kind: ModeKind::Morph, rows: 4, cols: 4 },
+        GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3, win_len: 3 },
+        GameConfig { kind: ModeKind::Original, rows: 3, cols: 3, win_len: 3 },
+        GameConfig { kind: ModeKind::Bonanza, rows: 3, cols: 3, win_len: 3 },
+        GameConfig { kind: ModeKind::Morph, rows: 4, cols: 4, win_len: 3 },
     ];
     for config in small {
         let depth = if matches!(config.kind, ModeKind::Morph) { 3 } else { 5 };
@@ -62,7 +62,7 @@ fn hard_respects_time_box_on_large_morph() {
     use engine::{build, is_move_legal};
     use std::time::Instant;
 
-    let config = GameConfig { kind: ModeKind::Morph, rows: 5, cols: 5 };
+    let config = GameConfig { kind: ModeKind::Morph, rows: 5, cols: 5, win_len: 3 };
     let (mode, s) = build(config, 0);
     let limits = SearchLimits { time_ms: 500, max_depth: 64 };
 

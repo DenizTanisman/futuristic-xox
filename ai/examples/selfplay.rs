@@ -53,12 +53,12 @@ fn main() {
 
     println!("== Heuristic validation: Hard should dominate Easy, beat Medium ==\n");
 
-    matchup("Classic 3x3", GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 30, small);
-    matchup("Original 3x3", GameConfig { kind: ModeKind::Original, rows: 3, cols: 3 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 30, small);
-    matchup("Original 4x4", GameConfig { kind: ModeKind::Original, rows: 4, cols: 4 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 16, line4);
-    matchup("Bonanza 3x3", GameConfig { kind: ModeKind::Bonanza, rows: 3, cols: 3 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 30, small);
-    matchup("Morph 4x4", GameConfig { kind: ModeKind::Morph, rows: 4, cols: 4 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 16, morph);
+    matchup("Classic 3x3", GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3, win_len: 3 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 30, small);
+    matchup("Original 3x3", GameConfig { kind: ModeKind::Original, rows: 3, cols: 3, win_len: 3 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 30, small);
+    matchup("Original 4x4", GameConfig { kind: ModeKind::Original, rows: 4, cols: 4, win_len: 3 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 16, line4);
+    matchup("Bonanza 3x3", GameConfig { kind: ModeKind::Bonanza, rows: 3, cols: 3, win_len: 3 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 30, small);
+    matchup("Morph 4x4", GameConfig { kind: ModeKind::Morph, rows: 4, cols: 4, win_len: 3 }, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, 16, morph);
 
     println!();
-    matchup("Original 3x3", GameConfig { kind: ModeKind::Original, rows: 3, cols: 3 }, SelectionPolicy::AlwaysBest, SelectionPolicy::Top3Uniform, 30, small);
+    matchup("Original 3x3", GameConfig { kind: ModeKind::Original, rows: 3, cols: 3, win_len: 3 }, SelectionPolicy::AlwaysBest, SelectionPolicy::Top3Uniform, 30, small);
 }

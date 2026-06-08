@@ -130,7 +130,7 @@ mod tests {
     use engine::{build, GameConfig, GameState, Mode, ModeKind};
 
     fn original_3x3() -> (Box<dyn Mode>, GameState) {
-        build(GameConfig { kind: ModeKind::Original, rows: 3, cols: 3 }, 0)
+        build(GameConfig { kind: ModeKind::Original, rows: 3, cols: 3, win_len: 3 }, 0)
     }
 
     fn limits() -> SearchLimits {

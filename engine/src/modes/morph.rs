@@ -86,9 +86,9 @@ impl Mode for MorphMode {
     }
 
     fn apply(&self, s: &GameState, m: &Move) -> GameState {
-        // Two moves per turn; `apply_valued` flips the turn only when `moves_left_in_turn` hits 0,
-        // and applies the single-move fallback when no second move exists (spec §4.4).
-        apply_valued(s, m, 2, valued_has_legal_move)
+        // Single alternating placement: one stone per turn, the turn flips after every placement
+        // (changed from two-per-turn). Capture/shape rules are unchanged.
+        apply_valued(s, m, 1, valued_has_legal_move)
     }
 
     fn is_terminal(&self, s: &GameState) -> Option<GameResult> {

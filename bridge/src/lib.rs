@@ -106,7 +106,7 @@ pub struct GameSession {
 impl GameSession {
     /// Start a new game. `seed` only affects Bonanza's randomized hands (spec §4.3).
     pub fn new(kind: Mode4, rows: usize, cols: usize, seed: u64) -> Self {
-        let config = GameConfig { kind: kind.into(), rows, cols };
+        let config = GameConfig { kind: kind.into(), rows, cols, win_len: 3 };
         let (mode, state) = build(config, seed);
         GameSession {
             mode,
@@ -301,14 +301,15 @@ mod tests {
     }
 
     #[test]
-    fn morph_reports_move_progress() {
+    fn morph_single_placement_flips_turn() {
+        // Morph now alternates single placements: one stone per turn, turn flips immediately.
         let g = GameSession::new(Mode4::Morph, 4, 4, 0);
-        assert_eq!(g.snapshot().moves_left_in_turn, 2);
+        assert_eq!(g.snapshot().moves_left_in_turn, 1);
         let mut g = g;
         let r = g.human_move(Some(1), 5);
         assert!(r.applied);
-        // Still player 0's turn, now on the second of two moves.
-        assert_eq!(r.snapshot.turn, 0);
+        // Turn flips to player 1 after the single placement.
+        assert_eq!(r.snapshot.turn, 1);
         assert_eq!(r.snapshot.moves_left_in_turn, 1);
     }
 }

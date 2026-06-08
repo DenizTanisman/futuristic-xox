@@ -1,7 +1,7 @@
 //! Line modes: Classic (`valued = false`) and Original/Bonanza (`valued = true`).
-//! Win = 3 in a row (spec §3.4, §4.1–4.3). One move per turn.
+//! Win = `win_len` in a row (3 by default; Classic 4×4 "long" uses 4). One move per turn.
 
-use crate::geometry::line_triples;
+use crate::geometry::line_segments;
 use crate::mode::{Mode, WIN};
 use crate::rules::*;
 use crate::state::{GameResult, GameState, Move};
@@ -14,15 +14,19 @@ const W_CENTER: i32 = 5;
 pub struct LineMode {
     /// `false` = Classic (symbols, no capture); `true` = Original/Bonanza (valued + capture).
     valued: bool,
-    /// Precomputed winning 3-lines for this grid.
-    lines: Vec<[usize; 3]>,
+    /// Cells in a row needed to win (3 normally; Classic 4×4 "long" = 4).
+    win_len: usize,
+    /// Precomputed winning lines (length `win_len`) for this grid.
+    lines: Vec<Vec<usize>>,
 }
 
 impl LineMode {
-    pub fn new(rows: usize, cols: usize, valued: bool) -> Self {
+    /// `win_len` cells in a row to win — 3 for every mode except Classic 4×4 "long" (4).
+    pub fn new(rows: usize, cols: usize, valued: bool, win_len: usize) -> Self {
         LineMode {
             valued,
-            lines: line_triples(rows, cols),
+            win_len,
+            lines: line_segments(rows, cols, win_len),
         }
     }
 
@@ -39,8 +43,8 @@ impl LineMode {
             .count() as i32
     }
 
-    /// Number of lines that are a *threat* for `owner`: exactly two of `owner`'s pawns plus a third
-    /// cell that is empty or capturable by `owner` (spec §7.6).
+    /// Number of lines that are a *threat* for `owner`: exactly `win_len-1` of `owner`'s pawns plus a
+    /// single remaining cell that is empty or capturable by `owner` (spec §7.6, generalized).
     fn threats(&self, s: &GameState, owner: u8) -> i32 {
         let max_hand = s.hands[owner as usize].iter().max().copied().unwrap_or(0);
         let mut count = 0;
@@ -67,10 +71,10 @@ impl LineMode {
                     }
                 }
             }
-            if blocked || mine != 2 {
+            if blocked || mine != self.win_len - 1 {
                 continue;
             }
-            // exactly two mine and one open slot; open must be empty or capturable.
+            // exactly win_len-1 mine and one open slot; open must be empty or capturable.
             if let Some(cell) = open {
                 let usable = match s.at(cell) {
                     None => true,

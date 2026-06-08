@@ -12,7 +12,7 @@ fn hard_takes_immediate_win_classic() {
     let mut board = vec![E; 9];
     board[0] = p(0, 0);
     board[1] = p(0, 0);
-    let mode = LineMode::new(3, 3, false);
+    let mode = LineMode::new(3, 3, false, 3);
     let s = state(3, 3, board, vec![0, 0, 0], vec![0, 0], 0, 1);
 
     let mv = play_move(&mode, &s, SelectionPolicy::AlwaysBest, perfect(9), 1).unwrap();
@@ -27,7 +27,7 @@ fn hard_blocks_immediate_loss_classic() {
     board[0] = p(0, 0);
     board[3] = p(1, 0);
     board[4] = p(1, 0);
-    let mode = LineMode::new(3, 3, false);
+    let mode = LineMode::new(3, 3, false, 3);
     let s = state(3, 3, board, vec![0, 0, 0], vec![0, 0, 0], 0, 1);
 
     let mv = play_move(&mode, &s, SelectionPolicy::AlwaysBest, perfect(9), 1).unwrap();
@@ -42,7 +42,7 @@ fn hard_takes_capture_win_original() {
     board[0] = p(0, 7);
     board[1] = p(0, 7);
     board[2] = p(1, 3);
-    let mode = LineMode::new(3, 3, true);
+    let mode = LineMode::new(3, 3, true, 3);
     let s = state(3, 3, board, vec![5], vec![1], 0, 1);
 
     let mv = play_move(&mode, &s, SelectionPolicy::AlwaysBest, perfect(12), 1).unwrap();
@@ -53,7 +53,7 @@ fn hard_takes_capture_win_original() {
 #[test]
 fn hard_vs_hard_classic_3x3_is_a_draw() {
     // Perfect tic-tac-toe play by both sides always draws — the canonical correctness check.
-    let config = GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3 };
+    let config = GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3, win_len: 3 };
     let result = play_game(config, 0, SelectionPolicy::AlwaysBest, SelectionPolicy::AlwaysBest, perfect(9));
     assert_eq!(result, GameResult::Draw);
 }
@@ -61,7 +61,7 @@ fn hard_vs_hard_classic_3x3_is_a_draw() {
 #[test]
 fn hard_never_loses_classic_3x3_against_easy() {
     // Across several seeds, perfect play must never lose to Easy (draw or win only).
-    let config = GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3 };
+    let config = GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3, win_len: 3 };
     for seed in 0..15u64 {
         // Hard is player 0.
         let r = play_game(config, seed, SelectionPolicy::AlwaysBest, SelectionPolicy::LowMix, perfect(9));
@@ -78,7 +78,7 @@ fn hard_prefers_faster_win() {
     let mut board = vec![E; 9];
     board[0] = p(0, 0);
     board[1] = p(0, 0);
-    let mode = LineMode::new(3, 3, false);
+    let mode = LineMode::new(3, 3, false, 3);
     let s = state(3, 3, board, vec![0, 0, 0], vec![0, 0], 0, 1);
     let mv = play_move(&mode, &s, SelectionPolicy::AlwaysBest, perfect(9), 7).unwrap();
     // Completing now (cell 2) is the only immediate win.

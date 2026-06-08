@@ -5,7 +5,7 @@ use common::{p, state, E};
 use engine::{GameResult, LineMode, Mode};
 
 fn original_3x3() -> LineMode {
-    LineMode::new(3, 3, true)
+    LineMode::new(3, 3, true, 3)
 }
 
 #[test]
@@ -42,7 +42,7 @@ fn diagonal_line_wins() {
 #[test]
 fn three_in_a_row_wins_on_4x4_too() {
     // "3 in a row, all grids" (spec §3.4): a 3-window on a 4×4 still wins.
-    let mode = LineMode::new(4, 4, true);
+    let mode = LineMode::new(4, 4, true, 3);
     let mut board = vec![E; 16];
     board[5] = p(0, 1);
     board[6] = p(0, 2);
@@ -83,7 +83,7 @@ fn game_in_progress_is_not_terminal() {
 #[test]
 fn classic_draw_on_full_board() {
     // Classic uses board-full as draw (modeled as hands-empty, spec §4.1).
-    let mode = LineMode::new(3, 3, false);
+    let mode = LineMode::new(3, 3, false, 3);
     let board = vec![
         p(0, 0), p(1, 0), p(0, 0),
         p(0, 0), p(1, 0), p(1, 0),

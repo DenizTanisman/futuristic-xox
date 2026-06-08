@@ -35,14 +35,14 @@ fn play_to_end(config: GameConfig, seed: u64) -> GameResult {
 #[test]
 fn all_modes_terminate_and_are_consistent() {
     let configs = [
-        GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3 },
-        GameConfig { kind: ModeKind::Classic, rows: 4, cols: 4 },
-        GameConfig { kind: ModeKind::Original, rows: 3, cols: 3 },
-        GameConfig { kind: ModeKind::Original, rows: 4, cols: 4 },
-        GameConfig { kind: ModeKind::Bonanza, rows: 3, cols: 3 },
-        GameConfig { kind: ModeKind::Bonanza, rows: 4, cols: 4 },
-        GameConfig { kind: ModeKind::Morph, rows: 4, cols: 4 },
-        GameConfig { kind: ModeKind::Morph, rows: 5, cols: 5 },
+        GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3, win_len: 3 },
+        GameConfig { kind: ModeKind::Classic, rows: 4, cols: 4, win_len: 3 },
+        GameConfig { kind: ModeKind::Original, rows: 3, cols: 3, win_len: 3 },
+        GameConfig { kind: ModeKind::Original, rows: 4, cols: 4, win_len: 3 },
+        GameConfig { kind: ModeKind::Bonanza, rows: 3, cols: 3, win_len: 3 },
+        GameConfig { kind: ModeKind::Bonanza, rows: 4, cols: 4, win_len: 3 },
+        GameConfig { kind: ModeKind::Morph, rows: 4, cols: 4, win_len: 3 },
+        GameConfig { kind: ModeKind::Morph, rows: 5, cols: 5, win_len: 3 },
     ];
     for config in configs {
         for seed in 0..40u64 {
@@ -54,7 +54,7 @@ fn all_modes_terminate_and_are_consistent() {
 
 #[test]
 fn ordered_moves_is_a_permutation_of_legal_moves() {
-    let (mode, s) = build(GameConfig { kind: ModeKind::Original, rows: 3, cols: 3 }, 0);
+    let (mode, s) = build(GameConfig { kind: ModeKind::Original, rows: 3, cols: 3, win_len: 3 }, 0);
     let mut a = mode.legal_moves(&s);
     let mut b = mode.ordered_moves(&s);
     a.sort_by_key(|m| (m.cell, m.value));

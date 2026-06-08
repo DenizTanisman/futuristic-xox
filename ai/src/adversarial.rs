@@ -280,11 +280,11 @@ mod tests {
     use engine::{build, GameConfig, ModeKind};
 
     fn original_3x3() -> (Box<dyn Mode>, GameState) {
-        build(GameConfig { kind: ModeKind::Original, rows: 3, cols: 3 }, 0)
+        build(GameConfig { kind: ModeKind::Original, rows: 3, cols: 3, win_len: 3 }, 0)
     }
 
     fn classic_3x3() -> (Box<dyn Mode>, GameState) {
-        build(GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3 }, 0)
+        build(GameConfig { kind: ModeKind::Classic, rows: 3, cols: 3, win_len: 3 }, 0)
     }
 
     fn depth_limits(d: i32) -> SearchLimits {

@@ -105,7 +105,8 @@ fn morph_max_value(cells: usize) -> usize {
     }
 }
 
-/// Morph: own color only, two of every value `1..=N` (spec §3.2, §4.4). Two moves per turn.
+/// Morph: own color only, two of every value `1..=N` (spec §3.2). Single alternating placement —
+/// one stone per turn (changed from two).
 pub fn morph_state(rows: usize, cols: usize) -> GameState {
     let n = morph_max_value(rows * cols);
     let mut hand: Vec<u8> = Vec::with_capacity(2 * n);
@@ -117,7 +118,7 @@ pub fn morph_state(rows: usize, cols: usize) -> GameState {
         board: empty_board(rows, cols),
         hands: [hand.clone(), hand],
         turn: 0,
-        moves_left_in_turn: 2,
+        moves_left_in_turn: 1,
         cols,
         rows,
     }

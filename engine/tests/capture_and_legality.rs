@@ -7,7 +7,7 @@ use engine::{is_move_legal, LineMode, Mode, Move};
 
 /// A 3×3 Original mode (valued + capture).
 fn original() -> LineMode {
-    LineMode::new(3, 3, true)
+    LineMode::new(3, 3, true, 3)
 }
 
 #[test]

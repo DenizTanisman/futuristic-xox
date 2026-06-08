@@ -107,13 +107,14 @@ pub fn classic_has_legal_move(s: &GameState) -> bool {
 
 // ---- Win detection ----
 
-/// First fully-owned 3-line, if any (spec §3.4). Only the last mover can complete a line, so
-/// returning the first match is correct.
-pub fn winner_on_lines(s: &GameState, lines: &[[usize; 3]]) -> Option<u8> {
+/// First fully-owned line (any length), if any (spec §3.4). Only the last mover can complete a line,
+/// so returning the first match is correct. Lines may be 3- or 4-long (Classic short/long).
+pub fn winner_on_lines(s: &GameState, lines: &[Vec<usize>]) -> Option<u8> {
     for line in lines {
-        if let (Some(a), Some(b), Some(c)) = (s.at(line[0]), s.at(line[1]), s.at(line[2])) {
-            if a.owner == b.owner && b.owner == c.owner {
-                return Some(a.owner);
+        if let Some(first) = line.first().and_then(|&c| s.at(c)) {
+            let owner = first.owner;
+            if line.iter().all(|&c| s.at(c).is_some_and(|p| p.owner == owner)) {
+                return Some(owner);
             }
         }
     }

@@ -10,7 +10,7 @@
 //! ```
 //! use engine::{build, GameConfig, ModeKind};
 //!
-//! let (mode, state) = build(GameConfig { kind: ModeKind::Original, rows: 3, cols: 3 }, 0);
+//! let (mode, state) = build(GameConfig { kind: ModeKind::Original, rows: 3, cols: 3, win_len: 3 }, 0);
 //! let moves = mode.ordered_moves(&state);
 //! let next = mode.apply(&state, &moves[0]);
 //! assert!(mode.is_terminal(&next).is_none());
