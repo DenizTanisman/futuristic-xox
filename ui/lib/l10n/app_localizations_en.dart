@@ -549,11 +549,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'To win you must bring four of your pawns together into a shape: an I, an L, or a Z.';
 
   @override
-  String get tutMorphTwomovesTitle => 'That\'s why you move twice';
+  String get tutMorphTwomovesTitle => 'Two of each piece';
 
   @override
-  String get tutMorphTwomovesBody =>
-      'Building a four-pawn shape one at a time would be very hard. So in Morph you place two pawns each turn — and you hold two of every value.';
+  String get tutMorphTwomovesBody => 'You have two of each piece in your hand.';
 
   @override
   String get tutMorphIvTitle => 'Complete the shape — I';
@@ -561,13 +560,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tutMorphIvBody =>
       'That column is almost ready. Pick a pawn and complete a vertical I by placing it on the glowing square.';
-
-  @override
-  String get tutMorphIhTitle => 'Two pawns this time';
-
-  @override
-  String get tutMorphIhBody =>
-      'Now it\'s the double move. Pick two pawns in turn and place them on the two glowing squares to complete a horizontal I.';
 
   @override
   String get tutMorphDiagTitle => 'Shapes can be slanted too';
@@ -603,10 +595,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tutMorphDoneBody =>
       'Now you speak the language of shapes — I, L, Z; straight, slanted, or mirrored. Try it in a real game; build a shape and claim the win.';
-
-  @override
-  String get tutMorphHintFirst =>
-      'Pick the first pawn and place it on a glowing square';
 
   @override
   String get tutMorphHintOneMore =>

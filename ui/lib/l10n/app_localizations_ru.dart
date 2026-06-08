@@ -552,11 +552,11 @@ class AppLocalizationsRu extends AppLocalizations {
       'Чтобы победить, нужно собрать четыре свои фишки в фигуру: I, L или Z.';
 
   @override
-  String get tutMorphTwomovesTitle => 'Поэтому ты ходишь дважды';
+  String get tutMorphTwomovesTitle => 'По две каждой фигуры';
 
   @override
   String get tutMorphTwomovesBody =>
-      'Строить фигуру из четырёх фишек по одной было бы очень трудно. Поэтому в Morph за ход ты ставишь две фишки — и каждой ценности у тебя по две.';
+      'В руке у тебя по две фишки каждого значения.';
 
   @override
   String get tutMorphIvTitle => 'Заверши фигуру — I';
@@ -564,13 +564,6 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get tutMorphIvBody =>
       'Этот столбец почти готов. Выбери фишку и заверши вертикальную I, поставив её на светящуюся клетку.';
-
-  @override
-  String get tutMorphIhTitle => 'На этот раз две фишки';
-
-  @override
-  String get tutMorphIhBody =>
-      'Теперь двойной ход. Выбери две фишки по очереди и поставь их на две светящиеся клетки, чтобы завершить горизонтальную I.';
 
   @override
   String get tutMorphDiagTitle => 'Фигуры бывают и наклонными';
@@ -606,10 +599,6 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get tutMorphDoneBody =>
       'Теперь ты владеешь языком фигур — I, L, Z; прямых, наклонных или зеркальных. Попробуй в настоящей игре; собери фигуру и добудь победу.';
-
-  @override
-  String get tutMorphHintFirst =>
-      'Выбери первую фишку и поставь её на светящуюся клетку';
 
   @override
   String get tutMorphHintOneMore =>

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Morph is single alternating placement** (one stone per turn) instead of two per turn; shapes
+  (I/L/Z, all orientations) and grids (4×4, 5×5) unchanged. Win length is now configurable for line
+  modes (Classic 4×4 "long" = 4-in-a-row), updated in both the Rust engine and the Dart backend.
+- **Morph tutorial:** repurposed the former "double move" step into "Her taştan iki tane" / "Two of
+  each piece" (teaches the two-of-each hand composition; its [2,2,5,5] medallion visual already fit).
+
+### Removed
+- **Morph tutorial:** deleted the "two stones to win" demo (two-stone winning no longer exists under
+  single-placement Morph) and its now-orphan strings; remaining steps/counters re-index automatically.
+
 ### Added
 - **Dev-only macOS self-play test harness.** Pick mode + grid (+ Bonanza seed / Morph shape), make the
   first move, then both sides play the adversarial "first" option (**2 s/move time box**) to a

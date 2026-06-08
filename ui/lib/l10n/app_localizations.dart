@@ -1095,13 +1095,13 @@ abstract class AppLocalizations {
   /// No description provided for @tutMorphTwomovesTitle.
   ///
   /// In en, this message translates to:
-  /// **'That\'s why you move twice'**
+  /// **'Two of each piece'**
   String get tutMorphTwomovesTitle;
 
   /// No description provided for @tutMorphTwomovesBody.
   ///
   /// In en, this message translates to:
-  /// **'Building a four-pawn shape one at a time would be very hard. So in Morph you place two pawns each turn — and you hold two of every value.'**
+  /// **'You have two of each piece in your hand.'**
   String get tutMorphTwomovesBody;
 
   /// No description provided for @tutMorphIvTitle.
@@ -1115,18 +1115,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'That column is almost ready. Pick a pawn and complete a vertical I by placing it on the glowing square.'**
   String get tutMorphIvBody;
-
-  /// No description provided for @tutMorphIhTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Two pawns this time'**
-  String get tutMorphIhTitle;
-
-  /// No description provided for @tutMorphIhBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Now it\'s the double move. Pick two pawns in turn and place them on the two glowing squares to complete a horizontal I.'**
-  String get tutMorphIhBody;
 
   /// No description provided for @tutMorphDiagTitle.
   ///
@@ -1187,12 +1175,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Now you speak the language of shapes — I, L, Z; straight, slanted, or mirrored. Try it in a real game; build a shape and claim the win.'**
   String get tutMorphDoneBody;
-
-  /// No description provided for @tutMorphHintFirst.
-  ///
-  /// In en, this message translates to:
-  /// **'Pick the first pawn and place it on a glowing square'**
-  String get tutMorphHintFirst;
 
   /// No description provided for @tutMorphHintOneMore.
   ///

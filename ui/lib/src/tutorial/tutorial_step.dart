@@ -593,7 +593,7 @@ List<TutorialStep> morphTutorialSteps() => [
         body: (l) => l.tutMorphShapesBody,
         button: (l) => l.tutBtnNext,
       ),
-      // 5 — that's why you move twice (two pairs)
+      // two of each piece — the showcase medallions already show each value twice ([2,2,5,5]).
       TutorialStep(
         kind: TutKind.info,
         futuristic: true,
@@ -618,23 +618,8 @@ List<TutorialStep> morphTutorialSteps() => [
         body: (l) => l.tutMorphIvBody,
         hint: (l) => l.tutHintWinPlace,
       ),
-      // 7 — horizontal I, TWO pawns this turn (targets 6 & 7 → row [4,5,6,7])
-      TutorialStep(
-        kind: TutKind.demo,
-        futuristic: true,
-        gridCols: 4,
-        gridRows: 4,
-        fcells: _morphBoard({4: 2, 5: 3}),
-        hand: [1, 4, 5, 6],
-        targets: [6, 7],
-        winShape: [4, 5, 6, 7],
-        shapeName: 'I',
-        demoMode: TutMode.shape,
-        title: (l) => l.tutMorphIhTitle,
-        body: (l) => l.tutMorphIhBody,
-        hint: (l) => l.tutMorphHintFirst,
-      ),
-      // 8 — shapes can be slanted (diagonal staircase icon)
+      // (removed) the two-stones-per-turn horizontal-I demo — Morph is single placement now.
+      // shapes can be slanted (diagonal staircase icon)
       TutorialStep(
         kind: TutKind.info,
         futuristic: true,

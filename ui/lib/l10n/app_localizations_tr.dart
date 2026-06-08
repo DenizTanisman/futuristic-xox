@@ -547,11 +547,11 @@ class AppLocalizationsTr extends AppLocalizations {
       'Kazanmak için dört taşını bir araya getirip bir şekil oluşturmalısın: I, L ya da Z.';
 
   @override
-  String get tutMorphTwomovesTitle => 'Bu yüzden çift hamle';
+  String get tutMorphTwomovesTitle => 'Her taştan iki tane';
 
   @override
   String get tutMorphTwomovesBody =>
-      'Dört taşlık bir şekli tek tek koyarak kurmak çok zor olurdu. O yüzden Morph\'ta her sıranda iki taş birden koyarsın — ve her taştan elinde ikişer tane vardır.';
+      'Elinde her taş çeşidinden ikişer tane bulunur.';
 
   @override
   String get tutMorphIvTitle => 'Şekli tamamla — I';
@@ -559,13 +559,6 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get tutMorphIvBody =>
       'Şu sütun neredeyse hazır. Bir taş seç ve parlayan kareye koyarak dikey bir I tamamla.';
-
-  @override
-  String get tutMorphIhTitle => 'Bu kez iki taş';
-
-  @override
-  String get tutMorphIhBody =>
-      'Sıra çift hamlede. İki taşı sırayla seçip iki parlayan kareye koy ve yatay I\'yı tamamla.';
 
   @override
   String get tutMorphDiagTitle => 'Şekiller eğik de olur';
@@ -601,9 +594,6 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get tutMorphDoneBody =>
       'Artık şekillerin dilini biliyorsun — I, L, Z; düz, çapraz ya da aynalı. Hadi gerçek bir oyunda dene; bir şekil kurup zafere ulaş.';
-
-  @override
-  String get tutMorphHintFirst => 'İlk taşı seç ve parlayan bir kareye koy';
 
   @override
   String get tutMorphHintOneMore => 'Bir taş daha — diğer parlayan kareye koy';

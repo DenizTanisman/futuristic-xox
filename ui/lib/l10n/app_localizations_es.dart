@@ -550,11 +550,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Para ganar debes reunir cuatro de tus peones en una forma: una I, una L o una Z.';
 
   @override
-  String get tutMorphTwomovesTitle => 'Por eso mueves dos veces';
+  String get tutMorphTwomovesTitle => 'Dos de cada pieza';
 
   @override
-  String get tutMorphTwomovesBody =>
-      'Construir una forma de cuatro peones de uno en uno sería muy difícil. Así que en Morph colocas dos peones por turno — y tienes dos de cada valor.';
+  String get tutMorphTwomovesBody => 'Tienes dos de cada pieza en la mano.';
 
   @override
   String get tutMorphIvTitle => 'Completa la forma — I';
@@ -562,13 +561,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get tutMorphIvBody =>
       'Esa columna casi está lista. Elige un peón y completa una I vertical colocándolo en la casilla brillante.';
-
-  @override
-  String get tutMorphIhTitle => 'Dos peones esta vez';
-
-  @override
-  String get tutMorphIhBody =>
-      'Ahora es el movimiento doble. Elige dos peones por turno y colócalos en las dos casillas brillantes para completar una I horizontal.';
 
   @override
   String get tutMorphDiagTitle => 'Las formas también pueden inclinarse';
@@ -604,10 +596,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get tutMorphDoneBody =>
       'Ya hablas el idioma de las formas — I, L, Z; rectas, inclinadas o reflejadas. Pruébalo en una partida real; construye una forma y reclama la victoria.';
-
-  @override
-  String get tutMorphHintFirst =>
-      'Elige el primer peón y colócalo en una casilla brillante';
 
   @override
   String get tutMorphHintOneMore =>
