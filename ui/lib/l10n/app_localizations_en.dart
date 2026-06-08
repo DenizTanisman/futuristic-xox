@@ -119,6 +119,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gridLabel => 'Grid';
 
   @override
+  String get gridShort => '4×4 short';
+
+  @override
+  String get gridLong => '4×4 long';
+
+  @override
   String get difficultyEasy => 'Easy';
 
   @override

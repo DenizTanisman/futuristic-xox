@@ -41,6 +41,8 @@
 
   "difficultyLabel": "Сложность",
   "gridLabel": "Поле",
+  "gridShort": "4×4 коротк.",
+  "gridLong": "4×4 длинн.",
   "difficultyEasy": "Лёгкий",
   "difficultyMedium": "Средний",
   "difficultyHard": "Сложный",

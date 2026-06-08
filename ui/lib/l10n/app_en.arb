@@ -41,6 +41,8 @@
 
   "difficultyLabel": "Difficulty",
   "gridLabel": "Grid",
+  "gridShort": "4×4 short",
+  "gridLong": "4×4 long",
   "difficultyEasy": "Easy",
   "difficultyMedium": "Medium",
   "difficultyHard": "Hard",

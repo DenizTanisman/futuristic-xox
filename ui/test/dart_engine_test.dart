@@ -113,6 +113,31 @@ void main() {
       api.humanMove(color: 1, value: 2, cell: 2);
       expect(api.humanMove(color: 0, value: 3, cell: 10).snapshot.outcome, Outcome.win0);
     });
+
+    test('Classic 4x4 long wins only on 4-in-a-row, not 3', () {
+      final api = DartGameApi();
+      api.newGame(mode: Mode4.classic, rows: 4, cols: 4, winLen: 4);
+      // P0 fills the top row; P1 parks in the row below. Single placement alternates the turn.
+      api.humanMove(cell: 0); // P0
+      api.humanMove(cell: 4); // P1
+      api.humanMove(cell: 1); // P0
+      api.humanMove(cell: 5); // P1
+      final three = api.humanMove(cell: 2); // P0 owns 0,1,2 — three in a row
+      expect(three.snapshot.outcome, Outcome.inProgress, reason: '3-in-a-row must NOT win in long');
+      api.humanMove(cell: 6); // P1
+      final four = api.humanMove(cell: 3); // P0 owns 0,1,2,3 — four in a row
+      expect(four.snapshot.outcome, Outcome.win0);
+    });
+
+    test('Classic 4x4 short still wins on 3-in-a-row', () {
+      final api = DartGameApi();
+      api.newGame(mode: Mode4.classic, rows: 4, cols: 4); // winLen defaults to 3
+      api.humanMove(cell: 0);
+      api.humanMove(cell: 4);
+      api.humanMove(cell: 1);
+      api.humanMove(cell: 5);
+      expect(api.humanMove(cell: 2).snapshot.outcome, Outcome.win0);
+    });
   });
 
   group('morph', () {

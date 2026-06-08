@@ -41,6 +41,8 @@
 
   "difficultyLabel": "Dificultad",
   "gridLabel": "Tablero",
+  "gridShort": "4×4 corto",
+  "gridLong": "4×4 largo",
   "difficultyEasy": "Fácil",
   "difficultyMedium": "Media",
   "difficultyHard": "Difícil",

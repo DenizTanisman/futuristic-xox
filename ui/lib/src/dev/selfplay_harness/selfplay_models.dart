@@ -30,6 +30,9 @@ class SelfPlayConfig {
   /// Safety depth cap; with a time box set high so the clock governs.
   final int maxDepth;
 
+  /// Line length to win for Classic (3 = "short", 4 = "long" on 4×4); ignored by other modes.
+  final int winLen;
+
   const SelfPlayConfig({
     required this.mode,
     required this.rows,
@@ -40,6 +43,7 @@ class SelfPlayConfig {
     required this.firstCell,
     this.timeMs = kSelfPlayTimeMs,
     this.maxDepth = 64,
+    this.winLen = 3,
   });
 }
 

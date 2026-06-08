@@ -120,6 +120,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get gridLabel => 'Поле';
 
   @override
+  String get gridShort => '4×4 коротк.';
+
+  @override
+  String get gridLong => '4×4 длинн.';
+
+  @override
   String get difficultyEasy => 'Лёгкий';
 
   @override

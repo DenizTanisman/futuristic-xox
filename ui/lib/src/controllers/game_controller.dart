@@ -41,6 +41,8 @@ class GameController extends ChangeNotifier {
   final Mode4 mode;
   final int rows;
   final int cols;
+  /// Line length to win for Classic (3/4); ignored by other modes.
+  final int winLen;
 
   /// players[0] = bottom seat (moves first), players[1] = top seat.
   final List<PlayerController> players;
@@ -74,11 +76,12 @@ class GameController extends ChangeNotifier {
     required this.mode,
     required this.rows,
     required this.cols,
+    this.winLen = 3,
     required this.players,
     required this.strings,
     int? seed,
   }) {
-    snapshot = api.newGame(mode: mode, rows: rows, cols: cols, seed: seed);
+    snapshot = api.newGame(mode: mode, rows: rows, cols: cols, seed: seed, winLen: winLen);
     // If the starting seat is non-human (future-proofing), let it play.
     Future.microtask(_runAutoPlayers);
   }

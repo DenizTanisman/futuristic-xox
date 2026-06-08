@@ -23,6 +23,9 @@ class GameScreen extends StatefulWidget {
   final int grid;
   final Difficulty difficulty;
 
+  /// Line length to win for Classic (3 = "short", 4 = "long" on 4×4); ignored by other modes.
+  final int winLen;
+
   /// Offline multiplayer: both seats are human (no AI). When false, seat 1 is the AI.
   final bool multiplayer;
 
@@ -31,6 +34,7 @@ class GameScreen extends StatefulWidget {
     required this.mode,
     required this.grid,
     required this.difficulty,
+    this.winLen = 3,
     this.multiplayer = false,
   });
 
@@ -61,6 +65,7 @@ class _GameScreenState extends State<GameScreen> {
       mode: widget.mode,
       rows: widget.grid,
       cols: widget.grid,
+      winLen: widget.winLen,
       players: players,
       strings: GameStrings(
         capture: l.captureMsg,

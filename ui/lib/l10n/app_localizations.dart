@@ -318,6 +318,18 @@ abstract class AppLocalizations {
   /// **'Grid'**
   String get gridLabel;
 
+  /// No description provided for @gridShort.
+  ///
+  /// In en, this message translates to:
+  /// **'4×4 short'**
+  String get gridShort;
+
+  /// No description provided for @gridLong.
+  ///
+  /// In en, this message translates to:
+  /// **'4×4 long'**
+  String get gridLong;
+
   /// No description provided for @difficultyEasy.
   ///
   /// In en, this message translates to:

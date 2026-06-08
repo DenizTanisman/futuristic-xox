@@ -41,6 +41,8 @@
 
   "difficultyLabel": "Zorluk",
   "gridLabel": "Izgara",
+  "gridShort": "4×4 kısa",
+  "gridLong": "4×4 uzun",
   "difficultyEasy": "Kolay",
   "difficultyMedium": "Orta",
   "difficultyHard": "Zor",

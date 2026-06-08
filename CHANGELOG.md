@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Classic "4×4 long" variant** (4-in-a-row win) selectable in setup, alongside "4×4 short"
+  (3-in-a-row); `winLen` threads setup → game → backend.
+- **Multiplayer ON/OFF** in setup (local two-human pass-and-play; difficulty disabled) — wired into the
+  redesigned setup screens (the toggle/seat routing already existed).
+
 ### Changed
+- **Setup screens redesigned.** Futuristic difficulty is now a **2×2** grid (Easy/Medium ·
+  Hard/Impossible) instead of a cramped 4-tier row; Classic shows a difficulty row + grid options
+  `[3×3] [4×4 short] [4×4 long]`. Grid buttons carry `(side, winLen)`.
+- **Dev test-dev (self-play harness)** gains a Classic win-length selector so 4×4-long is exercisable;
+  it already runs at the 2 s on-device budget, behind `kDebugMode` (absent from release builds).
 - **Morph is single alternating placement** (one stone per turn) instead of two per turn; shapes
   (I/L/Z, all orientations) and grids (4×4, 5×5) unchanged. Win length is now configurable for line
   modes (Classic 4×4 "long" = 4-in-a-row), updated in both the Rust engine and the Dart backend.

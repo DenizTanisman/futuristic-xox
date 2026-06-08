@@ -679,7 +679,43 @@ class _SetupScreen extends StatefulWidget {
 class _SetupScreenState extends State<_SetupScreen> {
   Difficulty difficulty = Difficulty.medium;
   late int grid = widget.mode.grids.first;
+  int winLen = 3;
   bool multiplayer = false;
+
+  /// (side, winLen, label) grid options. Classic offers 4×4 "short" (3-in-a-row) and "long"
+  /// (4-in-a-row); Futuristic grids are all win-length 3.
+  List<({int side, int winLen, String label})> _gridOptions(AppLocalizations l) {
+    if (widget.mode == Mode4.classic) {
+      return [
+        (side: 3, winLen: 3, label: '3×3'),
+        (side: 4, winLen: 3, label: l.gridShort),
+        (side: 4, winLen: 4, label: l.gridLong),
+      ];
+    }
+    return [for (final g in widget.mode.grids) (side: g, winLen: 3, label: '$g×$g')];
+  }
+
+  /// Difficulty selector: a 2×2 grid for the four Futuristic tiers (Easy/Medium · Hard/Impossible),
+  /// a single row for Classic's three. Fixes the 4-tier row layout drift.
+  Widget _difficultyBlock(AppLocalizations l) {
+    Widget seg(List<Difficulty> vals) => _Segmented<Difficulty>(
+          values: vals,
+          selected: difficulty,
+          label: (d) => _difficultyName(l, d),
+          onSelect: (d) => setState(() => difficulty = d),
+        );
+    if (widget.mode.difficulties.length == 4) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          seg(const [Difficulty.easy, Difficulty.medium]),
+          const SizedBox(height: 8),
+          seg(const [Difficulty.hard, Difficulty.impossible]),
+        ],
+      );
+    }
+    return seg(widget.mode.difficulties);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -704,25 +740,30 @@ class _SetupScreenState extends State<_SetupScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _sectionLabel(t, l.difficultyLabel),
-                      _Segmented<Difficulty>(
-                        values: widget.mode.difficulties,
-                        selected: difficulty,
-                        label: (d) => _difficultyName(l, d),
-                        onSelect: (d) => setState(() => difficulty = d),
-                      ),
+                      _difficultyBlock(l),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 22),
               _sectionLabel(t, l.gridLabel),
-              _Segmented<int>(
-                values: widget.mode.grids,
-                selected: grid,
-                label: (g) => '$g×$g',
-                iconBuilder: (g, color) => _GridIcon(n: g, color: color),
-                onSelect: (g) => setState(() => grid = g),
-              ),
+              Builder(builder: (_) {
+                final opts = _gridOptions(l);
+                final sel = opts.firstWhere(
+                  (o) => o.side == grid && o.winLen == winLen,
+                  orElse: () => opts.first,
+                );
+                return _Segmented<({int side, int winLen, String label})>(
+                  values: opts,
+                  selected: sel,
+                  label: (o) => o.label,
+                  iconBuilder: (o, color) => _GridIcon(n: o.side, color: color),
+                  onSelect: (o) => setState(() {
+                    grid = o.side;
+                    winLen = o.winLen;
+                  }),
+                );
+              }),
               const SizedBox(height: 22),
               _MultiplayerToggle(value: multiplayer, onChanged: (v) => setState(() => multiplayer = v)),
               const SizedBox(height: 26),
@@ -733,6 +774,7 @@ class _SetupScreenState extends State<_SetupScreen> {
                     mode: widget.mode,
                     grid: grid,
                     difficulty: difficulty,
+                    winLen: winLen,
                     multiplayer: multiplayer,
                   ),
                 ),

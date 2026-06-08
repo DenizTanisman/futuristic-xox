@@ -22,6 +22,7 @@ class SelfPlaySetupScreen extends StatefulWidget {
 class _SelfPlaySetupScreenState extends State<SelfPlaySetupScreen> {
   Mode4? _mode;
   int? _grid;
+  int _winLen = 3; // Classic only: 3 = short, 4 = long (4×4)
   MorphShape _shape = MorphShape.i;
   final TextEditingController _seedCtrl = TextEditingController(text: '0');
 
@@ -65,7 +66,8 @@ class _SelfPlaySetupScreenState extends State<SelfPlaySetupScreen> {
       return;
     }
     final api = DartGameApi();
-    final snap = api.newGame(mode: _mode!, rows: _grid!, cols: _grid!, seed: _effectiveSeed);
+    final snap =
+        api.newGame(mode: _mode!, rows: _grid!, cols: _grid!, seed: _effectiveSeed, winLen: _winLen);
     _preview = api;
     _snap = snap;
     _selColor = null;
@@ -95,6 +97,7 @@ class _SelfPlaySetupScreenState extends State<SelfPlaySetupScreen> {
       firstColor: _valued ? _selColor : null,
       firstValue: _valued ? _selValue : null,
       firstCell: _firstCell!,
+      winLen: _winLen,
       // timeMs/maxDepth default to the 2 s harness time box + a high safety cap.
     );
     Navigator.of(context).push(
@@ -136,6 +139,21 @@ class _SelfPlaySetupScreenState extends State<SelfPlaySetupScreen> {
                 (g) => '$g×$g',
                 (g) => setState(() {
                   _grid = g;
+                  if (!(_mode == Mode4.classic && g == 4)) _winLen = 3;
+                  _rebuildPreview();
+                }),
+              ),
+            ],
+            // Classic 4×4: win length 3 (short) or 4 (long) — exercises the new variant in test-dev.
+            if (_mode == Mode4.classic && _grid == 4) ...[
+              const SizedBox(height: 16),
+              _label('Win length'),
+              _chips<int>(
+                const [3, 4],
+                _winLen,
+                (w) => w == 3 ? '3 (short)' : '4 (long)',
+                (w) => setState(() {
+                  _winLen = w;
                   _rebuildPreview();
                 }),
               ),

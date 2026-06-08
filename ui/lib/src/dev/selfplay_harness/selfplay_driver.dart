@@ -19,7 +19,12 @@ import 'selfplay_models.dart';
 /// isolate and directly in unit tests.
 void produceSelfPlay(SelfPlayConfig config, void Function(SelfPlayFrame) emit) {
   final api = DartGameApi();
-  api.newGame(mode: config.mode, rows: config.rows, cols: config.cols, seed: config.seed);
+  api.newGame(
+      mode: config.mode,
+      rows: config.rows,
+      cols: config.cols,
+      seed: config.seed,
+      winLen: config.winLen);
 
   final first = api.humanMove(
     color: config.firstColor,
