@@ -120,7 +120,7 @@ void main() {
       final api = DartGameApi();
       final s = api.newGame(mode: Mode4.morph, rows: 4, cols: 4, seed: 1);
       expect(s.morphShape, isNotNull);
-      expect(s.movesLeftInTurn, 2);
+      expect(s.movesLeftInTurn, 1); // single alternating placement now
     });
 
     test('diagonal (staircase) I completion wins', () {
@@ -138,24 +138,24 @@ void main() {
       api.newGame(mode: Mode4.morph, rows: 4, cols: 4, seed: seed!);
       const target = [0, 5, 10, 15]; // main diagonal
       final park = [for (var c = 0; c < 16; c++) if (!target.contains(c)) c];
+      // Single placement now alternates: P0 fills the diagonal, P1 parks elsewhere in between.
       api.humanMove(color: 0, value: 1, cell: target[0]);
-      api.humanMove(color: 0, value: 1, cell: target[1]);
       api.humanMove(color: 1, value: 1, cell: park[0]);
+      api.humanMove(color: 0, value: 1, cell: target[1]);
       api.humanMove(color: 1, value: 1, cell: park[1]);
       api.humanMove(color: 0, value: 2, cell: target[2]);
+      api.humanMove(color: 1, value: 2, cell: park[2]);
       final r = api.humanMove(color: 0, value: 2, cell: target[3]);
       expect(r.snapshot.outcome, Outcome.win0);
     });
 
-    test('two moves per turn; same player continues then turn flips', () {
+    test('single placement flips the turn immediately', () {
       final api = DartGameApi();
-      api.newGame(mode: Mode4.morph, rows: 4, cols: 4);
+      final s0 = api.newGame(mode: Mode4.morph, rows: 4, cols: 4);
+      expect(s0.movesLeftInTurn, 1);
       final r1 = api.humanMove(color: 0, value: 1, cell: 5);
-      expect(r1.snapshot.turn, 0);
+      expect(r1.snapshot.turn, 1, reason: 'turn flips after one stone');
       expect(r1.snapshot.movesLeftInTurn, 1);
-      final r2 = api.humanMove(color: 0, value: 1, cell: 6);
-      expect(r2.snapshot.turn, 1);
-      expect(r2.snapshot.movesLeftInTurn, 2);
     });
   });
 
@@ -207,11 +207,15 @@ void main() {
       final s0 = api.newGame(mode: Mode4.morph, rows: 5, cols: 5, seed: 9);
       final target = morphPlacementsForShape(5, 5, MorphShape.values.indexOf(s0.morphShape!)).first;
       final park = [for (var c = 0; c < 25; c++) if (!target.contains(c)) c];
+      // Single alternating placement: P0 takes three shape cells, P1 parks in between.
       api.humanMove(color: 0, value: 1, cell: target[0]);
-      api.humanMove(color: 0, value: 1, cell: target[1]);
       api.humanMove(color: 1, value: 1, cell: park[0]);
+      api.humanMove(color: 0, value: 1, cell: target[1]);
       api.humanMove(color: 1, value: 1, cell: park[1]);
       api.humanMove(color: 0, value: 2, cell: target[2]);
+      // Player 0 now owns 3 of the 4 shape cells; it's P0's turn (after P1 would move) — but to test
+      // the hint we need P0 to move; park one more for P1 so the turn returns to P0.
+      api.humanMove(color: 1, value: 2, cell: park[2]);
       // Player 0 now owns 3 of the 4 shape cells; target[3] should be flagged as completing.
       expect(api.completingCells(), contains(target[3]));
     });

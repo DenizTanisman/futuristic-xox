@@ -7,8 +7,10 @@ import '../models/game_models.dart';
 /// - A future `RustGameApi` — flutter_rust_bridge bindings to the `bridge::GameSession`, swapping in
 ///   the native engine + real AI with no UI changes (spec §2; AI runs off the UI isolate for 60fps).
 abstract class GameApi {
-  /// Start a new game. `seed` only affects Bonanza's randomized hands (spec §4.3).
-  Snapshot newGame({required Mode4 mode, required int rows, required int cols, int? seed});
+  /// Start a new game. `seed` only affects Bonanza's randomized hands (spec §4.3). `winLen` is the
+  /// line length to win for Classic (3 = "short", 4 = "long" on 4×4); ignored by other modes.
+  Snapshot newGame(
+      {required Mode4 mode, required int rows, required int cols, int? seed, int winLen = 3});
 
   /// Current state.
   Snapshot snapshot();

@@ -3,7 +3,11 @@
 library;
 
 /// All length-3 winning segments for a `rows×cols` grid: horizontal, vertical, both diagonals.
-List<List<int>> lineTriples(int rows, int cols) {
+List<List<int>> lineTriples(int rows, int cols) => lineSegments(rows, cols, 3);
+
+/// All length-`winLen` winning segments (mirrors `engine::line_segments`). Generalizes [lineTriples]
+/// so Classic 4×4 can win on 3-in-a-row ("short") or 4-in-a-row ("long"). Only in-bounds windows.
+List<List<int>> lineSegments(int rows, int cols, int winLen) {
   int idx(int r, int c) => r * cols + c;
   final out = <List<int>>[];
   const dirs = [
@@ -12,13 +16,14 @@ List<List<int>> lineTriples(int rows, int cols) {
     [1, 1],
     [1, -1],
   ];
+  final step = winLen - 1;
   for (var r = 0; r < rows; r++) {
     for (var c = 0; c < cols; c++) {
       for (final d in dirs) {
-        final r2 = r + 2 * d[0];
-        final c2 = c + 2 * d[1];
-        if (r2 < 0 || r2 >= rows || c2 < 0 || c2 >= cols) continue;
-        out.add([idx(r, c), idx(r + d[0], c + d[1]), idx(r2, c2)]);
+        final re = r + step * d[0];
+        final ce = c + step * d[1];
+        if (re < 0 || re >= rows || ce < 0 || ce >= cols) continue;
+        out.add([for (var i = 0; i < winLen; i++) idx(r + i * d[0], c + i * d[1])]);
       }
     }
   }

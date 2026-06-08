@@ -17,8 +17,9 @@ extension Mode4X on Mode4 {
   /// Whether pawns carry values and can capture (spec §3.3). Classic does not.
   bool get valued => this != Mode4.classic;
 
-  /// Two moves per turn (spec §4.4).
-  bool get twoMovesPerTurn => this == Mode4.morph;
+  /// Morph used to place two stones per turn; it now alternates single placements, so no mode is
+  /// two-per-turn. Kept (returning false) so callers that gated the "move 1 of 2" UI still compile.
+  bool get twoMovesPerTurn => false;
 
   /// Allowed grid sizes (as side length) for this mode (spec §8).
   List<int> get grids => this == Mode4.morph ? const [4, 5] : const [3, 4];

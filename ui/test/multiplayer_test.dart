@@ -58,19 +58,15 @@ void main() {
       expect(c.snapshot.turn, 0, reason: 'back to bottom seat');
     });
 
-    test('Morph keeps two-moves-per-turn per human seat', () async {
+    test('Morph alternates single placements between human seats', () async {
       final c = mp(Mode4.morph, 4);
-      expect(c.snapshot.movesLeftInTurn, 2);
+      expect(c.snapshot.movesLeftInTurn, 1);
 
       c.selectPawn(0, 1);
       await c.onCellTap(5);
-      expect(c.snapshot.turn, 0, reason: 'still P1 mid-turn');
+      // Single placement now hands the turn straight to the other human seat.
+      expect(c.snapshot.turn, 1, reason: 'turn passes to P2 after one stone');
       expect(c.snapshot.movesLeftInTurn, 1);
-
-      // The selection persists (a second value-1 pawn remains), so just place again.
-      await c.onCellTap(6);
-      expect(c.snapshot.turn, 1, reason: 'turn passes to P2 after two moves');
-      expect(c.snapshot.movesLeftInTurn, 2);
     });
   });
 

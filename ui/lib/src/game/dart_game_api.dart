@@ -101,6 +101,7 @@ class DartGameApi implements GameApi {
   late Mode4 _mode;
   late int _rows;
   late int _cols;
+  late int _winLen; // cells in a row to win (3 normally; Classic 4×4 "long" = 4)
   late _State _s;
   late List<List<int>> _lines;
   late List<List<int>> _placements; // Morph: placements of the chosen shape only
@@ -117,13 +118,16 @@ class DartGameApi implements GameApi {
   late List<int> _zMoves; // [0,1,2] moves-left-in-turn
 
   @override
-  Snapshot newGame({required Mode4 mode, required int rows, required int cols, int? seed}) {
+  Snapshot newGame(
+      {required Mode4 mode, required int rows, required int cols, int? seed, int winLen = 3}) {
     _mode = mode;
     _rows = rows;
     _cols = cols;
+    // Classic honors winLen (3 = "short", 4 = "long"); other line modes are always 3-in-a-row.
+    _winLen = mode == Mode4.classic ? winLen : 3;
     final s = seed ?? DateTime.now().microsecondsSinceEpoch;
     _rng = Random(s);
-    _lines = lineTriples(rows, cols);
+    _lines = lineSegments(rows, cols, _winLen);
 
     if (mode == Mode4.morph) {
       final shapeIdx = Random(s).nextInt(3);
@@ -166,7 +170,8 @@ class DartGameApi implements GameApi {
       case Mode4.morph:
         final n = cells == 16 ? 6 : 11;
         final vals = [for (var v = 1; v <= n; v++) ...[v, v]];
-        return _State(board, [own(0, vals), own(1, vals)], 0, 2);
+        // Single alternating placement now (one move per turn).
+        return _State(board, [own(0, vals), own(1, vals)], 0, 1);
     }
   }
 
@@ -270,9 +275,10 @@ class DartGameApi implements GameApi {
         }
       }
     } else {
+      // Variable-length lines (3 normally; Classic 4×4 "long" = 4): all cells share one owner.
       for (final l in _lines) {
         final a = s.board[l[0]];
-        if (a != null && s.board[l[1]]?.owner == a.owner && s.board[l[2]]?.owner == a.owner) {
+        if (a != null && l.every((c) => s.board[c]?.owner == a.owner)) {
           return (owner: a.owner, cells: l);
         }
       }
@@ -328,7 +334,8 @@ class DartGameApi implements GameApi {
   List<int> completingCells() {
     final me = _s.turn;
     final groups = _mode == Mode4.morph ? _placements : _lines;
-    final need = _mode == Mode4.morph ? 3 : 2; // own cells before the finishing one
+    // own cells before the finishing one: Morph shape = 3; line modes = winLen-1 (2 short, 3 long).
+    final need = _mode == Mode4.morph ? 3 : _winLen - 1;
     final myColorPawns = _s.hands[me].where((h) => h.color == me);
     final result = <int>{};
     for (final g in groups) {
@@ -750,7 +757,7 @@ class DartGameApi implements GameApi {
           open = cell;
         }
       }
-      if (blocked || mine != 2 || open == null) continue;
+      if (blocked || mine != _winLen - 1 || open == null) continue;
       final p = s.board[open];
       final usable = p == null || (p.owner != color && maxHand > p.value);
       if (usable) count++;
