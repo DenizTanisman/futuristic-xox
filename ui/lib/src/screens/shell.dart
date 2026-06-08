@@ -12,6 +12,10 @@ import '../audio/sfx_controller.dart';
 import '../theme/app_themes.dart';
 import '../tutorial/tutorial_screen.dart';
 
+/// Personal-build flag for the dev test surface: a plain release/store build leaves this false (so the
+/// test-dev menu is compiled out), the owner's personal build sets `--dart-define=DEV_TEST=true`.
+const bool _kDevTest = bool.fromEnvironment('DEV_TEST');
+
 AppLocalizations _l(BuildContext c) => AppLocalizations.of(c)!;
 
 /// Locale-aware upper-casing. Dart's [String.toUpperCase] is not Turkish-aware ('i' → 'I'), and the
@@ -56,10 +60,11 @@ class AppDrawer extends StatelessWidget {
             _item(context, Icons.school_outlined, l.navTutorials, const TutorialsPage()),
             _item(context, Icons.info_outline, l.navAbout, const AboutPage()),
             _item(context, Icons.bug_report_outlined, l.navIssue, const IssuePage()),
-            // Dev-only: never present in release builds (work order §3.2). Not localized on purpose.
-            if (kDebugMode)
-              _item(context, Icons.science_outlined, 'Self-Play (dev)',
-                  const SelfPlaySetupScreen()),
+            // Dev-only test surface — at the very bottom. Present in debug builds AND in a personal
+            // build compiled with `--dart-define=DEV_TEST=true`; absent from a plain release/store
+            // build (both consts false → compiled out). Not localized on purpose.
+            if (kDebugMode || _kDevTest)
+              _item(context, Icons.science_outlined, 'Dev_test', const SelfPlaySetupScreen()),
           ],
         ),
       ),
