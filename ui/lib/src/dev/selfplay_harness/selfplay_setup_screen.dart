@@ -95,7 +95,7 @@ class _SelfPlaySetupScreenState extends State<SelfPlaySetupScreen> {
       firstColor: _valued ? _selColor : null,
       firstValue: _valued ? _selValue : null,
       firstCell: _firstCell!,
-      maxDepth: depthCapFor(_mode!, _grid!),
+      // timeMs/maxDepth default to the 2 s harness time box + a high safety cap.
     );
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => SelfPlayReviewScreen(config: config)),

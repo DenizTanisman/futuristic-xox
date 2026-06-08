@@ -159,8 +159,8 @@ class _DevBanner extends StatelessWidget {
         color: const Color(0xFF2A1E08),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         child: const Text(
-          'DEV self-play · deterministic best-play (time-box off). Desktop CPU ≫ phone — '
-          'validates correctness/flow/look, not on-phone 450 ms strength.',
+          'DEV self-play · best-play, 2 s/move time box. Desktop CPU ≫ phone — '
+          'validates correctness/flow/look, not on-phone strength.',
           style: TextStyle(color: Color(0xFFD4AF37), fontSize: 11),
         ),
       );

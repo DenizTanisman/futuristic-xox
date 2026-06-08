@@ -9,13 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Dev-only macOS self-play test harness.** Pick mode + grid (+ Bonanza seed / Morph shape), make the
-  first move, then both sides play the adversarial "first" option (time-box-off, deterministic) to a
+  first move, then both sides play the adversarial "first" option (**2 s/move time box**) to a
   win/draw. The full game is recorded; prev/next/replay scrubbing; a background producer (isolate)
   runs to terminal independent of the viewer; touching prev/next freezes auto-advance. No win/lose
   banner; the board persists until reset. Reachable only behind `kDebugMode` — **not in release
-  builds**. Backed by `DartGameApi.selfPlayStep` (deterministic depth-capped search; real `aiMove`
-  keeps its time box). Runs on any debug Flutter target (macOS needs full Xcode; works as-is on a
-  debug Android/desktop build).
+  builds**. Backed by `DartGameApi.selfPlayStep({timeMs, maxDepth})` (real `aiMove` keeps its own time
+  box). A literally-perfect full-depth search is infeasible past tiny boards (Original 4×4 depth 6 ≈
+  70 s), so the harness time-boxes each move; `timeMs: 0` keeps a deterministic depth-only mode for
+  tests. Runs on any debug Flutter target (macOS needs full Xcode).
 
 ### Fixed
 - **Hard AI is actually hard on device.** The shipping Flutter app runs the pure-Dart backend

@@ -403,13 +403,22 @@ class DartGameApi implements GameApi {
     return _commit(mv);
   }
 
-  /// Dev/test only (self-play harness): commit one deterministic best move — the adversarial `first`
-  /// option with the **time box off** and an explicit [maxDepth] cap — so recorded games are
-  /// reproducible across runs/machines. Real play ([aiMove]) keeps its 450 ms time box untouched.
-  /// Returns the resulting [MoveResult], or null at a terminal position (no move to make).
-  MoveResult? selfPlayStep(int maxDepth) {
+  /// Dev/test only (self-play harness): commit one best move — the adversarial `first` option.
+  ///
+  /// - `timeMs > 0` → iterative deepening within that per-move time box (the harness uses 2000 ms);
+  ///   strong but *not* reproducible across machines (timing decides the depth reached).
+  /// - `timeMs == 0` → **time box off**, search to `maxDepth` only → deterministic, reproducible
+  ///   records (used by the determinism tests). A full-depth "perfect" search is infeasible beyond
+  ///   tiny boards (Original 4×4 depth 6 ≈ 70 s), hence the time box for real harness runs.
+  ///
+  /// `maxDepth` is the safety cap; with a time box set high so the clock governs. Real play
+  /// ([aiMove]) keeps its own 450 ms box untouched. Returns the [MoveResult], or null at a terminal.
+  MoveResult? selfPlayStep({int timeMs = 0, int maxDepth = 64}) {
     if (_outcome(_s) != Outcome.inProgress || _legalMoves(_s).isEmpty) return null;
-    final mv = _adversarialSearch(budgetMsOverride: _kNoTimeBox, maxDepthOverride: maxDepth)?.first;
+    final mv = _adversarialSearch(
+      budgetMsOverride: timeMs == 0 ? _kNoTimeBox : timeMs,
+      maxDepthOverride: maxDepth,
+    )?.first;
     if (mv == null) return null;
     return _commit(mv);
   }

@@ -35,7 +35,7 @@ void produceSelfPlay(SelfPlayConfig config, void Function(SelfPlayFrame) emit) {
 
   var prev = first.snapshot;
   while (true) {
-    final r = api.selfPlayStep(config.maxDepth);
+    final r = api.selfPlayStep(timeMs: config.timeMs, maxDepth: config.maxDepth);
     if (r == null) break; // terminal
     emit(SelfPlayFrame(
       snapshot: r.snapshot,

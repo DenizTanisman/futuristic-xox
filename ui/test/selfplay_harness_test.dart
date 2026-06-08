@@ -32,7 +32,8 @@ SelfPlayConfig configFor(Mode4 mode, int grid,
         firstColor: null,
         firstValue: null,
         firstCell: 0,
-        maxDepth: depth);
+        timeMs: 0,
+      maxDepth: depth);
   }
   final h = snap.hand0.first;
   final cells = api.legalCells(color: h.color, value: h.value);
@@ -44,6 +45,7 @@ SelfPlayConfig configFor(Mode4 mode, int grid,
       firstColor: h.color,
       firstValue: h.value,
       firstCell: cells.first,
+      timeMs: 0,
       maxDepth: depth);
 }
 
@@ -96,6 +98,28 @@ void main() {
       });
     }
   });
+
+  test('time-boxed run (2 s path) still reaches a terminal position', () {
+    // Exercises the timeMs > 0 branch (a small box keeps the test quick). Not asserting determinism —
+    // a time box trades reproducibility for depth.
+    final api = DartGameApi();
+    final snap = api.newGame(mode: Mode4.original, rows: 4, cols: 4, seed: 0);
+    final h = snap.hand0.first;
+    final c = SelfPlayConfig(
+      mode: Mode4.original,
+      rows: 4,
+      cols: 4,
+      seed: 0,
+      firstColor: h.color,
+      firstValue: h.value,
+      firstCell: api.legalCells(color: h.color, value: h.value).first,
+      timeMs: 200,
+      maxDepth: 64,
+    );
+    final frames = run(c);
+    expect(frames, isNotEmpty);
+    expect(frames.last.snapshot.outcome, isNot(Outcome.inProgress));
+  }, timeout: const Timeout(Duration(minutes: 2)));
 
   test('determinism: same setup → identical record twice', () {
     final c = configFor(Mode4.original, 3, depth: 6);

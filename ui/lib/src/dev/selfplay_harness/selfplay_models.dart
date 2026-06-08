@@ -22,7 +22,12 @@ class SelfPlayConfig {
   final int? firstValue;
   final int firstCell;
 
-  /// Depth cap for the deterministic, time-box-off self-play search (see [depthCapFor]).
+  /// Per-move time box in ms (0 = off → deterministic depth-only search, used by tests). The live
+  /// harness uses [kSelfPlayTimeMs]; a full-depth "perfect" search is infeasible past tiny boards
+  /// (Original 4×4 depth 6 ≈ 70 s), so the harness time-boxes each move.
+  final int timeMs;
+
+  /// Safety depth cap; with a time box set high so the clock governs.
   final int maxDepth;
 
   const SelfPlayConfig({
@@ -33,9 +38,13 @@ class SelfPlayConfig {
     required this.firstColor,
     required this.firstValue,
     required this.firstCell,
-    required this.maxDepth,
+    this.timeMs = kSelfPlayTimeMs,
+    this.maxDepth = 64,
   });
 }
+
+/// The harness per-move time box: 2 seconds (work order follow-up — dev_test gets a 2 s limit).
+const int kSelfPlayTimeMs = 2000;
 
 /// One recorded position: the board state to render plus the cell that just changed (for the
 /// last-move highlight) and whether that move was a capture. Sendable across isolates (plain fields).
@@ -53,19 +62,3 @@ class SelfPlayFrame {
   });
 }
 
-/// Per-mode depth cap for the time-box-off self-play search (work order §5(C), logged in the plan).
-/// Small boards solve fully (deterministic perfect play); larger boards are depth-limited but still
-/// deterministic — the property the harness needs for reproducible scrubbing. Morph is capped low
-/// because its two-move turns square the per-turn branching (≈ b²) and there is no time box to stop a
-/// runaway search.
-int depthCapFor(Mode4 mode, int grid) {
-  switch (mode) {
-    case Mode4.classic:
-      return grid == 3 ? 9 : 12;
-    case Mode4.original:
-    case Mode4.bonanza:
-      return grid == 3 ? 9 : 7;
-    case Mode4.morph:
-      return grid == 4 ? 6 : 4;
-  }
-}
