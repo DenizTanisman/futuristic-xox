@@ -59,6 +59,19 @@ class _SelfPlaySetupScreenState extends State<SelfPlaySetupScreen> {
     return 0;
   }
 
+  /// Grid options for the selected mode. Classic offers three named variants (3×3 / 4×4 short /
+  /// 4×4 long) carrying their win length; Futuristic grids are all win-length 3.
+  List<({int side, int winLen, String label})> _gridOpts() {
+    if (_mode == Mode4.classic) {
+      return const [
+        (side: 3, winLen: 3, label: '3×3'),
+        (side: 4, winLen: 3, label: '4×4 short'),
+        (side: 4, winLen: 4, label: '4×4 long'),
+      ];
+    }
+    return [for (final g in _mode!.grids) (side: g, winLen: 3, label: '$g×$g')];
+  }
+
   void _rebuildPreview() {
     if (_mode == null || _grid == null) {
       _preview = null;
@@ -127,36 +140,32 @@ class _SelfPlaySetupScreenState extends State<SelfPlaySetupScreen> {
               (m) => setState(() {
                 _mode = m;
                 _grid = null;
+                _winLen = 3;
                 _rebuildPreview();
               }),
             ),
             if (_mode != null) ...[
               const SizedBox(height: 16),
               _label('Grid'),
-              _chips<int>(
-                _mode!.grids,
-                _grid,
-                (g) => '$g×$g',
-                (g) => setState(() {
-                  _grid = g;
-                  if (!(_mode == Mode4.classic && g == 4)) _winLen = 3;
-                  _rebuildPreview();
-                }),
-              ),
-            ],
-            // Classic 4×4: win length 3 (short) or 4 (long) — exercises the new variant in test-dev.
-            if (_mode == Mode4.classic && _grid == 4) ...[
-              const SizedBox(height: 16),
-              _label('Win length'),
-              _chips<int>(
-                const [3, 4],
-                _winLen,
-                (w) => w == 3 ? '3 (short)' : '4 (long)',
-                (w) => setState(() {
-                  _winLen = w;
-                  _rebuildPreview();
-                }),
-              ),
+              // Classic shows three named options (3×3 / 4×4 short / 4×4 long), each carrying its
+              // win length; Futuristic grids are all win-length 3 — mirrors the main setup screen.
+              Builder(builder: (_) {
+                final opts = _gridOpts();
+                final sel = opts.firstWhere(
+                  (o) => o.side == _grid && o.winLen == _winLen,
+                  orElse: () => opts.first,
+                );
+                return _chips<({int side, int winLen, String label})>(
+                  opts,
+                  _grid == null ? null : sel,
+                  (o) => o.label,
+                  (o) => setState(() {
+                    _grid = o.side;
+                    _winLen = o.winLen;
+                    _rebuildPreview();
+                  }),
+                );
+              }),
             ],
             if (_mode == Mode4.bonanza && _grid != null) ...[
               const SizedBox(height: 16),
