@@ -1,7 +1,7 @@
 name: futuristic_xox
 description: "Futuristic XOX — enhanced tic-tac-toe with valued, capturing pawns (mobile-first)."
 publish_to: "none"
-version: 1.0.1+2
+version: 1.1.0+3
 
 environment:
   # Color.withValues() (used in the theme/widgets) requires Flutter 3.27 / Dart 3.6+.

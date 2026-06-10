@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-06-10
+
+Feature release: per-side difficulty tiers (incl. the new **Impossible**), the adversarial top-3
+search behind them, single-placement Morph, Classic 4×4 short/long win-length variants, redesigned
+setup screens, local multiplayer, and a genuinely hard on-device Hard AI.
+
 ### Added
 - **Classic "4×4 long" variant** (4-in-a-row win) selectable in setup, alongside "4×4 short"
   (3-in-a-row); `winLen` threads setup → game → backend.
